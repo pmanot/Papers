@@ -12,45 +12,25 @@ import Filesystem
 
 
 
+import SwiftUI
+import PDFKit
+
 struct PdfView: View {
-    @State var pdf = PDFFileDocument(pdf: PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s19_qp_21", ofType: "pdf")!))!)
-    var pages: [Int]
-    
-    init(_ pdf: PDFDocument = PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s19_qp_21", ofType: "pdf")!))!, pages: Pages = .index(3)){
-        self.pdf = PDFFileDocument(pdf: pdf)
-        switch pages {
-            case .index(let x):
-                self.pages = [x]
-                
-            case .all:
-                self.pages = Array(0..<pdf.pageCount)
-        }
+    init(_ paper: Paper, pages: [Int]){
+        self.paper = paper
+        self.pages = pages
     }
-    
-    init(_ url: URL, pages: Pages = .index(3)){
-        self.pdf = PDFFileDocument(pdf: PDFDocument(url: url)!)
-        switch pages {
-            case .index(let x):
-                self.pages = [x]
-                
-            case .all:
-                self.pages = Array(0..<PDFFileDocument(pdf: PDFDocument(url: url)!).pdf.pageCount)
-        }
-    }
-    
-    
+    var paper: Paper = examplePaper
+    var pages: [Int] = [3]
     var body: some View {
-        VStack {
-            ScrollView {
-                Spacer()
-                ForEach(pages, id: \.self){ page in
-                    drawPDF(pdf: pdf.pdf, page: page)
-                        .frame(width: 500, height: 500)
-                        .scaleEffect(CGSize(width: 0.65, height: 0.65))
-                        .drawingGroup()
-                        .id(UUID())
+        GeometryReader { screen in
+            VStack {
+                ScrollView {
+                    ForEach(pages, id: \.self) { page in
+                        CustomPDFView(pdf: paper.pdf, page: page)
+                            .frame(width: screen.size.width, height: screen.size.height)
+                    }
                 }
-                Spacer()
             }
         }
     }
@@ -58,30 +38,45 @@ struct PdfView: View {
 
 struct PdfView_Previews: PreviewProvider {
     static var previews: some View {
-        PdfView()
+        PdfView(examplePaper, pages: [4])
     }
 }
 
-
-func drawPDF(pdf: PDFDocument, page: Int = 1) -> Image? {
-    guard let page = pdf.page(at: page) else { return nil }
-
-    let pageRect = page.bounds(for: .mediaBox)
-    let renderer = UIGraphicsImageRenderer(size: pageRect.size)
-    let img = renderer.image { ctx in
-        UIColor.white.set()
-        ctx.fill(pageRect)
-        ctx.cgContext.translateBy(x: 0, y: pageRect.size.height)
-        ctx.cgContext.scaleBy(x: 1, y: -1.0)
-        ctx.cgContext.stroke(pageRect)
-
-        ctx.cgContext.drawPDFPage(page.pageRef!)
+struct CustomPDFView: UIViewRepresentable {
+    let pdf: PDFDocument
+    let page: Int
+    init(pdf: PDFDocument, page: Int = 3){
+        self.pdf = pdf
+        self.page = page
+    }
+    
+    func makeUIView(context: UIViewRepresentableContext<CustomPDFView>) -> CustomPDFView.UIViewType {
+        let pdfView = PDFView()
+        pdfView.document = pdf
+        pdfView.autoScales = true
+        pdfView.go(to: pdf.page(at: page)!)
+        pdfView.displayMode = .singlePage
+        return pdfView
     }
 
-    return Image(uiImage: img)
+    func updateUIView(_ uiView: UIView, context: Context) {
+    }
 }
 
-enum Pages {
-    case all
-    case index(_ x: Int)
+struct CustomPDFEditor: UIViewRepresentable {
+    
+    let pdf: PDFDocument
+    init(pdf: PDFDocument){
+        self.pdf = pdf
+    }
+    
+    func makeUIView(context: Context) -> UIView {
+        let pdfView = PDFView()
+        pdfView.document = pdf
+        pdfView.autoScales = true
+        return pdfView
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {
+    }
 }
