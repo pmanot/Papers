@@ -1,25 +1,14 @@
 //
-//  PdfView.swift
-//  Papers
+// Copyright (c) Purav Manot
 //
-//  Created by Purav Manot on 21/06/21.
-//
-
-import SwiftUI
-import PDFKit
-
-
 
 import SwiftUI
 import PDFKit
 
 struct PdfView: View {
-    init(_ paper: Paper, pages: [Int]){
-        self.paper = paper
-        self.pages = pages
-    }
-    var paper: Paper = examplePaper
+    var paper: Paper = Paper.example
     var pages: [Int] = [3]
+    
     var body: some View {
         GeometryReader { screen in
             VStack {
@@ -32,11 +21,16 @@ struct PdfView: View {
             }
         }
     }
+    
+    init(_ paper: Paper, pages: [Int]){
+        self.paper = paper
+        self.pages = pages
+    }
 }
 
 struct PdfView_Previews: PreviewProvider {
     static var previews: some View {
-        PdfView(examplePaper, pages: [4])
+        PdfView(Paper.example, pages: [4])
     }
 }
 
@@ -56,7 +50,7 @@ struct CustomPDFView: UIViewRepresentable {
         pdfView.displayMode = .singlePage
         return pdfView
     }
-
+    
     func updateUIView(_ uiView: UIView, context: Context) {
     }
 }
@@ -73,7 +67,7 @@ struct CustomPDFEditor: UIViewRepresentable {
         pdfView.autoScales = true
         return pdfView
     }
-
+    
     func updateUIView(_ uiView: UIView, context: Context) {
     }
 }
