@@ -8,22 +8,59 @@
 import SwiftUI
 
 struct PapersView: View {
-    var paperList: [Paper] = [Paper(paperCode: "9702_s19_qp_21")]
+    var papers: [Paper] = []
+    @State var paperTapped: Bool = false
+    init(_ papers: [Paper] = []){
+        self.papers = papers
+    }
+    
     var body: some View {
-        ZStack {
-            NavigationView {
-                List(paperList) { paper in
-                    NavigationLink(destination: PdfView(paper.pdf!, pages: .all)){
-                        Text(paper.paperCode)
+        NavigationView {
+            ScrollView {
+                LazyVStack {
+                    ForEach(papers){ paper in
+                        NavigationLink(destination: QuestionList(paper)) {
+                            HStack {
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .strokeBorder()
+                                        .frame(height: 50)
+                                    HStack {
+                                        VStack(alignment: .leading) {
+                                            HStack {
+                                                Text(paper.subject.rawValue)
+                                                    .font(.body)
+                                                    .fontWeight(.heavy)
+                                                Text(String(paper.year))
+                                                    .font(.callout)
+                                                    .fontWeight(.regular)
+                                            }
+                                            Text(paper.paperCode)
+                                                .font(.caption)
+                                                .fontWeight(.light)
+                                        }
+                                        .padding(.leading, 10)
+                                        
+                                        Image(systemName: "chevron.right.circle.fill")
+                                            .resizable()
+                                            .frame(width: 25, height: 25)
+                                            .padding(.leading, 170)
+                                    }
+                                }
+                                .padding(.horizontal, 10)
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
             }
+            .navigationTitle("Papers")
         }
     }
 }
 
 struct PapersView_Previews: PreviewProvider {
     static var previews: some View {
-        PapersView()
+        PapersView([examplePaper])
     }
 }
