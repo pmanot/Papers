@@ -44,7 +44,36 @@ struct Paper: Identifiable, Hashable {
     let pdf: PDFDocument
     var questions: [Question] = []
     
-    
+    mutating func extractQuestions() {
+        var questionPages: [Int: [Int]] = [:]
+        var questionNumber: Int = 1
+        var lastIndex: Int = 0
+        for pageNumber in 4..<pdf.pageCount {
+            let textData = (pdf.page(at: pageNumber)?.string!)!
+            let regex = try! NSRegularExpression(pattern: "[0-9]*")
+            let possibleIndices = regex.returnMatches(textData).sorted {$0 <= $1}
+            for index in possibleIndices {
+                if index == questionNumber {
+                    questionPages[index] = [pageNumber]
+                    questionNumber += 1
+                    lastIndex = index
+                }
+            }
+            if lastIndex != 0 {
+                if !(questionPages[lastIndex]!.contains(pageNumber)) {
+                    questionPages[lastIndex]!.append(pageNumber)
+                }
+            }
+        }
+        
+        for index in questionPages.keys {
+            if questionPages[index] != [] {
+                questions.append(Question(paper: self, page: questionPages[index]!, index: index))
+                questions.sort(by: {$0.index < $1.index})
+            }
+        }
+        
+    }
     
 }
 
