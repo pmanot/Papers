@@ -11,7 +11,7 @@ import SwiftUI
 struct PapersApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            PapersView([examplePaper])
         }
     }
 }

@@ -10,21 +10,16 @@ import PDFKit
 
 struct QuestionList: View {
     @State var paper: Paper = examplePaper
-    @State var text: String = ""
+    @State var tapped: Bool = false
     init(_ paper: Paper){
         self.paper = paper
     }
     var body: some View {
-        NavigationView {
             List(paper.questions) { question in
-                NavigationLink(destination: QuestionView(question)) {
+                NavigationLink(destination: QuestionView(question), isActive: $tapped) {
                     Text(String(question.index))
                 }
             }
-        }
-        .onAppear {
-            paper.extractQuestions()
-        }
     }
 }
 

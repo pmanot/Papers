@@ -6,9 +6,7 @@
 //
 
 import SwiftUI
-import UniformTypeIdentifiers
 import PDFKit
-import Filesystem
 
 
 
@@ -64,14 +62,13 @@ struct CustomPDFView: UIViewRepresentable {
 }
 
 struct CustomPDFEditor: UIViewRepresentable {
-    
+    let pdfView = PDFView()
     let pdf: PDFDocument
     init(pdf: PDFDocument){
         self.pdf = pdf
     }
     
     func makeUIView(context: Context) -> UIView {
-        let pdfView = PDFView()
         pdfView.document = pdf
         pdfView.autoScales = true
         return pdfView

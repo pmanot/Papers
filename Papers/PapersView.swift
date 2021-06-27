@@ -16,9 +16,7 @@ struct PapersView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                LazyVStack {
-                    ForEach(papers){ paper in
+                    List(papers){ paper in
                         NavigationLink(destination: QuestionList(paper)) {
                             HStack {
                                 ZStack(alignment: .leading) {
@@ -44,7 +42,7 @@ struct PapersView: View {
                                         Image(systemName: "chevron.right.circle.fill")
                                             .resizable()
                                             .frame(width: 25, height: 25)
-                                            .padding(.leading, 170)
+                                            .padding(.leading, 120)
                                     }
                                 }
                                 .padding(.horizontal, 10)
@@ -52,8 +50,6 @@ struct PapersView: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
-                }
-            }
             .navigationTitle("Papers")
         }
     }

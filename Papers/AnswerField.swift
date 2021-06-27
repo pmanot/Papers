@@ -13,7 +13,6 @@ struct AnswerField: View {
         ZStack(alignment: .topTrailing) {
             TextEditor(text: $text)
                 .foregroundColor(.white)
-                .font(.body, weight: .bold)
                 .frame(width: 350)
                 .opacity(0.4)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -28,7 +27,6 @@ struct AnswerField: View {
                         .frame(width: 30, height: 30)
                         .padding()
                 }
-                .visibleIfKeyboardActive()
             }
         }
     }

@@ -21,6 +21,7 @@ struct QuestionView: View {
             PdfView(question.paper, pages: question.pages)
         }
         .edgesIgnoringSafeArea(.all)
+        .navigationBarHidden(true)
     }
 }
 

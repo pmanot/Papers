@@ -2,7 +2,7 @@
 //  Model.swift
 //  PastPapers
 //
-//  Created by Purav Manot on 25/06/21.
+//  Created by Purav Manot on 23/06/21.
 //
 
 import Foundation
@@ -34,6 +34,7 @@ struct Paper: Identifiable, Hashable {
             variant = .octNov
         }
         year =  Int("20\(paperCode.dropFirst(12))") ?? 0
+        extractQuestions()
     }
     
     let paperCode: String
