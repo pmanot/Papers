@@ -6,24 +6,30 @@ import SwiftUI
 import PDFKit
 
 struct PdfView: View {
-    var paper: Paper = Paper.example
+    var pdf: PDFDocument
     var pages: [Int] = [3]
     
     var body: some View {
         GeometryReader { screen in
-            VStack {
-                ScrollView {
+            ScrollView {
+                VStack {
                     ForEach(pages, id: \.self) { page in
-                        CustomPDFView(pdf: paper.pdf, page: page)
+                        CustomPDFView(pdf: pdf, page: page)
                             .frame(width: screen.size.width, height: screen.size.height)
                     }
                 }
             }
         }
+        .edgesIgnoringSafeArea(.all)
     }
     
     init(_ paper: Paper, pages: [Int]){
-        self.paper = paper
+        self.pdf = paper.pdf
+        self.pages = pages
+    }
+    
+    init(_ markScheme: MarkScheme, pages: [Int]){
+        self.pdf = markScheme.pdf
         self.pages = pages
     }
 }
@@ -37,6 +43,7 @@ struct PdfView_Previews: PreviewProvider {
 struct CustomPDFView: UIViewRepresentable {
     let pdf: PDFDocument
     let page: Int
+    
     init(pdf: PDFDocument, page: Int = 3){
         self.pdf = pdf
         self.page = page
@@ -44,10 +51,13 @@ struct CustomPDFView: UIViewRepresentable {
     
     func makeUIView(context: UIViewRepresentableContext<CustomPDFView>) -> CustomPDFView.UIViewType {
         let pdfView = PDFView()
+        
         pdfView.document = pdf
         pdfView.autoScales = true
         pdfView.go(to: pdf.page(at: page)!)
         pdfView.displayMode = .singlePage
+        pdfView.displaysPageBreaks = false
+        
         return pdfView
     }
     
@@ -65,6 +75,7 @@ struct CustomPDFEditor: UIViewRepresentable {
     func makeUIView(context: Context) -> UIView {
         pdfView.document = pdf
         pdfView.autoScales = true
+        pdfView.displayBox = .trimBox
         return pdfView
     }
     
