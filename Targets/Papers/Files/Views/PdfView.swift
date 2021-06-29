@@ -6,6 +6,7 @@ import SwiftUI
 import PDFKit
 
 struct PdfView: View {
+    @Environment(\.colorScheme) var colorScheme
     var pdf: PDFDocument
     var pages: [Int] = [3]
     
@@ -14,10 +15,18 @@ struct PdfView: View {
             ScrollView {
                 VStack {
                     ForEach(pages, id: \.self) { page in
-                        CustomPDFView(pdf: pdf, page: page)
-                            .frame(width: screen.size.width, height: screen.size.height)
+                        Group {
+                            if colorScheme == .dark {
+                                CustomPDFView(pdf, page: page)
+                                    .colorInvert()
+                            } else {
+                                CustomPDFView(pdf, page: page)
+                            }
+                        }
+                        .frame(width: screen.size.width, height: screen.size.height)
                     }
                 }
+                .background(colorScheme == .dark ? Color.black : Color.white)
             }
         }
         .edgesIgnoringSafeArea(.all)
@@ -43,25 +52,28 @@ struct PdfView_Previews: PreviewProvider {
 struct CustomPDFView: UIViewRepresentable {
     let pdf: PDFDocument
     let page: Int
+    let pdfView = PDFView()
     
-    init(pdf: PDFDocument, page: Int = 3){
+    init(_ pdf: PDFDocument, page: Int = 3){
         self.pdf = pdf
         self.page = page
     }
     
     func makeUIView(context: UIViewRepresentableContext<CustomPDFView>) -> CustomPDFView.UIViewType {
-        let pdfView = PDFView()
         
         pdfView.document = pdf
         pdfView.autoScales = true
         pdfView.go(to: pdf.page(at: page)!)
         pdfView.displayMode = .singlePage
         pdfView.displaysPageBreaks = false
+        pdfView.pageShadowsEnabled = false
+        pdfView.displayBox = .artBox
         
         return pdfView
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
+        pdfView.backgroundColor = UIColor(Color.primary == .white ? .black : .white)
     }
 }
 
