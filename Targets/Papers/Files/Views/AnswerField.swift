@@ -2,29 +2,24 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUIX
+import SwiftUI
 
 struct AnswerField: View {
-    @State var text: String = ""
+    @State public var text: String = ""
+    
+    init(){
+        UITextView.appearance().backgroundColor = .clear
+    }
     
     var body: some View {
-        ZStack(alignment: .topTrailing) {
+        ZStack {
             TextEditor(text: $text)
+                .font(.body)
                 .foregroundColor(.white)
-                .frame(width: 350)
-                .opacity(0.4)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .offset(y: 200)
-            
-            Button {
-                Keyboard.dismiss()
-            } label: {
-                Image(systemName: "arrow.down.circle.fill")
-                    .resizable()
-                    .foregroundColor(.green)
-                    .frame(width: 30, height: 30)
-                    .padding()
-            }
+                .background(Color.black.clipShape(RoundedRectangle(cornerRadius: 10)))
+                .opacity(0.8)
+                .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(antialiased: true).foregroundColor(.secondary))
+                .padding()
         }
     }
 }
