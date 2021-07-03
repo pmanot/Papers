@@ -15,29 +15,16 @@ struct AnswerField: View {
     }
     
     var body: some View {
-        ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottomTrailing) {
             Capsule()
                 .frame(width: answers.count > 1 ? 20*CGFloat((answers.count)) : 0, height: 18.5)
                 .padding()
                 .foregroundColor(.black)
             TabView {
                 ForEach(answers, id: \.id) { answer in
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .bottom) {
-                            IndexPicker(index: $answers[answers.firstIndex(of: answer)!].index, question: question)
-                            
-                            ButtonSymbol("plus.square.fill"){
-                                withAnimation {
-                                    answers.append(Answer(paper: Paper.example, index: QuestionIndex(letter: QuestionIndex.letters[QuestionIndex.letters.firstIndex(of: answers.last!.index.letter!)! + 1])))
-                                }
-                            }
-                            .font(.title)
-                            .frame(width: 26, height: 26)
-                            .foregroundColor(.green)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 5)
-                                    .strokeBorder(antialiased: true)
-                            )
+                            IndexPicker(index: $answers[answers.firstIndex(of: answer)!].index)
                         }
                         .padding(.vertical, 5)
                         
@@ -47,13 +34,25 @@ struct AnswerField: View {
                             .font(.body)
                             .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 12)).colorInvert())
                             .opacity(0.8)
-                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(antialiased: true).foregroundColor(.primary))
-                            .padding([.bottom, .horizontal, .top], 5)
+                            .modifier(RoundedBorder())
+                            .padding([.bottom, .horizontal], 5)
                     }
                 }
                 .animation(.easeIn)
             }
             .tabViewStyle(PageTabViewStyle())
+            ButtonSymbol("plus.square.fill"){
+                withAnimation {
+                    if answers.last?.index.letter != nil {
+                        answers.append(Answer(paper: question.paper, index: index.nextQuestionIndex()))
+                    } else {
+                        answers.append(Answer(paper: question.paper))
+                    }
+                }
+            }
+            .font(.title, weight: .light)
+            .foregroundColor(.green)
+            .padding(10)
         }
         .animation(.spring())
     }
