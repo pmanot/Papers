@@ -5,10 +5,10 @@
 import SwiftUI
 import PDFKit
 
-struct PdfView: View {
+struct PDFPageView: View {
     @Environment(\.colorScheme) var colorScheme
-    var pdf: PDFDocument
-    var pages: [Int] = [3]
+    let pdf: PDFDocument
+    let pages: [Int]
     
     var body: some View {
         GeometryReader { screen in
@@ -43,9 +43,9 @@ struct PdfView: View {
     }
 }
 
-struct PdfView_Previews: PreviewProvider {
+struct PDFPageView_Previews: PreviewProvider {
     static var previews: some View {
-        PdfView(Paper.example, pages: [4])
+        PDFPageView(Paper.example, pages: [4])
     }
 }
 
@@ -67,13 +67,12 @@ struct CustomPDFView: UIViewRepresentable {
         pdfView.displayMode = .singlePage
         pdfView.displaysPageBreaks = false
         pdfView.pageShadowsEnabled = false
-        pdfView.displayBox = .artBox
-        
+        pdfView.displayBox = .cropBox
+        pdfView.backgroundColor = UIColor.clear
         return pdfView
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
-        pdfView.backgroundColor = UIColor(Color.primary == .white ? .black : .white)
     }
 }
 
