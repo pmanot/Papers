@@ -65,53 +65,136 @@ struct AnswerField_Previews: PreviewProvider {
 }
 
 extension AnswerField {
+    
     struct IndexPicker: View {
         @Namespace private var animation
         @Binding var index: QuestionIndex
-        let question: Question
         
         var body: some View {
-            HStack(alignment: .bottom) {
-                Text(String(question.index))
-                    .font(.largeTitle)
-                    .fontWeight(.black)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(antialiased: true)
-                            .frame(width: 45, height: 45)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .strokeBorder(antialiased: true)
-                                    .frame(width: 50, height: 50)
-                            )
-                    )
-                    .frame(width: 50, height: 50)
-                    .padding(.leading, 5)
-                Group {
-                    if index.letter == nil {
+            HStack(alignment: .bottom, spacing: 7) {
+                Button(action: {
+                    index.increment()
+                }){
+                    Text(String(index.number))
+                        .font(.largeTitle)
+                        .fontWeight(.black)
+                        .frame(width: 38, height: 38)
+                        .modifier(RoundedBorder())
+                        .padding(3)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(lineWidth: 2, antialiased: true)
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .frame(width: 40, height: 40)
+                .padding(.leading, 7)
+                HStack(alignment: .bottom, spacing: 5) {
+                    LetterPicker(index: $index)
+                        .matchedGeometryEffect(id: "chooseLetter", in: animation)
+                    if index.letter != "" && index.letter != nil {
+                        NumeralPicker(index: $index)
+                            .matchedGeometryEffect(id: "chooseNumeral", in: animation)
+                    }
+                }
+            }
+        }
+    }
+}
+
+extension AnswerField.IndexPicker {
+    struct LetterPicker: View {
+        @Binding var index: QuestionIndex
+        var body: some View {
+            Group {
+                if index.letter == "" {
+                    VStack {
+                        HStack(alignment: .center, spacing: 5) {
+                            Picker("", selection: $index){
+                                ForEach(QuestionIndex.letters, id: \.self){ letter in
+                                    Text(letter)
+                                        .tag(QuestionIndex(number: index.number, letter: letter, numeral: index.numeral))
+                                }
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            .frame(width: 260)
+                            .modifier(RoundedBorder())
+                            
+                            ButtonSymbol("xmark.square", onToggle: "xmark.square.fill"){
+                                index.letter = nil
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .font(.title, weight: .light)
+                            .frame(width: 25, height: 25)
+                        }
+                    }
+                } else if index.letter == nil {
+                    ButtonSymbol("xmark.square.fill", onToggle: "xmark.square"){
+                        index.letter = "a"
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .font(.title, weight: .light)
+                    .frame(width: 25, height: 25)
+                } else {
+                    Button(action: {withAnimation {index.letter = ""}}){
+                        Text(index.letter ?? "")
+                            .foregroundColor(.primary)
+                            .bold()
+                            .frame(width: 30, height: 30)
+                            .colorInvert()
+                            .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 10)))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .modifier(RoundedBorder())
+                }
+            }
+        }
+    }
+    
+    struct NumeralPicker: View {
+        @Binding var index: QuestionIndex
+        var body: some View {
+            Group {
+                if index.numeral == "" {
+                    HStack(alignment: .center, spacing: 5) {
                         Picker("", selection: $index){
-                            ForEach(QuestionIndex.letters, id: \.self){ letter in
-                                Text(letter)
-                                    .tag(QuestionIndex(number: question.index, letter: letter))
+                            ForEach(QuestionIndex.romanNumerals, id: \.self){ numeral in
+                                Text(numeral)
+                                    .tag(QuestionIndex(number: index.number, letter: index.letter, numeral: numeral))
                             }
                         }
                         .pickerStyle(SegmentedPickerStyle())
                         .frame(width: 260)
-                    } else {
-                        Button(action: {withAnimation {index.letter = nil}}){
-                            Text(index.letter ?? "")
-                                .bold()
-                                .frame(width: 30, height: 30)
-                                .background(Color.secondary.clipShape(RoundedRectangle(cornerRadius: 10)).opacity(0.8))
+                        .modifier(RoundedBorder())
+                        
+                        ButtonSymbol("xmark.square", onToggle: "xmark.square.fill"){
+                            index.numeral = nil
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .font(.title, weight: .light)
+                        .frame(width: 25, height: 25)
                     }
+                } else if index.numeral == nil {
+                    ButtonSymbol("xmark.square.fill", onToggle: "xmark.square"){
+                        index.numeral = "i"
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .font(.title, weight: .light)
+                    .frame(width: 25, height: 25)
+                } else {
+                    Button(action: {withAnimation {index.numeral = ""}}){
+                        Text(index.numeral ?? "")
+                            .foregroundColor(.primary)
+                            .bold()
+                            .frame(width: 23, height: 23)
+                            .colorInvert()
+                            .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 8)))
+                            .padding(2)
+                            .modifier(RoundedBorder())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .modifier(RoundedBorder())
                 }
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .strokeBorder(antialiased: true)
-                )
-                .matchedGeometryEffect(id: "chooseIndex", in: animation)
             }
         }
     }
