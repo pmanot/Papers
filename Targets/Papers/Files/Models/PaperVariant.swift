@@ -3,7 +3,6 @@
 //
 
 import PDFKit
-import SwiftUIX
 
 public enum PaperVariant: String {
     case febMarch = "Febuary-March"
