@@ -5,33 +5,41 @@
 import SwiftUI
 
 struct AnswerField: View {
-    @State private var answers: [Answer] = [Answer(paper: Paper.example)]
-    var question: Question
+    @EnvironmentObject var codableAnswers: Answers
+    @Binding var answers: [Answer]
+    
     @State var index: QuestionIndex = QuestionIndex()
     
-    init(_ question: Question){
+    let question: Question
+    let directory = DocumentDirectory()
+    
+    init(_ question: Question, _ answers: Binding<[Answer]>){
         UITextView.appearance().backgroundColor = .clear
         self.question = question
+        self._answers = answers
     }
     
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
+            /*
             Capsule()
                 .frame(width: answers.count > 1 ? 20*CGFloat((answers.count)) : 0, height: 18.5)
                 .padding()
                 .foregroundColor(.black)
+            */
             TabView {
                 ForEach(answers, id: \.id) { answer in
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .bottom) {
                             IndexPicker(index: $answers[answers.firstIndex(of: answer)!].index)
+                                .padding(.trailing, 5)
                         }
                         .padding(.vertical, 5)
                         
                         TextEditor(text: $answers[answers.firstIndex(of: answer)!].text)
                             .foregroundColor(.primary)
-                            .padding(.horizontal, 6)
-                            .font(.body)
+                            .padding(.horizontal, 5)
+                            .font(.subheadline)
                             .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 12)).colorInvert())
                             .opacity(0.8)
                             .modifier(RoundedBorder())
@@ -43,11 +51,7 @@ struct AnswerField: View {
             .tabViewStyle(PageTabViewStyle())
             ButtonSymbol("plus.square.fill"){
                 withAnimation {
-                    if answers.last?.index.letter != nil {
-                        answers.append(Answer(paper: question.paper, index: index.nextQuestionIndex()))
-                    } else {
-                        answers.append(Answer(paper: question.paper))
-                    }
+                    answers.append(Answer(paper: question.paper, index: answers.last?.index.getNextQuestionIndex() ?? QuestionIndex()))
                 }
             }
             .font(.title, weight: .light)
@@ -60,7 +64,7 @@ struct AnswerField: View {
 
 struct AnswerField_Previews: PreviewProvider {
     static var previews: some View {
-        AnswerField(Paper.example.questions[0])
+        AnswerField(QuestionPaper.example.questions[0], .constant([Answer(paper: QuestionPaper.example)]))
     }
 }
 
@@ -76,19 +80,12 @@ extension AnswerField {
                     index.increment()
                 }){
                     Text(String(index.number))
-                        .font(.largeTitle)
-                        .fontWeight(.black)
-                        .frame(width: 38, height: 38)
-                        .modifier(RoundedBorder())
-                        .padding(3)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .strokeBorder(lineWidth: 2, antialiased: true)
-                        )
+                        .modifier(IndexNumber())
                 }
                 .buttonStyle(PlainButtonStyle())
                 .frame(width: 40, height: 40)
                 .padding(.leading, 7)
+                
                 HStack(alignment: .bottom, spacing: 5) {
                     LetterPicker(index: $index)
                         .matchedGeometryEffect(id: "chooseLetter", in: animation)
@@ -129,7 +126,7 @@ extension AnswerField.IndexPicker {
                         }
                     }
                 } else if index.letter == nil {
-                    ButtonSymbol("xmark.square.fill", onToggle: "xmark.square"){
+                    ButtonSymbol("square.dashed", onToggle: "square.dashed.inset.fill"){
                         index.letter = "a"
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -138,14 +135,9 @@ extension AnswerField.IndexPicker {
                 } else {
                     Button(action: {withAnimation {index.letter = ""}}){
                         Text(index.letter ?? "")
-                            .foregroundColor(.primary)
-                            .bold()
-                            .frame(width: 30, height: 30)
-                            .colorInvert()
-                            .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 10)))
+                            .modifier(IndexLetter())
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .modifier(RoundedBorder())
                 }
             }
         }
@@ -175,7 +167,7 @@ extension AnswerField.IndexPicker {
                         .frame(width: 25, height: 25)
                     }
                 } else if index.numeral == nil {
-                    ButtonSymbol("xmark.square.fill", onToggle: "xmark.square"){
+                    ButtonSymbol("square.dashed", onToggle: "square.dashed.inset.fill"){
                         index.numeral = "i"
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -184,16 +176,9 @@ extension AnswerField.IndexPicker {
                 } else {
                     Button(action: {withAnimation {index.numeral = ""}}){
                         Text(index.numeral ?? "")
-                            .foregroundColor(.primary)
-                            .bold()
-                            .frame(width: 23, height: 23)
-                            .colorInvert()
-                            .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 8)))
-                            .padding(2)
-                            .modifier(RoundedBorder())
+                            .modifier(IndexNumeral())
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .modifier(RoundedBorder())
                 }
             }
         }
