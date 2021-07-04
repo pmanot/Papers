@@ -6,23 +6,47 @@ import PDFKit
 import SwiftUI
 
 struct QuestionList: View {
-    @State var paper: Paper = Paper.example
+    var staticPaper: QuestionPaper = QuestionPaper.example
+    @State var paper: QuestionPaper = QuestionPaper.example
     
-    init(_ paper: Paper) {
-        self.paper = paper
+    init(_ paper: QuestionPaper) {
+        self.staticPaper = paper
     }
     
     var body: some View {
-        List(paper.questions) { question in
-            Row(question)
+        List(){
+            Section {
+                NavigationLink(destination: QuestionView(paper)) {
+                    VStack(alignment: .leading){
+                        Text(paper.subject.rawValue)
+                            .font(.title)
+                            .fontWeight(.heavy)
+                        Text(paper.variant.rawValue + " " + String(paper.year))
+                            .font(.callout)
+                            .fontWeight(.light)
+                    }
+                    .padding(10)
+                }
+            }
+            
+            Section(header: Text("Questions").font(.title).fontWeight(.heavy)){
+                ForEach(paper.questions, id: \.id) { question in
+                    Row(question)
+                        .listStyle(GroupedListStyle())
+                }
+            }
+            .textCase(.none)
         }
-        .navigationTitle("Questions")
+        .listStyle(InsetGroupedListStyle())
+        .onAppear {
+            paper = staticPaper
+        }
     }
 }
 
 struct QuestionList_Previews: PreviewProvider {
     static var previews: some View {
-        QuestionList(Paper.example)
+        QuestionList(QuestionPaper.example)
     }
 }
 
@@ -39,17 +63,20 @@ extension QuestionList{
             NavigationLink(destination: QuestionView(question)) {
                 HStack {
                     Group {
-                        Text(String(question.index))
-                            .font(/*@START_MENU_TOKEN@*/.title/*@END_MENU_TOKEN@*/)
+                        Text(String(question.index.number))
+                            .font(.title)
                             .fontWeight(.heavy)
-                            .frame(width: 20)
+                            .frame(width: 30)
                             .padding()
                         Text("\(question.pages.count) page" + (question.pages.count > 1 ? "s" : ""))
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                            .frame(width: 60, alignment: .leading)
+                            .font(.caption2)
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 4)
+                            .background(Capsule().strokeBorder().foregroundColor(.secondary))
                     }
                 }
+                .multilineTextAlignment(.leading)
             }
         }
     }
