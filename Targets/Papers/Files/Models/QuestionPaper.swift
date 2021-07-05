@@ -12,6 +12,7 @@ struct QuestionPaper: Identifiable, Hashable {
     let pdf: PDFDocument
     let markscheme: MarkScheme?
     var questions: [Question] = []
+    var pages: [PDFPage] = []
     
     var subject: Subject {
         switch paperCode.dropLast(10) {
