@@ -30,35 +30,45 @@ struct QuestionPaper: Identifiable, Hashable {
         extractQuestions()
     }
     
-    init(_ pdf: PDFDocument){
-        self.paperCode = ""
-        self.pdf = pdf
-        year = Int("20\(paperCode.dropFirst(12))") ?? 0
-        markscheme = MarkScheme.example
-    }
-    
     mutating func extractQuestions() {
         var questionPages: [Int: [Int]] = [:]
         var questionNumber: Int = 1
         var lastIndex: Int = 0
+        var firstPageIgnoringDatasheet: Int {
+            switch metadata.subject {
+            case .physics:
+                return 3
+            case .chemistry:
+                return 0
+            default:
+                return 3
+            }
+        }
         
-        for pageNumber in 4..<pdf.pageCount {
-            let textData = (pdf.page(at: pageNumber)?.string!)!
-            let regex = try? NSRegularExpression(pattern: String(questionNumber))
-            
-            if regex!.matches(textData) {
-                questionPages[questionNumber] = [pageNumber]
-                lastIndex = questionNumber
-                questionNumber += 1
-                print(pageNumber)
-            }
-            
-            if lastIndex != 0 {
-                if !(questionPages[lastIndex]! == [pageNumber]) {
-                    questionPages[lastIndex]!.append(pageNumber)
-                    print(pageNumber)
+        for pageNumber in firstPageIgnoringDatasheet..<pdf.pageCount {
+            if !pdf.page(at: pageNumber)!.string!.contains("BLANK PAGE") {
+                
+                let page = pdf.page(at: pageNumber)!.snapshot().cgImage!.cropping(to: CGRect(origin: CGPoint(x: 0,y: 0), size: CGSize(width: 150, height: 1000)))!
+                let extractedText = recogniseText(from: page)
+                
+                print(extractedText)
+                
+                if extractedText.contains(substring: "\(questionNumber)"){
+                    print(extractedText)
+                    
+                    questionPages[questionNumber] = [pageNumber]
+                    lastIndex = questionNumber
+                    questionNumber += 1
+                } else {
+                    if questionPages[lastIndex] != nil {
+                        questionPages[lastIndex]!.append(pageNumber)
+                        print(pageNumber)
+                        
+                    }
                 }
+                
             }
+            
         }
         
         for index in questionPages.keys {
