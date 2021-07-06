@@ -10,7 +10,7 @@ struct DocumentDirectory {
     }
     
     func write(_ string: String, to location: String){
-        let documentURL = url.appendingPathComponent("\(location).txt")
+        let documentURL = url.appendingPathComponent("\(location).json")
         do {
             try string.write(to: documentURL, atomically: true, encoding: .utf8)
         } catch {
@@ -20,7 +20,7 @@ struct DocumentDirectory {
     
     func read(from location: String) -> String {
         do {
-            let str = try String(contentsOf: url.appendingPathComponent("\(location).txt"))
+            let str = try String(contentsOf: url.appendingPathComponent("\(location).json"))
             return str
         } catch {
             print("Read Error: ", error.localizedDescription)
