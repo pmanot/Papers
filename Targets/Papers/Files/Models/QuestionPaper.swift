@@ -4,41 +4,21 @@
 
 import PDFKit
 import Filesystem
+import SwiftUI
 
 struct QuestionPaper: Identifiable, Hashable {
     let id = UUID()
-    let paperCode: String
-    let year: Int
+    let metadata: CambridgeMetaData
     let pdf: PDFDocument
     let markscheme: MarkScheme?
     var questions: [Question] = []
-    var pages: [PDFPage] = []
-    
-    var subject: Subject {
-        switch paperCode.dropLast(10) {
-            case "9701":
-                return .chemistry
-            case "9702":
-                return .physics
-            default:
-                return .other
-        }
-    }
-    
-    var variant: PaperVariant {
-        if paperCode.contains("_s"){
-            return .mayJune
-        } else {
-            return .octNov
-        }
-    }
+    var extractedText = ""
     
     init(_ paperCode: String) {
-        self.paperCode = paperCode
+        metadata = CambridgeMetaData(paperCode: paperCode)
         
         let url = URL(fileURLWithPath: Bundle.main.path(forResource: paperCode, ofType: "pdf")!)
         pdf = PDFDocument(url: url)!
-        year = Int("20\(paperCode.dropFirst(12))") ?? 0
         
         let msCode = paperCode.replacingOccurrences(of: "qp", with: "ms")
         if Bundle.main.path(forResource: msCode, ofType: "pdf") != nil {
