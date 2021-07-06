@@ -2,15 +2,18 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUIX
+import SwiftUI
+import Filesystem
 
 struct PapersView: View {
-    var papers: [Paper] = []
+    @Binding var pdf: PDFFileDocument
+    @State var papers: [QuestionPaper] = []
     
-    @State var paperTapped: Bool = false
+    @State var showPaper: Bool = false
     
-    init(_ papers: [Paper] = []) {
+    init(_ papers: [QuestionPaper] = [], pdf: Binding<PDFFileDocument>) {
         self.papers = papers
+        self._pdf = pdf
     }
     
     var body: some View {
@@ -19,53 +22,54 @@ struct PapersView: View {
                 Row(paper: paper)
                     .buttonStyle(PlainButtonStyle())
             }
+            .listStyle(InsetGroupedListStyle())
             .navigationTitle("Papers")
+            .navigationViewStyle(StackNavigationViewStyle())
         }
     }
 }
 
 extension PapersView {
     struct Row: View {
-        let paper: Paper
+        let paper: QuestionPaper
         
         var body: some View {
             NavigationLink(destination: QuestionList(paper)) {
-                HStack {
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder()
-                            .frame(height: 50)
-                        HStack {
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text(paper.subject.rawValue)
-                                        .font(.body)
-                                        .fontWeight(.heavy)
-                                    Text(String(paper.year))
-                                        .font(.callout)
-                                        .fontWeight(.regular)
-                                }
-                                Text(paper.paperCode)
-                                    .font(.caption)
-                                    .fontWeight(.light)
+                HStack(alignment: .bottom) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 3) {
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(paper.metadata.subject.rawValue)
+                                    .font(.title2)
+                                    .fontWeight(.heavy)
+                                Text(String(paper.metadata.year))
+                                    .font(.body)
                             }
-                            .padding(.leading, 10)
-                            
-                            Image(systemName: "chevron.right.circle.fill")
-                                .resizable()
-                                .frame(width: 25, height: 25)
-                                .padding(.leading, 120)
+                            Text(paper.metadata.paperCode)
+                                .font(.caption2)
+                                .fontWeight(.light)
+                                .padding(.leading, 2)
                         }
+                        .frame(width: 245, alignment: .leading)
+                        
+                        Text(String(paper.questions.count))
+                            .foregroundColor(.primary)
+                            .colorInvert()
+                            .font(.callout)
+                            .frame(width: 35, height: 35)
+                            .background(Color.primary.cornerRadius(10))
                     }
-                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
                 }
+                .padding(5)
             }
         }
     }
 }
 
+
 struct PapersView_Previews: PreviewProvider {
     static var previews: some View {
-        PapersView([Paper.example])
+        PapersView([QuestionPaper.example], pdf: .constant(PDFFileDocument()))
     }
 }

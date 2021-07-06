@@ -32,20 +32,28 @@ struct PDFPageView: View {
         .edgesIgnoringSafeArea(.all)
     }
     
-    init(_ paper: Paper, pages: [Int]){
+    init(_ paper: QuestionPaper, pages: [Int] = []){
         self.pdf = paper.pdf
-        self.pages = pages
+        if pages == [] {
+            self.pages = Array(0..<paper.pdf.pageCount)
+        } else {
+            self.pages = pages
+        }
     }
     
-    init(_ markScheme: MarkScheme, pages: [Int]){
+    init(markScheme: MarkScheme, pages: [Int] = []){
         self.pdf = markScheme.pdf
-        self.pages = pages
+        if pages == [] {
+            self.pages = Array(0..<markScheme.pdf.pageCount)
+        } else {
+            self.pages = pages
+        }
     }
 }
 
 struct PDFPageView_Previews: PreviewProvider {
     static var previews: some View {
-        PDFPageView(Paper.example, pages: [4])
+        PDFPageView(QuestionPaper.example, pages: [4])
     }
 }
 

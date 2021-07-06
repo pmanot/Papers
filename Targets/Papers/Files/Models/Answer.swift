@@ -17,7 +17,7 @@ struct CodableAnswers: Codable {
     var answers: [QuestionIndex: String] = [:]
     init(_ answers: [Answer]){
         if answers.count > 0 {
-            paperCode = answers[0].paper.paperCode
+            paperCode = answers[0].paper.metadata.paperCode
         }
         for answer in answers {
             self.answers[answer.index] = answer.text

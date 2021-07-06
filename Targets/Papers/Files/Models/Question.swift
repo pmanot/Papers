@@ -3,19 +3,18 @@
 //
 
 import PDFKit
-import SwiftUIX
 
 struct Question: Identifiable, Hashable {
     let id = UUID()
     let pages: [Int]
-    let paper: Paper
-    var answer: Answer?
-    var index: Int
+    let paper: QuestionPaper
+    var answer: AnswerSheet?
+    var index: QuestionIndex
     
-    init(paper: Paper, page: [Int], index: Int = 0){
-        self.index = index
+    init(paper: QuestionPaper, page: [Int], index: Int = 1){
+        self.index = QuestionIndex(number: index)
         self.pages = page
         self.paper = paper
-        answer = paper.markscheme?.answers[index - 1]
+        answer = nil
     }
 }

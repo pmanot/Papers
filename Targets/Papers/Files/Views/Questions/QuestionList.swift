@@ -14,14 +14,14 @@ struct QuestionList: View {
     }
     
     var body: some View {
-        List(){
+        List {
             Section {
                 NavigationLink(destination: QuestionView(paper)) {
                     VStack(alignment: .leading){
-                        Text(paper.subject.rawValue)
+                        Text(paper.metadata.subject.rawValue)
                             .font(.title)
                             .fontWeight(.heavy)
-                        Text(paper.variant.rawValue + " " + String(paper.year))
+                        Text(paper.metadata.variant.rawValue + " " + String(paper.metadata.year))
                             .font(.callout)
                             .fontWeight(.light)
                     }
@@ -53,7 +53,7 @@ struct QuestionList_Previews: PreviewProvider {
 
 extension QuestionList{
     struct Row: View {
-        var question: Question
+        let question: Question
         
         init(_ question: Question) {
             self.question = question
