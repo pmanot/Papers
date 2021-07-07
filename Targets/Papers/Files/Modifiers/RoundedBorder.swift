@@ -1,9 +1,7 @@
 //
-//  RoundedBorder.swift
-//  Papers
+// Copyright (c) Purav Manot
 //
-//  Created by Purav Manot on 02/07/21.
-//
+
 
 import Foundation
 import SwiftUI

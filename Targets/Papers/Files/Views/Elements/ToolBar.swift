@@ -35,8 +35,10 @@ struct ToolBar: View {
                 
                 ButtonSymbol("keyboard", onToggle: "keyboard.chevron.compact.down"){
                     withAnimation(.easeInOut) {
-                        endEditing()
-                        answerFieldShowing.toggle()
+                        withAnimation {
+                            endEditing()
+                            answerFieldShowing.toggle()
+                        }
                     }
                 }
                 
@@ -51,6 +53,8 @@ struct ToolBar: View {
                 }
                 
                 ButtonSymbol("arrow.right.circle.fill"){
+                    endEditing()
+                    answerFieldShowing = false
                     showAnswers.toggle()
                 }
                 .font(.title)

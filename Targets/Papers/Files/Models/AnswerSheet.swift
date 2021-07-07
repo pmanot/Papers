@@ -10,7 +10,7 @@ struct AnswerSheet: Identifiable, Hashable {
     let markscheme: MarkScheme
     var index: Int
     
-    init(markscheme: MarkScheme = QuestionPaper.exampleMs, page: [Int], index: Int = 0){
+    init(markscheme: MarkScheme = MarkScheme.example, page: [Int], index: Int = 0){
         self.index = index
         self.pages = page
         self.markscheme = markscheme

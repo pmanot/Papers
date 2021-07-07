@@ -38,6 +38,8 @@
 		84C6B39026909AC200642719 /* DocumentDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C6B38F26909AC200642719 /* DocumentDirectory.swift */; };
 		84C7C6552693F4A80058B3DB /* Vision.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C7C6542693F4A80058B3DB /* Vision.swift */; };
 		84C7C6572694033B0058B3DB /* CabridgeMetaData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C7C6562694033B0058B3DB /* CabridgeMetaData.swift */; };
+		84C7C65B2694CEF70058B3DB /* IndexPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C7C65A2694CEF70058B3DB /* IndexPicker.swift */; };
+		84C7C65D26959B960058B3DB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C7C65C26959B960058B3DB /* ContentView.swift */; };
 		84CA0B9F268CEAF900D77BA7 /* Answer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CA0B9E268CEAF900D77BA7 /* Answer.swift */; };
 		84CFCEA72688EF110016BC51 /* PapersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CFCEA62688EF110016BC51 /* PapersView.swift */; };
 		84CFCEAB2688EF920016BC51 /* QuestionList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CFCEAA2688EF920016BC51 /* QuestionList.swift */; };
@@ -84,6 +86,8 @@
 		84C6B38F26909AC200642719 /* DocumentDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentDirectory.swift; sourceTree = "<group>"; };
 		84C7C6542693F4A80058B3DB /* Vision.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Vision.swift; sourceTree = "<group>"; };
 		84C7C6562694033B0058B3DB /* CabridgeMetaData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CabridgeMetaData.swift; sourceTree = "<group>"; };
+		84C7C65A2694CEF70058B3DB /* IndexPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IndexPicker.swift; sourceTree = "<group>"; };
+		84C7C65C26959B960058B3DB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		84CA0B9E268CEAF900D77BA7 /* Answer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Answer.swift; sourceTree = "<group>"; };
 		84CFCEA62688EF110016BC51 /* PapersView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PapersView.swift; sourceTree = "<group>"; };
 		84CFCEAA2688EF920016BC51 /* QuestionList.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QuestionList.swift; sourceTree = "<group>"; };
@@ -143,6 +147,7 @@
 			children = (
 				84AE031626919A2000FAD4C6 /* AnswersView.swift */,
 				848338D626839DC2008D2D58 /* AnswerField.swift */,
+				84C7C65A2694CEF70058B3DB /* IndexPicker.swift */,
 			);
 			path = Answers;
 			sourceTree = "<group>";
@@ -191,6 +196,8 @@
 			isa = PBXGroup;
 			children = (
 				84956E66265FEA4C009E971B /* PapersApp.swift */,
+				84C7C65C26959B960058B3DB /* ContentView.swift */,
+				84CFCEA62688EF110016BC51 /* PapersView.swift */,
 				8452073F268F4F53001969CC /* Modifiers */,
 				D4FBCE0626890D6900D18196 /* Extensions */,
 				D4FBCDFE26890CC500D18196 /* Models */,
@@ -257,7 +264,6 @@
 		D4FBCDFF26890CFC00D18196 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				84CFCEA62688EF110016BC51 /* PapersView.swift */,
 				84734D2A2692057500FAD98A /* Elements */,
 				841E741C268B28D200E112B0 /* Classifier */,
 				D4FBCDFD26890CBC00D18196 /* Questions */,
@@ -359,6 +365,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84C7C65B2694CEF70058B3DB /* IndexPicker.swift in Sources */,
 				841E7419268AFB2B00E112B0 /* QuestionView.swift in Sources */,
 				848338D726839DC2008D2D58 /* AnswerField.swift in Sources */,
 				84AE031B26919B9C00FAD4C6 /* IndexLetter.swift in Sources */,
@@ -374,6 +381,7 @@
 				841E7424268B399B00E112B0 /* TopicView.swift in Sources */,
 				84734D222691C8B500FAD98A /* ToolBar.swift in Sources */,
 				84734D26269201F900FAD98A /* Answers.swift in Sources */,
+				84C7C65D26959B960058B3DB /* ContentView.swift in Sources */,
 				D4FBCE0126890D1E00D18196 /* Question.swift in Sources */,
 				84AE031726919A2000FAD4C6 /* AnswersView.swift in Sources */,
 				D4FBCE0326890D4200D18196 /* PaperVariant.swift in Sources */,

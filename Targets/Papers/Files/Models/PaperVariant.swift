@@ -4,7 +4,7 @@
 
 import PDFKit
 
-public enum PaperVariant: String {
+public enum PaperVariant: String, Codable {
     case febMarch = "Febuary-March"
     case mayJune = "May-June"
     case octNov = "October-November"
