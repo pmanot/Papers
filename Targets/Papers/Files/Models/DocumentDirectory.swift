@@ -9,25 +9,24 @@ struct DocumentDirectory {
         getDocumentsDirectory()
     }
     
-    func write(_ string: String, to location: String){
-        let documentURL = url.appendingPathComponent("\(location).json")
+    func write(_ data: Data, to filename: String){
+        let documentURL = url.appendingPathComponent("\(filename).json")
         do {
-            try string.write(to: documentURL, atomically: true, encoding: .utf8)
+            try data.write(to: documentURL, atomically: true)
         } catch {
             print("Write Error: ", error.localizedDescription)
         }
     }
     
-    func read(from location: String) -> String {
+    func read(from filename: String) -> Data? {
         do {
-            let str = try String(contentsOf: url.appendingPathComponent("\(location).json"))
-            return str
+            let data = try Data(contentsOf: url.appendingPathComponent("\(filename).json"))
+            return data
         } catch {
             print("Read Error: ", error.localizedDescription)
+            return nil
         }
-        return ""
     }
-    
     
     func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
