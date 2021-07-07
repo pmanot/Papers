@@ -16,7 +16,7 @@ struct QuestionView: View {
     
     @State private var showMs: Bool = false
     @State var answerFieldShowing: Bool = false
-    @State var answers: [Answer] = [Answer(paper: QuestionPaper.example)]
+    @State var answers: [Answer] = []
     @State var answerDict: [QuestionIndex : String] = [:]
     
     @Environment(\.presentationMode) var presentationMode
@@ -35,12 +35,7 @@ struct QuestionView: View {
         GeometryReader { screen in
             ZStack(alignment: .bottom) {
                 Group {
-                    switch showMs {
-                        case true:
-                            AnswersView(question: question, fetchedAnswers: codableAnswers.fetch().answers, answersShowing: $showMs)
-                        case false:
-                            PDFPageView(question.paper, pages: question.pages)
-                    }
+                    PDFPageView(question.paper, pages: question.pages)
                 }
                 
                 ToolBar(showAnswers: $showMs, answerFieldShowing: $answerFieldShowing)
@@ -55,11 +50,11 @@ struct QuestionView: View {
             }
             .animation(.spring())
             .navigationBarHidden(true)
+            .onAppear {
+                answers.append(Answer(paper: question.paper))
+            }
             .onChange(of: answerFieldShowing){ _ in
                 print("AnswerField showing changed!")
-                if answers[0].text != "" {
-                    codableAnswers.save(answers)
-                }
             }
         }
     }

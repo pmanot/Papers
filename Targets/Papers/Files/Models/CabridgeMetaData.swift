@@ -4,7 +4,7 @@
 
 import Foundation
 
-struct CambridgeMetaData: Hashable {
+struct CambridgeMetaData: Hashable, Codable {
     let paperCode: String
     
     var subject: Subject {

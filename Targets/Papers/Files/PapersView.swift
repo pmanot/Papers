@@ -7,18 +7,17 @@ import Filesystem
 
 struct PapersView: View {
     @Binding var pdf: PDFFileDocument
-    @State var papers: [QuestionPaper] = []
+    @EnvironmentObject var papers: Papers
     
     @State var showPaper: Bool = false
     
-    init(_ papers: [QuestionPaper] = [], pdf: Binding<PDFFileDocument>) {
-        self.papers = papers
+    init(pdf: Binding<PDFFileDocument>) {
         self._pdf = pdf
     }
     
     var body: some View {
         NavigationView {
-            List(papers) { paper in
+            List(papers.papers, id: \.self) { paper in
                 Row(paper: paper)
                     .buttonStyle(PlainButtonStyle())
             }
@@ -70,6 +69,6 @@ extension PapersView {
 
 struct PapersView_Previews: PreviewProvider {
     static var previews: some View {
-        PapersView([QuestionPaper.example], pdf: .constant(PDFFileDocument()))
+        PapersView(pdf: .constant(PDFFileDocument()))
     }
 }

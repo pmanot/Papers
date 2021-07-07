@@ -6,11 +6,10 @@ import PDFKit
 import SwiftUI
 
 struct QuestionList: View {
-    var staticPaper: QuestionPaper = QuestionPaper.example
-    @State var paper: QuestionPaper = QuestionPaper.example
+    var paper: QuestionPaper
     
     init(_ paper: QuestionPaper) {
-        self.staticPaper = paper
+        self.paper = paper
     }
     
     var body: some View {
@@ -38,9 +37,6 @@ struct QuestionList: View {
             .textCase(.none)
         }
         .listStyle(InsetGroupedListStyle())
-        .onAppear {
-            paper = staticPaper
-        }
     }
 }
 

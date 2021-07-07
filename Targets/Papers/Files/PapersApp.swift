@@ -6,12 +6,21 @@ import SwiftUI
 import Filesystem
 
 @main
+
 struct PapersApp: App {
-    let papers = [QuestionPaper("9701_m20_qp_42"), QuestionPaper("9702_w20_qp_22"), QuestionPaper.example, QuestionPaper.example2]
+    var directory = DocumentDirectory()
     var body: some Scene {
         WindowGroup {
-            PapersView(papers, pdf: .constant(PDFFileDocument()))
-                .environmentObject(Answers())
+            ContentView()
+                .environmentObject(Papers())
         }
+    }
+}
+
+class Papers: ObservableObject {
+    var papers: [QuestionPaper] {
+        let directory = DocumentDirectory()
+        let data = directory.read(from: "Papers") ?? []
+        return try! JSONDecoder().decode([CodableQuestionPaper].self, from: data).questionPaper()
     }
 }
