@@ -4,8 +4,7 @@
 
 import Foundation
 
-struct QuestionIndex: Identifiable, Hashable, Codable {
-    var id = UUID()
+struct QuestionIndex: Hashable, Codable {
     var number: Int = 1
     var letter: String? = "a"
     var numeral: String? = nil
