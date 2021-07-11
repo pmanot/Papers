@@ -38,6 +38,13 @@ struct IndexPicker: View {
 
 struct LetterPicker: View {
     @Binding var index: QuestionIndex
+    let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .light)
+    
+    init(index: Binding<QuestionIndex>){
+        self._index = index
+        impactFeedbackgenerator.prepare()
+    }
+    
     var body: some View {
         Group {
             if index.letter == "" {
@@ -63,13 +70,17 @@ struct LetterPicker: View {
                 }
             } else if index.letter == nil {
                 ButtonSymbol("square.dashed", onToggle: "square.dashed.inset.fill"){
+                    impactFeedbackgenerator.impactOccurred()
                     index.letter = "a"
                 }
                 .buttonStyle(PlainButtonStyle())
                 .font(.title, weight: .light)
                 .frame(width: 25, height: 25)
             } else {
-                Button(action: {withAnimation {index.letter = ""}}){
+                Button(action: {
+                    impactFeedbackgenerator.impactOccurred()
+                    withAnimation {index.incrementLetter()}
+                }){
                     Text(index.letter ?? "")
                         .modifier(IndexLetter())
                 }
@@ -81,6 +92,13 @@ struct LetterPicker: View {
 
 struct NumeralPicker: View {
     @Binding var index: QuestionIndex
+    let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .light)
+    
+    init(index: Binding<QuestionIndex>){
+        self._index = index
+        impactFeedbackgenerator.prepare()
+    }
+    
     var body: some View {
         Group {
             if index.numeral == "" {
@@ -104,13 +122,17 @@ struct NumeralPicker: View {
                 }
             } else if index.numeral == nil {
                 ButtonSymbol("square.dashed", onToggle: "square.dashed.inset.fill"){
+                    impactFeedbackgenerator.impactOccurred()
                     index.numeral = "i"
                 }
                 .buttonStyle(PlainButtonStyle())
                 .font(.title, weight: .light)
                 .frame(width: 25, height: 25)
             } else {
-                Button(action: {withAnimation {index.numeral = ""}}){
+                Button(action: {
+                    impactFeedbackgenerator.impactOccurred()
+                    withAnimation {index.incrementNumeral()}
+                }){
                     Text(index.numeral ?? "")
                         .modifier(IndexNumeral())
                 }
