@@ -1,24 +1,34 @@
 //
-//  ContentView.swift
-//  Papers
-//
-//  Created by Purav Manot on 07/07/21.
+// Copyright (c) Purav Manot
 //
 
 import SwiftUI
 import Filesystem
+import PDFKit
 
 struct ContentView: View {
     @EnvironmentObject var papers: Papers
     var body: some View {
-        PapersView(pdf: .constant(PDFFileDocument()))
+        PapersView()
             .environmentObject(Papers())
             .onAppear {
                 let directory = DocumentDirectory()
-                if papers.papers == [] {
-                    directory.write(try! JSONEncoder().encode([QuestionPaper("9701_m20_qp_42"), QuestionPaper("9702_w20_qp_22"), QuestionPaper.example, QuestionPaper.example2].codableQuestionPaper()), to: "Papers")
+                let urls = Bundle.main.urls(forResourcesWithExtension: "pdf", subdirectory: .none)!
+                if false {
+                    for url in urls {
+                        directory.writePDF(pdf: PDFDocument(url: url)!, to: Paper(url: url).filename)
+                        print("written")
+                    }
+                }
+                papers.load()
+                if papers.cambridgePapers == [] {
+                    try! directory.write(Papers.examples, toDocumentNamed: "metadata")
                     print("Papers written!")
                 } else {
+                    let urls = directory.findPapers().map { Paper(url: $0) }
+                    for url in urls {
+                        papers.cambridgePapers.append(QuestionPaper(url.url))
+                    }
                     print("Papers loaded!")
                 }
             }
@@ -28,5 +38,6 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(Papers())
     }
 }
