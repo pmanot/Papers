@@ -21,6 +21,8 @@ func recogniseText(from image: CGImage) -> String {
         }
     }
     recognizeTextRequest.recognitionLevel = .accurate
+    recognizeTextRequest.usesLanguageCorrection = false
+    recognizeTextRequest.customWords = Array(1..<10).map { "\($0)" }
     
     let requestHandler = VNImageRequestHandler(cgImage: image, options: [:])
     try? requestHandler.perform([recognizeTextRequest])
