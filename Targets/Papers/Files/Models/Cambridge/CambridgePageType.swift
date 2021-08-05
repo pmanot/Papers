@@ -8,6 +8,7 @@ enum CambridgePageType: Hashable {
     case blank
     case datasheet
     case question(i: QuestionIndex)
+    case answer(i: QuestionIndex)
     case questionContinuation(i: QuestionIndex)
     
 }
@@ -34,6 +35,9 @@ extension CambridgePageType: Codable {
                     self = .question(i: i)
                 case 3:
                     let i = try container.decode(QuestionIndex.self, forKey: .associatedValue)
+                    self = .answer(i: i)
+                case 4:
+                    let i = try container.decode(QuestionIndex.self, forKey: .associatedValue)
                     self = .questionContinuation(i: i)
                 default:
                     throw CodingError.unknownValue
@@ -50,8 +54,11 @@ extension CambridgePageType: Codable {
         case .question(let i):
             try container.encode(2, forKey: .rawValue)
             try container.encode(i, forKey: .associatedValue)
-        case .questionContinuation(let i):
+        case .answer(let i):
             try container.encode(3, forKey: .rawValue)
+            try container.encode(i, forKey: .associatedValue)
+        case .questionContinuation(let i):
+            try container.encode(4, forKey: .rawValue)
             try container.encode(i, forKey: .associatedValue)
         }
         
