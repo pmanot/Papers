@@ -4,7 +4,7 @@
 
 import Foundation
 
-public enum CambridgePaperType: String, Codable {
+public enum CambridgePaperNumber: String, Codable {
     case paper1 = "Paper 1"
     case paper2 = "Paper 2"
     case paper3 = "Paper 3"
