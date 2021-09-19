@@ -15,12 +15,12 @@ struct QuestionList: View {
     var body: some View {
         List {
             Section {
-                NavigationLink(destination: QuestionView(paper)) {
+                NavigationLink(destination: QuestionView(paper.questions[0])) {
                     VStack(alignment: .leading){
                         Text(paper.metadata.subject.rawValue)
                             .font(.title)
                             .fontWeight(.heavy)
-                        Text(paper.metadata.variant.rawValue + " " + String(paper.metadata.year))
+                        Text(paper.metadata.month.rawValue + " " + String(paper.metadata.year))
                             .font(.callout)
                             .fontWeight(.light)
                     }

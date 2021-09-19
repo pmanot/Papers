@@ -61,6 +61,6 @@ extension CambridgePageType: Codable {
             try container.encode(4, forKey: .rawValue)
             try container.encode(i, forKey: .associatedValue)
         }
-        
     }
+    
 }

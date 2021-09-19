@@ -13,9 +13,12 @@ struct ToolBar: View {
     @Binding var showAnswers: Bool
     @Binding var answerFieldShowing: Bool
     
+    let impactFeedbackgenerator = UIImpactFeedbackGenerator(style: .light)
+    
     init(showAnswers: Binding<Bool>, answerFieldShowing: Binding<Bool>){
         self._showAnswers = showAnswers
         self._answerFieldShowing = answerFieldShowing
+        impactFeedbackgenerator.prepare()
     }
     
     var body: some View {
@@ -27,6 +30,7 @@ struct ToolBar: View {
                 .font(.title)
                 
                 ButtonSymbol("checkmark.circle", onToggle: "checkmark.circle.fill"){
+                    endEditing()
                     withAnimation {
                         showAnswers.toggle()
                     }
@@ -34,11 +38,10 @@ struct ToolBar: View {
                 .font(.title2)
                 
                 ButtonSymbol("keyboard", onToggle: "keyboard.chevron.compact.down"){
+                    endEditing()
                     withAnimation(.easeInOut) {
-                        withAnimation {
-                            endEditing()
-                            answerFieldShowing.toggle()
-                        }
+                        impactFeedbackgenerator.impactOccurred()
+                        answerFieldShowing.toggle()
                     }
                 }
                 

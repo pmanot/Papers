@@ -8,20 +8,18 @@
 import SwiftUI
 
 struct AnswersView: View {
-    let question: Question
+    @State var paper: QuestionPaper
     var fetchedAnswers: [QuestionIndex : String]
     
     @Binding var answersShowing: Bool
     
     var body: some View {
-        VStack {
-            PDFPageView(markScheme: question.paper.markscheme!)
-                .modifier(RoundedBorder())
-                .padding(.horizontal, 5)
-                .frame(height: 350)
-                .padding(.top, 5)
+        ZStack(alignment: .bottom) {
+            if paper.markscheme != nil {
+                PDFPageView(markScheme: paper.markscheme!)
+            }
             TabView {
-                ForEach(Array(fetchedAnswers.keys)) { key in
+                ForEach(Array(fetchedAnswers.keys), id: \.self) { key in
                     HStack {
                         VStack(alignment: .leading) {
                             HStack(alignment: .bottom) {
@@ -39,42 +37,39 @@ struct AnswersView: View {
                                 .font(.body)
                                 .padding(.vertical, 5)
                         }
-                        .padding(.trailing, 30)
+                        .padding(10)
+                        .background(Color.primary.colorInvert().cornerRadius(10).shadow(radius: 3).padding(2))
                         
                         VStack {
-                            ButtonSymbol("checkmark.circle.fill"){
-                                
+                            ButtonSymbol("checkmark"){
+                                endEditing()
                             }
                             .foregroundColor(.green)
-                            .padding(1)
-                            .overlay(Circle().strokeBorder(antialiased: true))
+                            .padding(15)
+                            .background(Color.primary.colorInvert().cornerRadius(10).shadow(radius: 3))
                             
-                            ButtonSymbol("xmark.circle.fill"){
-                                
+                            ButtonSymbol("xmark"){
                             }
                             .foregroundColor(.red)
-                            .padding(1)
-                            .overlay(Circle().strokeBorder(antialiased: true))
+                            .padding(15)
+                            .background(Color.primary.colorInvert().cornerRadius(10).shadow(radius: 3))
                         }
-                        .font(.title)
+                        .font(.title2)
+                        .padding(2)
                     }
                 }
-                .padding()
-                .padding(.horizontal, 20)
-                .modifier(RoundedBorder())
+                
             }
             .tabViewStyle(PageTabViewStyle())
-            .padding(5)
-            .padding(.bottom, 5)
+            .frame(height: 250)
+            .padding(.horizontal, 5)
             
-            ToolBar(showAnswers: $answersShowing, answerFieldShowing: .constant(false))
-                .padding()
         }
     }
 }
 
 struct AnswersView_Previews: PreviewProvider {
     static var previews: some View {
-        AnswersView(question: QuestionPaper.example.questions[0], fetchedAnswers: [QuestionIndex.example: "This is an example Answer!"], answersShowing: .constant(true))
+        AnswersView(paper: QuestionPaper.example, fetchedAnswers: [QuestionIndex.example: "This is an example Answer! let me try writieneifniewnifnewinviewnvinweivniwenviewjhicjewidhiewnciewhfiewmihiwwiefiwejigjiwheifmewig"], answersShowing: .constant(true))
     }
 }

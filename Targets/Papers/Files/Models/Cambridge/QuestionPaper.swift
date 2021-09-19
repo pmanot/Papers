@@ -56,11 +56,12 @@ struct QuestionPaper: Hashable, Codable {
         
         for pageNumber in 0..<pdf.pageCount {
             let page = pdf.page(at: pageNumber)!
+            let rawPageText = page.string ?? ""
             if pageNumber < firstPageIgnoringDatasheet {
-                pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .datasheet))
+                pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .datasheet, rawText: rawPageText))
             } else {
                 if page.string!.contains("BLANK PAGE") {
-                    pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .blank))
+                    pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .blank, rawText: rawPageText))
                 } else {
                     let pageImage = page.snapshot().cgImage!
                     let extractedText = recogniseText(from: pageImage.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 150, height: 1000)))!)
@@ -69,12 +70,12 @@ struct QuestionPaper: Hashable, Codable {
                     
                     if extractedText.contains(substring: "\(questionNumber)"){
                         let index = QuestionIndex(number: questionNumber, letter: nil, numeral: nil)
-                        pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .question(i: index)))
+                        pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .question(i: index), rawText: rawPageText))
                         lastIndex = questionNumber
                         questionNumber += 1
                     } else {
                         let index = QuestionIndex(number: lastIndex, letter: nil, numeral: nil)
-                        pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .questionContinuation(i: index)))
+                        pages.append(QuestionPaperPage(pageNumber: pageNumber, metadata: metadata, type: .questionContinuation(i: index), rawText: rawPageText))
                     }
                 }
             }

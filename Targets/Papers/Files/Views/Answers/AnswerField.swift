@@ -9,14 +9,17 @@ struct AnswerField: View {
     
     @State var index: QuestionIndex = QuestionIndex()
     @State var currentAnswer: Int = 1
+    @State var charCount: Int = 0
     
+    let paper: QuestionPaper
     let question: Question
     let directory = DocumentDirectory()
     
-    init(_ question: Question, _ answers: Binding<[Answer]>){
+    init(_ paper: QuestionPaper, _ question: Question, _ answers: Binding<[Answer]>){
         UITextView.appearance().backgroundColor = .clear
         self.question = question
         self._answers = answers
+        self.paper = paper
     }
     
     var body: some View {
@@ -40,14 +43,25 @@ struct AnswerField: View {
                                         }
                                         .padding(.vertical, 5)
                                         
-                                        TextEditor(text: $answers[answers.firstIndex(of: answer)!].text)
-                                            .foregroundColor(.primary)
-                                            .padding(.horizontal, 5)
-                                            .font(.subheadline)
-                                            .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 12)).colorInvert())
-                                            .opacity(0.9)
-                                            .modifier(RoundedBorder())
-                                            .padding([.bottom, .horizontal], 5)
+                                        ZStack(alignment: .bottomTrailing) {
+                                            TextEditor(text: $answers[answers.firstIndex(of: answer)!].text)
+                                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                                .onChange(of: answers[answers.firstIndex(of: answer)!].text, perform: { value in
+                                                    DispatchQueue.global().async(qos: .userInteractive) {
+                                                        charCount = value.wordCount()
+                                                    }
+                                                })
+                                            Text("\(charCount)")
+                                                .font(.caption)
+                                                .fontWeight(.heavy)
+                                                .foregroundColor(.yellow)
+                                                .frame(width: 20, height: 30)
+                                        }
+                                        .foregroundColor(.primary)
+                                        .padding(.horizontal, 5)
+                                        .font(.subheadline)
+                                        .background(Color.primary.clipShape(RoundedRectangle(cornerRadius: 12)).colorInvert())
+                                        .opacity(0.9)
                                     }
                                 }
                                 .frame(width: display.size.width)
@@ -58,7 +72,7 @@ struct AnswerField: View {
                             let currentAnswerIndex = answers.firstIndex(where: { $0.index.number == currentAnswer })
                             if currentAnswerIndex == nil {
                                 withAnimation {
-                                    answers.append(Answer(paper: question.paper, index: QuestionIndex(number: currentAnswer)))
+                                    answers.append(Answer(paper: paper, question: question, index: question.index))
                                 }
                             } else {
                                 let copy = answers[currentAnswerIndex!]
@@ -67,6 +81,11 @@ struct AnswerField: View {
                             }
                         }
                     }
+                }
+                .onAppear {
+                    currentAnswer = question.index.number
+                    print("changed")
+                    print(question.subQuestions)
                 }
                 
                 HStack {
@@ -78,10 +97,22 @@ struct AnswerField: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .modifier(RoundedBorder())
                     .frame(width: 310)
+                    .hidden(!question.chooseIndex)
 
                     ButtonSymbol("plus.square.fill"){
                         withAnimation {
-                            answers.append(Answer(paper: question.paper, index: answers.last?.index.getNextQuestionIndex() ?? QuestionIndex()))
+                            switch question.chooseIndex {
+                            case true:
+                                withAnimation {
+                                    answers.append(Answer(paper: paper, question: question, index: answers.last?.index.getNextQuestionIndex() ?? QuestionIndex()))
+                                }
+                            case false:
+                                var nextIndex = answers.last?.index
+                                nextIndex?.incrementLetter()
+                                withAnimation {
+                                    answers.append(Answer(paper: paper, question: question, index: nextIndex ?? QuestionIndex()))
+                                }
+                            }
                         }
                     }
                     .font(.title, weight: .light)
@@ -98,7 +129,7 @@ struct AnswerField: View {
 
 struct AnswerField_Previews: PreviewProvider {
     static var previews: some View {
-        AnswerField(QuestionPaper.example.questions[0], .constant([Answer(paper: QuestionPaper.example)]))
+        AnswerField(QuestionPaper.example, Question(index: 1, pages: []), .constant([ Answer(paper: QuestionPaper.example, question: Question(index: 1, pages: []) ) ] ) )
     }
 }
 

@@ -9,10 +9,10 @@ struct QuestionPaperPage: Hashable, Codable {
     let pageNumber: Int
     let metadata: CambridgeMetadata
     let type: CambridgePageType
+    let rawText: String
 }
 
 struct MarkSchemePage: Hashable, Codable {
     let pageNumber: Int
     let metadata: CambridgeMetadata
-    let type: CambridgePaperType
 }

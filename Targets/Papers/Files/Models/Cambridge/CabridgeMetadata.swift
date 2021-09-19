@@ -39,18 +39,22 @@ struct CambridgeMetadata: Hashable, Codable {
     var type: Int {
         Int(paperCode.id.dropFirst(12))!
     }
+    
+    var searchTags: [String] {
+        return ["\(month)", "\(year)", "\(paperCode.id)", subject.rawValue, month.rawValue]
+    }
 }
 
 struct CambridgePaperCode: Hashable, Codable {
     let id: String
-    let type: CambridgePaperCodeType
+    let type: CambridgePaperType
     
     init(_ id: String){
         self.id = id
         if id.contains("_ms"){
-            type = .markscheme
+            type = .markscheme(number: .init(rawValue: Int(id.dropFirst(id.count - 2).dropLast())!)! , variant: .init(rawValue: Int(id.dropFirst(id.count - 1))!)!)
         } else if id.contains("_qp"){
-            type = .questionPaper
+            type = .questionPaper(number: .init(rawValue: Int(id.dropFirst(id.count - 2).dropLast())!)! , variant: .init(rawValue: Int(id.dropFirst(id.count - 1))!)!)
         } else {
             type = .datasheet
         }

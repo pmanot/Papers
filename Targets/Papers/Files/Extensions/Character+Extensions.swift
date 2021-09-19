@@ -2,7 +2,7 @@
 // Copyright (c) Purav Manot
 //
 
-import Swift
+import Foundation
 
 extension Character {
     func number() -> Int? {

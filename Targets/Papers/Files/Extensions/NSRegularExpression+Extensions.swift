@@ -10,11 +10,11 @@ extension NSRegularExpression {
         return firstMatch(in: string, options: [], range: range) != nil
     }
     
-    func returnMatches(_ string: String, _ length: Int = 50) -> [Int] {
+    func returnMatches(_ string: String) -> [String] {
         if matches(string) {
-            let range = NSRange(location: 0, length: length)
+            let range = NSRange(location: 0, length: string.utf16.count)
             return matches(in: string, options: [], range: range).compactMap {
-                Int(String(string[Range($0.range, in: string)!]))
+                String(string[Range($0.range, in: string)!])
             }
         } else {
             return []

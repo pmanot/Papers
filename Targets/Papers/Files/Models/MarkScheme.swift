@@ -7,17 +7,15 @@ import PDFKit
 
 struct MarkScheme: Identifiable, Hashable {
     let id = UUID()
-    let code: String
+    let metadata: CambridgeMetadata
     let url: URL
-    let year: Int
     let pdf: PDFDocument
     var answers: [AnswerSheet] = []
     
     init(_ msCode: String) {
-        self.code = msCode
-        url = URL(fileURLWithPath: Bundle.main.path(forResource: code, ofType: "pdf")!)
+        self.metadata = CambridgeMetadata(paperCode: msCode)
+        url = URL(fileURLWithPath: Bundle.main.path(forResource: metadata.paperCode.id, ofType: "pdf")!)
         pdf = PDFDocument(url: url)!
-        year = Int("20\(code.dropFirst(12))") ?? 0
         
         extractAnswers()
     }

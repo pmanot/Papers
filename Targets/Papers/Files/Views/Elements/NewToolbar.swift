@@ -36,11 +36,9 @@ struct NewToolBar: View {
                 
                 ButtonSymbol("keyboard", onToggle: "keyboard.chevron.compact.down"){
                     withAnimation(.easeInOut) {
-                        withAnimation {
-                            impactFeedbackgenerator.impactOccurred()
-                            endEditing()
-                            answerFieldShowing.toggle()
-                        }
+                        endEditing()
+                        impactFeedbackgenerator.impactOccurred()
+                        answerFieldShowing.toggle()
                     }
                 }.font(.title3)
                 

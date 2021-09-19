@@ -12,7 +12,7 @@ struct PDFPageView: View {
     
     var body: some View {
         GeometryReader { screen in
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack {
                     ForEach(pages, id: \.self) { page in
                         Group {
@@ -33,9 +33,9 @@ struct PDFPageView: View {
     }
     
     init(_ paper: QuestionPaper, pages: [Int] = []){
-        self.pdf = paper.pdf
+        self.pdf = paper.pdf()
         if pages == [] {
-            self.pages = Array(0..<paper.pdf.pageCount)
+            self.pages = Array(0..<paper.pdf().pageCount)
         } else {
             self.pages = pages
         }

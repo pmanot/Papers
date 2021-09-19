@@ -3,32 +3,78 @@
 //
 
 import SwiftUI
+import PDFKit
 import Filesystem
 
 struct PapersView: View {
-    @Binding var pdf: PDFFileDocument
     @EnvironmentObject var papers: Papers
-    
-    @State var showPaper: Bool = false
-    
-    init(pdf: Binding<PDFFileDocument>) {
-        self._pdf = pdf
-    }
+    @State var viewingMode: ViewMode = .listStyle
     
     var body: some View {
-        NavigationView {
-            List(papers.papers, id: \.self) { paper in
-                Row(paper: paper)
-                    .buttonStyle(PlainButtonStyle())
-            }
-            .listStyle(InsetGroupedListStyle())
-            .navigationTitle("Papers")
-            .navigationViewStyle(StackNavigationViewStyle())
+            SearchView()
+                .environmentObject(papers)
+        .onAppear {
+            papers.load()
         }
     }
 }
 
+
+struct PapersView_Previews: PreviewProvider {
+    static var previews: some View {
+        PapersView()
+            .environmentObject(Papers())
+    }
+}
+
 extension PapersView {
+    struct ListView: View {
+        @EnvironmentObject var papers: Papers
+        @State var showImportSheet: Bool = false
+        
+        var body: some View {
+            List(papers.cambridgePapers, id: \.self){ paper in
+                Section {
+                    
+                }
+                Row(paper: paper)
+                    .buttonStyle(PlainButtonStyle())
+                    .id(UUID())
+            }
+            .listStyle(InsetGroupedListStyle())
+            .navigationTitle("Papers")
+            .navigationViewStyle(StackNavigationViewStyle())
+            .toolbar {
+                ButtonSymbol("plus.circle.fill"){
+                    showImportSheet.toggle()
+                }
+                .font(.largeTitle, weight: .bold)
+                .foregroundColor(.green)
+                .padding()
+            }
+            .fileImporter(isPresented: $showImportSheet, allowedContentTypes: [.pdf, .folder]){ result in
+                switch result {
+                case .success(let url):
+                    if url.startAccessingSecurityScopedResource() {
+                        var newPapers = papers.cambridgePapers
+                        newPapers.append(QuestionPaper(url))
+                        print(newPapers)
+                        print(url)
+                        try! DocumentDirectory().write(newPapers, toDocumentNamed: "metadata")
+                        DocumentDirectory().writePDF(pdf: PDFDocument(url: url)!, to: Paper(url: url).filename)
+                        url.stopAccessingSecurityScopedResource()
+                    }
+                case .failure(let error):
+                    print("Oops, \(error.localizedDescription)")
+                }
+                papers.load()
+            }
+        }
+    }
+}
+
+
+extension PapersView.ListView {
     struct Row: View {
         let paper: QuestionPaper
         
@@ -44,7 +90,7 @@ extension PapersView {
                                 Text(String(paper.metadata.year))
                                     .font(.body)
                             }
-                            Text(paper.metadata.paperCode)
+                            Text(paper.metadata.paperCode.id)
                                 .font(.caption2)
                                 .fontWeight(.light)
                                 .padding(.leading, 2)
@@ -61,14 +107,34 @@ extension PapersView {
                     .padding(.vertical, 7)
                 }
                 .padding(5)
+                .contextMenu(ContextMenu(menuItems: {
+                    Text("one")
+                    Text("Menu Item 2")
+                    Text("\(paper.questions.toJSONString()!)")
+                }))
+            }
+        }
+    }
+}
+
+extension PapersView {
+    struct BoxView: View {
+        var body: some View {
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], content: {
+                    ForEach(0..<40){ _ in
+                        RoundedRectangle(cornerRadius: 10)
+                            .strokeBorder()
+                            .frame(width: 70, height: 70)
+                    }
+                })
             }
         }
     }
 }
 
 
-struct PapersView_Previews: PreviewProvider {
-    static var previews: some View {
-        PapersView(pdf: .constant(PDFFileDocument()))
-    }
+enum ViewMode {
+    case boxStyle
+    case listStyle
 }

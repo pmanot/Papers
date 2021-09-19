@@ -13,45 +13,54 @@ import SwiftUI
 
 struct QuestionView: View {
     let question: Question
-    
+    @EnvironmentObject var papers: Papers
     @State private var showMs: Bool = false
     @State var answerFieldShowing: Bool = false
+    @State var dataSheetShowing = false
     @State var answers: [Answer] = []
     @State var answerDict: [QuestionIndex : String] = [:]
+    @State var offset: CGSize = CGSize.zero
+    @State var position: CGSize = CGSize.zero
+    @State var partition = CGSize.zero
     
     @Environment(\.presentationMode) var presentationMode
-    @EnvironmentObject var codableAnswers: Answers
 
     
     init(_ question: Question){
         self.question = question
     }
-    
-    init(_ paper: QuestionPaper){
-        self.question = Question(paper: paper, page: Array(0..<paper.pdf.pageCount))
-    }
-    
     var body: some View {
         GeometryReader { screen in
             ZStack(alignment: .bottom) {
                 Group {
-                    PDFPageView(question.paper, pages: question.pages)
+                    if !showMs {
+                        PDFPageView(papers.cambridgePapers.first {$0.questions.contains(question)}!, pages: question.pages.map { $0.pageNumber })
+                    } else {
+                        AnswersView(paper: papers.cambridgePapers.first {$0.questions.contains(question)}!, fetchedAnswers: CodableAnswers(answers).answers, answersShowing: $showMs)
+                    }
                 }
+                /*
+                TabView {
+                    PDFPageView(paper, pages: question.pages.map { $0.pageNumber })
+                    PDFPageView(paper, pages: paper.pages.filter {$0.type == .datasheet}.map {$0.pageNumber})
+                }
+                .edgesIgnoringSafeArea(.all)
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .always))
+                    /*DataSheet(paper: paper, isShowing: $dataSheetShowing)
+                        .position(x: screen.size.width/2, y: (dataSheetShowing ? -160 : 120))
+                        .hidden(!dataSheetShowing)*/
+                */
+                NewToolBar(showAnswers: $showMs, answerFieldShowing: $answerFieldShowing, dataSheetShowing: .constant(false))
+                    .position(x: screen.size.width/2, y: screen.size.height - 20)
                 
-                ToolBar(showAnswers: $showMs, answerFieldShowing: $answerFieldShowing)
-                    .padding()
-                    .position(x: screen.size.width/2, y: !answerFieldShowing ? (screen.size.height - 40) : 40 )
-                    .hidden(showMs)
-                
-                AnswerField(question, $answers)
-                    .environmentObject(codableAnswers)
-                    .frame(height: 250)
-                    .position(x: screen.size.width/2, y: screen.size.height - (answerFieldShowing ? 120 : -130))
+                AnswerField(papers.cambridgePapers.first {$0.questions.contains(question)}!, question, $answers)
+                    .frame(height: 200)
+                    .padding(.horizontal, 5)
+                    .position(x: screen.size.width/2, y: screen.size.height + (answerFieldShowing ? -120 : 130))
             }
             .animation(.spring())
-            .navigationBarHidden(true)
             .onAppear {
-                answers.append(Answer(paper: question.paper))
+                answers.append(Answer(paper: papers.cambridgePapers.first {$0.questions.contains(question)}!, question: question, index: question.index))
             }
             .onChange(of: answerFieldShowing){ _ in
                 print("AnswerField showing changed!")
@@ -62,7 +71,10 @@ struct QuestionView: View {
 
 struct QuestionView_Previews: PreviewProvider {
     static var previews: some View {
-        QuestionView(QuestionPaper.example.questions[0])
-            .environmentObject(Answers())
+        QuestionView(Question(index: 1, pages: []))
+            .environmentObject(Papers())
     }
 }
+
+
+
