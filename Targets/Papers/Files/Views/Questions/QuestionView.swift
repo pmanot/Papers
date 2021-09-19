@@ -1,13 +1,6 @@
 //
 // Copyright (c) Purav Manot
 //
-/*
-let jsonData = try! JSONEncoder().encode(CodableAnswers(answers))
-let jsonString = String(data: jsonData, encoding: .utf8)
-directory.write(jsonString!, to: question.paper.paperCode)
-let readJsonString = directory.read(from: question.paper.paperCode)
-let decodedData = try! JSONDecoder().decode(CodableAnswers.self, from: Data(directory.read(from: question.paper.paperCode).utf8))
-print(decodedData) */
 
 import SwiftUI
 
@@ -50,7 +43,7 @@ struct QuestionView: View {
                         .position(x: screen.size.width/2, y: (dataSheetShowing ? -160 : 120))
                         .hidden(!dataSheetShowing)*/
                 */
-                NewToolBar(showAnswers: $showMs, answerFieldShowing: $answerFieldShowing, dataSheetShowing: .constant(false))
+                NewToolbar(showAnswers: $showMs, answerFieldShowing: $answerFieldShowing, dataSheetShowing: .constant(false))
                     .position(x: screen.size.width/2, y: screen.size.height - 20)
                 
                 AnswerField(papers.cambridgePapers.first {$0.questions.contains(question)}!, question, $answers)

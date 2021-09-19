@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-struct NewToolBar: View {
+struct NewToolbar: View {
     @State private var bookmark: Bool = false
     @Environment(\.presentationMode) var presentationMode
     @Binding var showAnswers: Bool
@@ -63,9 +63,9 @@ struct NewToolBar: View {
     }
 }
 
-struct NewToolBar_Previews: PreviewProvider {
+struct NewToolbar_Previews: PreviewProvider {
     static var previews: some View {
-        NewToolBar(showAnswers: .constant(false), answerFieldShowing: .constant(false), dataSheetShowing: .constant(false))
+        NewToolbar(showAnswers: .constant(false), answerFieldShowing: .constant(false), dataSheetShowing: .constant(false))
     }
 }
 

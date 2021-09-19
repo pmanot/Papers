@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-struct ToolBar: View {
+struct Toolbar: View {
     @State private var bookmark: Bool = false
     @Environment(\.presentationMode) var presentationMode
     @Binding var showAnswers: Bool
