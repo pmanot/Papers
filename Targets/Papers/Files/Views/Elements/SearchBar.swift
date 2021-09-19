@@ -1,8 +1,5 @@
 //
-//  SearchBar.swift
-//  Papers
-//
-//  Created by Purav Manot on 06/08/21.
+// Copyright (c) Purav Manot
 //
 
 import SwiftUI

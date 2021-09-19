@@ -1,8 +1,5 @@
 //
-//  ButtonSymbol.swift
-//  Papers
-//
-//  Created by Purav Manot on 04/07/21.
+// Copyright (c) Purav Manot
 //
 
 import Foundation

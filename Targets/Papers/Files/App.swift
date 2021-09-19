@@ -2,11 +2,10 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUI
-import Filesystem
+import SwiftUIX
 
 @main
-struct PapersApp: App {
+struct App: SwiftUI.App {
     @StateObject var applicationStore = ApplicationStore()
     
     var body: some Scene {
