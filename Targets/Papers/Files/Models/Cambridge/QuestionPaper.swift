@@ -7,6 +7,8 @@ import Filesystem
 import SwiftUI
 
 struct QuestionPaper: Hashable, Codable {
+    static let maximumNumberOfQuestionsPerPaper = 10
+    
     let metadata: CambridgeMetadata
     let data: Data
     var markscheme: MarkScheme? {
@@ -19,14 +21,13 @@ struct QuestionPaper: Hashable, Codable {
     }
     var questions: [Question] = []
     
-    init(_ paperCode: String, Static: Bool = false) {
+    init(_ paperCode: String) {
         metadata = CambridgeMetadata(paperCode: paperCode)
         let url = URL(fileURLWithPath: Bundle.main.path(forResource: paperCode, ofType: "pdf")!)
         data = PDFDocument(url: url)!.dataRepresentation()!
         print("calculated")
-        if Static == false {
-            fetchPages()
-        }
+        
+        fetchPages()
     }
     
     init(_ url: URL){
@@ -42,12 +43,12 @@ struct QuestionPaper: Hashable, Codable {
         var lastIndex: Int = 0
         var firstPageIgnoringDatasheet: Int {
             switch metadata.subject {
-            case .physics:
-                return 3
-            case .chemistry:
-                return 0
-            default:
-                return 3
+                case .physics:
+                    return 3
+                case .chemistry:
+                    return 0
+                default:
+                    return 3
             }
         }
         let regex = try! NSRegularExpression(pattern: "\\([a-h]*\\)")
@@ -81,9 +82,10 @@ struct QuestionPaper: Hashable, Codable {
             }
         }
         
-        for i in 1..<10 {
+        for i in 1..<Self.maximumNumberOfQuestionsPerPaper {
             let index = QuestionIndex(number: i, letter: nil, numeral: nil)
-            let pagesContainingQuestion = pages.filter { $0.type == .question(i: index) || $0.type == .questionContinuation(i: index)}
+            let pagesContainingQuestion = pages
+                .filter { $0.type == .question(i: index) || $0.type == .questionContinuation(i: index)}
             if pagesContainingQuestion.count != 0 {
                 var subQuestions: [SubQuestion] = []
                 for page in pagesContainingQuestion {
@@ -103,7 +105,7 @@ struct QuestionPaper: Hashable, Codable {
 }
 
 extension QuestionPaper {
-    static let example = QuestionPaper("9702_s19_qp_21", Static: true)
+    static let example = QuestionPaper("9702_s19_qp_21")
     static let example2 = QuestionPaper("9702_s18_qp_21")
     static let exampleMs = MarkScheme("9702_s19_ms_21")
 }

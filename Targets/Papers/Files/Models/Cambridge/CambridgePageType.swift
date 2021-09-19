@@ -10,7 +10,6 @@ enum CambridgePageType: Hashable {
     case question(i: QuestionIndex)
     case answer(i: QuestionIndex)
     case questionContinuation(i: QuestionIndex)
-    
 }
 
 extension CambridgePageType: Codable {

@@ -7,14 +7,12 @@ import PDFKit
 import Filesystem
 
 struct PapersView: View {
-    @EnvironmentObject var papers: Papers
-    @State var viewingMode: ViewMode = .listStyle
-    
+    @EnvironmentObject var papersDatabase: PapersDatabase
+        
     var body: some View {
-            SearchView()
-                .environmentObject(papers)
-        .onAppear {
-            papers.load()
+        NavigationView {
+            ListView()
+                .environmentObject(papersDatabase)
         }
     }
 }
@@ -23,20 +21,17 @@ struct PapersView: View {
 struct PapersView_Previews: PreviewProvider {
     static var previews: some View {
         PapersView()
-            .environmentObject(Papers())
+            .environmentObject(PapersDatabase())
     }
 }
 
 extension PapersView {
     struct ListView: View {
-        @EnvironmentObject var papers: Papers
+        @EnvironmentObject var papers: PapersDatabase
         @State var showImportSheet: Bool = false
         
         var body: some View {
-            List(papers.cambridgePapers, id: \.self){ paper in
-                Section {
-                    
-                }
+            List(papers.cambridgePapers, id: \.self) { paper in
                 Row(paper: paper)
                     .buttonStyle(PlainButtonStyle())
                     .id(UUID())
@@ -54,18 +49,18 @@ extension PapersView {
             }
             .fileImporter(isPresented: $showImportSheet, allowedContentTypes: [.pdf, .folder]){ result in
                 switch result {
-                case .success(let url):
-                    if url.startAccessingSecurityScopedResource() {
-                        var newPapers = papers.cambridgePapers
-                        newPapers.append(QuestionPaper(url))
-                        print(newPapers)
-                        print(url)
-                        try! DocumentDirectory().write(newPapers, toDocumentNamed: "metadata")
-                        DocumentDirectory().writePDF(pdf: PDFDocument(url: url)!, to: Paper(url: url).filename)
-                        url.stopAccessingSecurityScopedResource()
-                    }
-                case .failure(let error):
-                    print("Oops, \(error.localizedDescription)")
+                    case .success(let url):
+                        if url.startAccessingSecurityScopedResource() {
+                            var newPapers = papers.cambridgePapers
+                            newPapers.append(QuestionPaper(url))
+                            print(newPapers)
+                            print(url)
+                            try! DocumentDirectory().write(newPapers, toDocumentNamed: "metadata")
+                            DocumentDirectory().writePDF(pdf: PDFDocument(url: url)!, to: Paper(url: url).filename)
+                            url.stopAccessingSecurityScopedResource()
+                        }
+                    case .failure(let error):
+                        print("Oops, \(error.localizedDescription)")
                 }
                 papers.load()
             }

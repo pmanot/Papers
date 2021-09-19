@@ -13,7 +13,7 @@ import SwiftUI
 
 struct QuestionView: View {
     let question: Question
-    @EnvironmentObject var papers: Papers
+    @EnvironmentObject var papers: PapersDatabase
     @State private var showMs: Bool = false
     @State var answerFieldShowing: Bool = false
     @State var dataSheetShowing = false
@@ -72,7 +72,7 @@ struct QuestionView: View {
 struct QuestionView_Previews: PreviewProvider {
     static var previews: some View {
         QuestionView(Question(index: 1, pages: []))
-            .environmentObject(Papers())
+            .environmentObject(PapersDatabase())
     }
 }
 

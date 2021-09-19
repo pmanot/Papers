@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
-    @EnvironmentObject var papers: Papers
+    @EnvironmentObject var papers: PapersDatabase
     @State var searchResults = SearchResults([])
     @State var searchOptions = ["Question Papers", "Questions"]
     @State var searchSelection = "Question Papers"
@@ -49,6 +49,6 @@ struct SearchView: View {
 struct SearchView_Previews: PreviewProvider {
     static var previews: some View {
         SearchView()
-            .environmentObject(Papers())
+            .environmentObject(PapersDatabase())
     }
 }

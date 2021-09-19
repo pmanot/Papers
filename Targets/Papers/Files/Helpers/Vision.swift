@@ -16,7 +16,7 @@ func recogniseText(from image: CGImage) -> String {
         for observation in observations {
             guard let candidate = observation.topCandidates(maximumRecognitionCandidates).first else { continue }
             
-            recognizedText = "\(candidate.string)"
+            recognizedText = candidate.string
             
         }
     }

@@ -5,44 +5,48 @@
 import Foundation
 import PDFKit
 
-final public class Papers: ObservableObject {
+/// A container for question papers.
+///
+/// Responsible for loading and containing question papers from the app's documents directory..
+final public class PapersDatabase: ObservableObject {
     let directory = DocumentDirectory()
-    @Published var cambridgePapers: [QuestionPaper]
     
-    var papers: [Paper] {
-        if let data = directory.read(from: "Papers") {
-            return try! JSONDecoder().decode([Paper].self, from: data)
-        }
-        return []
+    @Published var cambridgePapers: [QuestionPaper] = []
+    
+    init() {
+        
     }
     
-    init(){
-        if let data = directory.read(from: "metadata"){
-            cambridgePapers = try! JSONDecoder().decode([QuestionPaper].self, from: data)
-        } else {
-            cambridgePapers = []
-        }
-    }
-    
-    func typeCheck(pdf: PDFDocument) -> Bool {
-        if let url = pdf.documentURL {
-            if url.absoluteString.contains("9701_") || url.absoluteString.contains("9702_") {
-                return true
+    func load() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            if let data = self.directory.read(from: "metadata") {
+                let papers = try! JSONDecoder().decode([QuestionPaper].self, from: data)
+                
+                DispatchQueue.main.async {
+                    self.cambridgePapers = papers
+                }
+            } else {
+                try! self.directory.write(PapersDatabase.examples, toDocumentNamed: "metadata")
+                
+                let urls = self.directory.findPapers().map({ Paper(url: $0) })
+                
+                DispatchQueue.main.async {
+                    for url in urls {
+                        self.cambridgePapers.append(QuestionPaper(url.url))
+                    }
+                }
             }
         }
-        return false
     }
-    
-    func load(){
-        if let data = directory.read(from: "metadata"){
-            cambridgePapers = try! JSONDecoder().decode([QuestionPaper].self, from: data)
-        } else {
-            cambridgePapers = []
-        }
-    }
-    
 }
 
-extension Papers {
-    static let examples = [QuestionPaper("9701_m20_qp_42"), QuestionPaper("9702_w20_qp_22"), QuestionPaper("9702_s19_qp_21"), QuestionPaper.example2]
+// MARK: - Development Preview -
+
+extension PapersDatabase {
+    static let examples = [
+        QuestionPaper("9701_m20_qp_42"),
+        QuestionPaper("9702_w20_qp_22"),
+        QuestionPaper("9702_s19_qp_21"),
+        QuestionPaper.example2
+    ]
 }
