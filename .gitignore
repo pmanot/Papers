@@ -1,3 +1,11 @@
-Papers.xcodeproj/project.xcworkspace/xcuserdata
-Papers.xcodeproj/xcuserdata/vmanot.xcuserdatad
-Papers/Assets.xcassets/.DS_Store
+.DS_Store
+.swiftpm/
+.swiftpm/*
+/*.xcodeproj
+/.build
+/build
+/Packages
+xcuserdata/
+fastlane/*
+!fastlane/Fastfile
+!fastlane/Pluginfile
