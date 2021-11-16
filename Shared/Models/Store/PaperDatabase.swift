@@ -10,13 +10,17 @@ final public class PapersDatabase: ObservableObject {
     
     @Published var metadata: [CambridgePaperMetadata] = []
     @Published var papers: [CambridgeQuestionPaper] = []
-    
+    @Published var paperBundles: [CambridgePaperBundle] = []
+    var questions: [Question] {
+        paperBundles.compactMap { $0.questionPaper }.questions()
+    }
     init() {
         
     }
     
     func load() {
         var urls = self.directory.findPapers()
+        var paperCodes: [String] = []
         DispatchQueue.global(qos: .userInitiated).async {
             if urls == [] {
                 for url in fetchPaths() {
@@ -30,11 +34,13 @@ final public class PapersDatabase: ObservableObject {
                 
                 DispatchQueue.main.async {
                     self.metadata = fetchedMetadata
-                    
-                    for url in urls {
-                        self.papers.append(
-                            CambridgeQuestionPaper(url: url, metadata: self.metadata.matching(url)!)
-                        )
+                    paperCodes = urls.map { getQuestionPaperCode($0.getPaperCode()) }.removingDuplicates()
+                    print(paperCodes)
+                    for paperCode in paperCodes {
+                        let questionPaperByCode = urls.first (where: { getQuestionPaperCode($0.getPaperCode()) == paperCode }).map{ CambridgeQuestionPaper(url: $0, metadata: fetchedMetadata.first { getQuestionPaperCode($0.paperCode) == paperCode }!)} ?? nil
+                        let markschemeByCode = urls.first (where: { getQuestionPaperCode($0.getPaperCode()) == paperCode }).map { CambridgeMarkscheme(url: $0, metadata: fetchedMetadata.first { getQuestionPaperCode($0.paperCode) == paperCode }!)} ?? nil
+                        self.paperBundles.append(CambridgePaperBundle(questionPaper: questionPaperByCode, markscheme: markschemeByCode))
+                        
                     }
                 }
                 

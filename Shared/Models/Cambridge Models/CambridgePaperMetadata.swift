@@ -17,6 +17,8 @@ struct CambridgePaperMetadata: Codable, Hashable {
     let paperNumber: CambridgePaperNumber
     let paperVariant: CambridgePaperVariant
     var pageData: [CambridgePaperPage] = []
+    var numberOfQuestions: Int = 0
+    var rawText: String = ""
     
     init(paperCode: String){
         if regexMatches(string: paperCode, pattern: CambridgePaperMetadata.paperCodePattern) { // check if papercode is valid
@@ -39,12 +41,14 @@ struct CambridgePaperMetadata: Codable, Hashable {
             self.month = CambridgePaperMonth.febMarch
             self.year = 00
             self.subject = .other
+            
         }
     }
     
     init(url: URL){
         self.init(paperCode: url.deletingPathExtension().lastPathComponent)
         fetchPageData(pdf: PDFDocument(url: url)!)
+        self.rawText = pageData.map { $0.rawText }.reduce("", +)
     }
     
     init(bundleResourceName: String){
@@ -52,34 +56,57 @@ struct CambridgePaperMetadata: Codable, Hashable {
     }
     
     mutating func fetchPageData(pdf: PDFDocument) {
-        var nextQuestionNumber: Int = 1
-        var runningQuestionNumber: Int = 0
-        
-        for i in 0..<pdf.pageCount {
-            let pageNumber = i + 1
-            let page = pdf.page(at: i)!
-            let rawPageText = page.string ?? ""
+        switch paperType {
+        case .markscheme:
+            for i in 0..<pdf.pageCount {
+                let pageNumber = i + 1
+                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                let rawPageText = page.string ?? "" // extract text from the page
+                pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
+            }
+        case .questionPaper:
+            var nextQuestionNumber: Int = 1 // question number to look for
+            var runningQuestionNumber: Int = 0 // current question number (last question number detected)
             
-            if rawPageText.contains("BLANK PAGE") { // blank page detected
-                pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
-            } else {
-                let snapshot = page.snapshot().cgImage!
-                let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 50, y: 0), size: CGSize(width: 100, height: 1000)))! // crop page snapshot to only include page number
+            for i in 0..<pdf.pageCount {
+                let pageNumber = i + 1
+                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                let rawPageText = page.string ?? "" // extract text from the page
                 
-                if recogniseText(from: croppedSnapshot).contains("\(nextQuestionNumber)"){ //page containing new question
-                    runningQuestionNumber = nextQuestionNumber
-                    nextQuestionNumber += 1
+                if rawPageText.contains("BLANK PAGE") { // check for blank page
+                    pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
+                } else {
+                    let snapshot = page.snapshot().cgImage!
+                    let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 50, y: 0), size: CGSize(width: 100, height: 1000)))! // crop page snapshot to only include page number
                     
-                    let index = QuestionIndex(runningQuestionNumber)
-                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                    
-                } else { //continuation of previous question
-                    let index = QuestionIndex(runningQuestionNumber)
-                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                    if recogniseText(from: croppedSnapshot).contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
+                        runningQuestionNumber = nextQuestionNumber
+                        nextQuestionNumber += 1
+                        
+                        let index = QuestionIndex(runningQuestionNumber)
+                        pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                        print(rawPageText) // debugging
+
+                        
+                    } else { //continuation of previous question
+                        let index = QuestionIndex(runningQuestionNumber)
+                        pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                        print(rawPageText) // debugging
+                    }
                 }
             }
+            numberOfQuestions = runningQuestionNumber
+            print("page data calculated")
+        case .datasheet:
+            for i in 0..<pdf.pageCount {
+                let pageNumber = i + 1
+                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                let rawPageText = page.string ?? "" // extract text from the page
+                pageData.append(CambridgePaperPage(type: .datasheet, rawText: rawPageText, pageNumber: pageNumber))
+            }
+        case .other:
+            pageData += [] // do nothing
         }
-        print("page data calculated")
     }
 }
 

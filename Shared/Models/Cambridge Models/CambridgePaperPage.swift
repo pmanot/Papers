@@ -18,6 +18,7 @@ struct CambridgePaperPage: Codable, Hashable {
 enum CambridgePageType: Codable, Hashable {
     case blank
     case datasheet
+    case markschemePage
     case multipleChoicePage(indexes: [QuestionIndex])
     case questionPaperPage(index: QuestionIndex)
     
@@ -37,6 +38,8 @@ enum CambridgePageType: Codable, Hashable {
                     self = .blank
                 case "datasheet":
                     self = .datasheet
+                case "markscheme":
+                    self = .markschemePage
                 case "question":
                     let index = try container.decode(QuestionIndex.self, forKey: .associatedValue)
                     self = .questionPaperPage(index: index)
@@ -55,6 +58,8 @@ enum CambridgePageType: Codable, Hashable {
             try container.encode("blank", forKey: .rawValue)
         case .datasheet:
             try container.encode("datasheet", forKey: .rawValue)
+        case .markschemePage:
+            try container.encode("markscheme", forKey: .rawValue)
         case .questionPaperPage(let index):
             try container.encode("question", forKey: .rawValue)
             try container.encode(index, forKey: .associatedValue)

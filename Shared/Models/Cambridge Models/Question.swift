@@ -7,7 +7,8 @@ import PDFKit
 
 struct Question: Hashable, Identifiable {
     let id = UUID()
-    
+    let metadata: CambridgePaperMetadata
+
     let pdf: PDFDocument
     let index: QuestionIndex
     var check: QuestionCheck = .unsolved
@@ -15,12 +16,17 @@ struct Question: Hashable, Identifiable {
     var pages: [CambridgePaperPage]
     let rawText: String
     
-    init(pdf: PDFDocument, index: QuestionIndex, pages: [CambridgePaperPage]){
+    init(pdf: PDFDocument, index: QuestionIndex, pages: [CambridgePaperPage], metadata: CambridgePaperMetadata){
         self.pdf = pdf
         self.index = index
         self.pages = pages
         self.rawText = pages.map { $0.rawText }.reduce("", +)
+        self.metadata = metadata
     }
+}
+
+extension Question {
+    static var example = Question(pdf: PDFDocument(url: PapersDatabase.urls[0])!, index: QuestionIndex(1), pages: [CambridgePaperPage(type: .questionPaperPage(index: QuestionIndex(1)), rawText: "", pageNumber: 4), CambridgePaperPage(type: .questionPaperPage(index: QuestionIndex(1)), rawText: "", pageNumber: 5)], metadata: CambridgePaperMetadata(url: PapersDatabase.urls[0]))
 }
 
 enum QuestionCheck: Int, Codable {
