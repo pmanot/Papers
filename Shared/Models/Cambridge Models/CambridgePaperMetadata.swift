@@ -65,38 +65,49 @@ struct CambridgePaperMetadata: Codable, Hashable {
                 pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
             }
         case .questionPaper:
-            var nextQuestionNumber: Int = 1 // question number to look for
-            var runningQuestionNumber: Int = 0 // current question number (last question number detected)
-            
-            for i in 0..<pdf.pageCount {
-                let pageNumber = i + 1
-                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                let rawPageText = page.string ?? "" // extract text from the page
-                
-                if rawPageText.contains("BLANK PAGE") { // check for blank page
-                    pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
-                } else {
-                    let snapshot = page.snapshot().cgImage!
-                    let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 50, y: 0), size: CGSize(width: 100, height: 1000)))! // crop page snapshot to only include page number
-                    
-                    if recogniseText(from: croppedSnapshot).contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
-                        runningQuestionNumber = nextQuestionNumber
-                        nextQuestionNumber += 1
+                switch paperNumber {
+                    case .paper1: // mcq
+                        for i in 0..<pdf.pageCount {
+                            let pageNumber = i + 1
+                            let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                            let rawPageText = page.string ?? "" // extract text from the page
+                            pageData.append(CambridgePaperPage(type: .multipleChoicePage(indexes: []), rawText: rawPageText, pageNumber: pageNumber))
+                        }
+                        self.numberOfQuestions = 50 // Cambridge A level MCQ Papers always contain 40 questions
+                    default: // paper 4
+                        var nextQuestionNumber: Int = 1 // question number to look for
+                        var runningQuestionNumber: Int = 0 // current question number (last question number detected)
                         
-                        let index = QuestionIndex(runningQuestionNumber)
-                        pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                        print(rawPageText) // debugging
+                        for i in 0..<pdf.pageCount {
+                            let pageNumber = i + 1
+                            let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                            let rawPageText = page.string ?? "" // extract text from the page
+                            
+                            if rawPageText.contains("BLANK PAGE") { // check for blank page
+                                pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
+                            } else {
+                                let snapshot = page.snapshot().cgImage!
+                                let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 50, y: 0), size: CGSize(width: 100, height: 1000)))! // crop page snapshot to only include page number
+                                
+                                if recogniseText(from: croppedSnapshot).contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
+                                    runningQuestionNumber = nextQuestionNumber
+                                    nextQuestionNumber += 1
+                                    
+                                    let index = QuestionIndex(runningQuestionNumber)
+                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                    print(rawPageText) // debugging
 
-                        
-                    } else { //continuation of previous question
-                        let index = QuestionIndex(runningQuestionNumber)
-                        pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                        print(rawPageText) // debugging
-                    }
+                                    
+                                } else { //continuation of previous question
+                                    let index = QuestionIndex(runningQuestionNumber)
+                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                    print(rawPageText) // debugging
+                                }
+                            }
+                        }
+                        numberOfQuestions = runningQuestionNumber
+                        print("page data calculated")
                 }
-            }
-            numberOfQuestions = runningQuestionNumber
-            print("page data calculated")
         case .datasheet:
             for i in 0..<pdf.pageCount {
                 let pageNumber = i + 1
