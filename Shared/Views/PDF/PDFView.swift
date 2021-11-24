@@ -9,18 +9,6 @@ struct WrappedPDFView: UIViewRepresentable {
     let pdfView = PDFKit.PDFView()
     let pdf: PDFDocument
     
-    class Coordinator: NSObject, PDFViewDelegate {
-        var parent: WrappedPDFView
-        
-        init(_ parent: WrappedPDFView){
-            self.parent = parent
-        }
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
     init(pdf: PDFDocument){
         self.pdf = pdf
     }
@@ -33,17 +21,21 @@ struct WrappedPDFView: UIViewRepresentable {
         self.pdf = compiledPDF
     }
     
+    init(pdf: PDFDocument, pages: [CambridgePaperPage]){
+        self.init(pages: pages.map { $0.getPage(pdf: pdf) })
+    }
+    
+    
     func makeUIView(context: Context) -> UIView {
         pdfView.document = pdf
         pdfView.autoScales = true
         pdfView.displayBox = .mediaBox
-        pdfView.delegate = context.coordinator
-        pdfView.pageShadowsEnabled = true
+        pdfView.backgroundColor = .clear
         return pdfView
     }
     
     func updateUIView(_ uiView: UIView, context: Context) {
-        
+        pdfView.document = pdf
     }
 }
 
@@ -56,24 +48,17 @@ struct PDFView: View {
     }
     
     var body: some View {
-        ZStack(alignment: .topLeading) {
-            WrappedPDFView(pdf: pdf)
-                .isScrollEnabled(true)
-            if drawingOverlay {
-                DrawingOverlayView()
-                    .scrollDisabled(true)
-            }
-        }
-        .navigationBarItems(leading:
-            SymbolButton("pencil.circle"){
-                drawingOverlay.toggle()
-            }
-        )
+        WrappedPDFView(pdf: pdf)
+            .navigationBarItems(leading:
+                SymbolButton("pencil.circle"){
+                    drawingOverlay.toggle()
+                }
+            )
     }
 }
 
 struct PDFView_Previews: PreviewProvider {
     static var previews: some View {
-        PDFView(PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9701_m20_qp_42", ofType: "pdf")!))!)
+        PDFView(PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_42", ofType: "pdf")!))!)
     }
 }
