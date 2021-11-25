@@ -17,6 +17,7 @@ struct CambridgePaperMetadata: Codable, Hashable {
     let paperNumber: CambridgePaperNumber
     let paperVariant: CambridgePaperVariant
     var pageData: [CambridgePaperPage] = []
+    var answers: [Answer] = []
     var numberOfQuestions: Int = 0
     var rawText: String = ""
     
@@ -59,21 +60,31 @@ struct CambridgePaperMetadata: Codable, Hashable {
         switch paperType {
         case .markscheme:
             for i in 0..<pdf.pageCount {
-                let pageNumber = i + 1
-                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                let rawPageText = page.string ?? "" // extract text from the page
-                pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
+                switch paperNumber {
+                    case .paper1: // paper 1 (mcq)
+                        let pageNumber = i + 1
+                        let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                        let rawPageText = page.string ?? "" // extract text from the page
+                        pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
+
+                        
+                    default: // paper 4
+                        let pageNumber = i + 1
+                        let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                        let rawPageText = page.string ?? "" // extract text from the page
+                        pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
+                }
             }
         case .questionPaper:
                 switch paperNumber {
-                    case .paper1: // mcq
+                    case .paper1: // paper 1 (mcq)
                         for i in 0..<pdf.pageCount {
                             let pageNumber = i + 1
                             let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
                             let rawPageText = page.string ?? "" // extract text from the page
                             pageData.append(CambridgePaperPage(type: .multipleChoicePage(indexes: []), rawText: rawPageText, pageNumber: pageNumber))
                         }
-                        self.numberOfQuestions = 50 // Cambridge A level MCQ Papers always contain 40 questions
+                        self.numberOfQuestions = 40 // Cambridge A level MCQ Papers always contain 40 questions
                     default: // paper 4
                         var nextQuestionNumber: Int = 1 // question number to look for
                         var runningQuestionNumber: Int = 0 // current question number (last question number detected)
@@ -95,18 +106,18 @@ struct CambridgePaperMetadata: Codable, Hashable {
                                     
                                     let index = QuestionIndex(runningQuestionNumber)
                                     pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                    print(rawPageText) // debugging
+                                     // debugging
 
                                     
                                 } else { //continuation of previous question
                                     let index = QuestionIndex(runningQuestionNumber)
                                     pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                    print(rawPageText) // debugging
+                                     // debugging
                                 }
                             }
                         }
                         numberOfQuestions = runningQuestionNumber
-                        print("page data calculated")
+                        
                 }
         case .datasheet:
             for i in 0..<pdf.pageCount {
