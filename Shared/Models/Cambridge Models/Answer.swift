@@ -7,6 +7,23 @@ import Foundation
 struct Answer: Codable, Hashable {
     let index: QuestionIndex
     var value: AnswerValue
+    
+    mutating func updateValue(value: AnswerValue){
+        self.value = value
+    }
+    
+    func selected(_ selection: MCQSelection) -> Bool {
+        return self.value == .multipleChoice(choice: selection)
+    }
+    
+    mutating func toggleChoice(_ choice: MCQSelection){
+        switch self.value {
+            case .multipleChoice(choice: choice):
+                self.updateValue(value: AnswerValue.multipleChoice(choice: .none))
+            default:
+                self.updateValue(value: AnswerValue.multipleChoice(choice: choice))
+        }
+    }
 }
 
 enum AnswerValue: Codable, Hashable {
@@ -48,4 +65,12 @@ enum AnswerValue: Codable, Hashable {
         }
     }
     
+}
+
+enum MCQSelection: String, Codable, Hashable {
+    case A = "A"
+    case B = "B"
+    case C = "C"
+    case D = "D"
+    case none = "N"
 }

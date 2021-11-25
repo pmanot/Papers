@@ -48,11 +48,3 @@ struct QuestionIndex: Hashable, Codable {
         self.subNumber = subNumber
     }
 }
-
-
-enum MCQSelection: String, Codable, Hashable {
-    case A = "A"
-    case B = "B"
-    case C = "C"
-    case D = "D"
-}
