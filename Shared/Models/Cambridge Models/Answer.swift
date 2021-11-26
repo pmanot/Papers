@@ -8,6 +8,7 @@ struct Answer: Codable, Hashable {
     let index: QuestionIndex
     var value: AnswerValue
     
+    
     mutating func updateValue(value: AnswerValue){
         self.value = value
     }
@@ -26,10 +27,33 @@ struct Answer: Codable, Hashable {
     }
 }
 
+typealias Answers = [QuestionIndex : AnswerValue]
+
 enum AnswerValue: Codable, Hashable {
     case multipleChoice(choice: MCQSelection)
     case text(string: String)
     
+    mutating func updateValue(value: AnswerValue){
+        self = value
+    }
+    
+    func selected(_ selection: MCQSelection) -> Bool {
+        return self == .multipleChoice(choice: selection)
+    }
+    
+    mutating func toggleChoice(_ choice: MCQSelection){
+        switch self {
+            case .multipleChoice(choice: choice):
+                self.updateValue(value: AnswerValue.multipleChoice(choice: .none))
+            default:
+                self.updateValue(value: AnswerValue.multipleChoice(choice: choice))
+        }
+    }
+    
+}
+
+
+extension AnswerValue {
     enum CodingKeys: CodingKey {
         case rawValue
         case associatedValue
@@ -64,7 +88,6 @@ enum AnswerValue: Codable, Hashable {
             try container.encode(string, forKey: .associatedValue)
         }
     }
-    
 }
 
 enum MCQSelection: String, Codable, Hashable {

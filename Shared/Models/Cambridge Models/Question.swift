@@ -47,4 +47,8 @@ struct QuestionIndex: Hashable, Codable {
         self.numeral = numeral
         self.subNumber = subNumber
     }
+    
+    mutating func increment(){
+        self.number += 1
+    }
 }

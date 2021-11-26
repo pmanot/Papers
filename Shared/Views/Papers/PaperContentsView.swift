@@ -5,33 +5,53 @@
 import SwiftUI
 
 struct PaperContentsView: View {
-    let paper: CambridgeQuestionPaper
+    let paperBundle: CambridgePaperBundle
+    @Binding var searchText: String
     
-    init(paper: CambridgeQuestionPaper){
-        self.paper = paper
+    init(paper: CambridgeQuestionPaper, search: Binding<String> = Binding.constant("")){
+        self.paperBundle = CambridgePaperBundle(questionPaper: paper, markscheme: nil)
+        self._searchText = search
+    }
+    
+    init(bundle: CambridgePaperBundle, search: Binding<String> = Binding.constant("")){
+        self.paperBundle = bundle
+        self._searchText = search
     }
     
     var body: some View {
         List {
-            Section(header: "Paper"){
-                PaperRow(paper)
+            if paperBundle.questionPaper != nil {
+                Section(header: "Question Paper"){
+                    PaperRow(paperBundle.questionPaper!)
+                }
             }
             
-            Section(header: "Questions"){
-                ForEach(paper.questions){ question in
-                    QuestionRow(question)
+            if paperBundle.markscheme != nil {
+                Section(header: "Markscheme"){
+                    PaperRow(paperBundle.markscheme!)
+                }
+            }
+            
+            if paperBundle.questionPaper != nil {
+                Section(header: "Questions"){
+                    ForEach(paperBundle.questionPaper!.questions){ question in
+                        NavigationLink(destination: QuestionView(question)) {
+                            QuestionRow(question)
+                        }
+                        .listRowBackground(!searchText.isEmpty ? Color.white.opacity(question.rawText.match(searchText) ? 0.4 : 0) : Color.clear)
+                    }
                 }
             }
         }
-        .onAppear {
-            print(fetchPaths())
-        }
+        .labelsHidden()
     }
 }
 
 struct PaperContentsView_Previews: PreviewProvider {
     static var previews: some View {
-        PaperContentsView(paper: CambridgeQuestionPaper.init(url: PapersDatabase.urls[0], metadata: PapersDatabase().examples[0]))
+        NavigationView {
+            PaperContentsView(paper: CambridgeQuestionPaper(url: PapersDatabase.urls[0], metadata: ApplicationStore().papersDatabase.examples[0]))
+        }
     }
 }
 
@@ -63,13 +83,31 @@ extension PaperContentsView {
 
 extension PaperContentsView {
     struct PaperRow: View {
-        let paper: CambridgeQuestionPaper
+        let paper: CambridgePaperBundle
         init(_ paper: CambridgeQuestionPaper){
-            self.paper = paper
+            self.paper = CambridgePaperBundle(questionPaper: paper, markscheme: nil)
+        }
+        
+        init(_ paper: CambridgeMarkscheme){
+            self.paper = CambridgePaperBundle(questionPaper: nil, markscheme: paper)
+        }
+        
+        @ViewBuilder var destination: some View {
+            switch paper.questionPaper {
+                case nil:
+                    WrappedPDFView(pdf: paper.markscheme!.pdf)
+                default:
+                    switch paper.metadata.paperNumber {
+                        case .paper1:
+                            MCQView(paper: CambridgeMultipleChoicePaper(url: paper.questionPaper!.pdf.documentURL!, metadata: paper.metadata))
+                        default:
+                            WrappedPDFView(pdf: paper.questionPaper!.pdf)
+                    }
+            }
         }
         
         var body: some View {
-            NavigationLink(destination: PDFView(paper.pdf)) {
+            NavigationLink(destination: destination) {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(paper.metadata.subject.rawValue)")
@@ -82,7 +120,7 @@ extension PaperContentsView {
                             .fontWeight(.black)
                             .foregroundColor(.primary)  
                             .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 1))
+                            .border(Color.primary, width: 1, cornerRadius: 10, style: .circular)
                     }
                     
                     HStack {
@@ -92,7 +130,7 @@ extension PaperContentsView {
                             .foregroundColor(.primary)
                             .opacity(0.8)
                             .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
                         
                         Text("20\(paper.metadata.year)")
                             .font(.caption)
@@ -100,7 +138,7 @@ extension PaperContentsView {
                             .foregroundColor(.primary)
                             .opacity(0.8)
                             .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
                         
                         Text("Paper \(paper.metadata.paperNumber.rawValue)")
                             .font(.caption)
@@ -108,7 +146,7 @@ extension PaperContentsView {
                             .foregroundColor(.primary)
                             .opacity(0.8)
                             .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
                         
                         Text("Variant \(paper.metadata.paperVariant.rawValue)")
                             .font(.caption)
@@ -116,27 +154,13 @@ extension PaperContentsView {
                             .foregroundColor(.primary)
                             .opacity(0.8)
                             .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
                     }
                     .padding(.leading, 5)
                     
                 }
                 .padding(5)
             }
-            .contextMenu {
-                NavigationLink(destination: PaperContentsView(paper: paper)) {
-                    Label(paper.metadata.paperCode, systemImage: "doc.text")
-                }
-                
-                Label("Markscheme", systemImage: "doc.on.clipboard")
-                
-                Button {
-                    
-                } label: {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
-            }
-
         }
     }
 }

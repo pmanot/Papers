@@ -11,6 +11,7 @@ struct PapersApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(applicationStore)
+                .environmentObject(applicationStore.papersDatabase)
         }
     }
 }

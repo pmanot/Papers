@@ -1,14 +1,12 @@
 //
-//  Toolbar.swift
-//  Papers (iOS)
-//
-//  Created by Purav Manot on 30/10/21.
+// Copyright (c) Purav Manot
 //
 
 import SwiftUI
+import SwiftUIX
 
 struct Toolbar: View {
-    
+    @EnvironmentObject var applicationStore: ApplicationStore
     @State private var dragOffset: CGSize = .zero
     @State private var minimised: Bool = false
     @Binding var markschemeToggle: Bool
@@ -81,6 +79,7 @@ struct Toolbar: View {
 struct Toolbar_Previews: PreviewProvider {
     static var previews: some View {
         Toolbar(markschemeToggle: .constant(true))
+            .environmentObject(ApplicationStore())
     }
 }
 
@@ -97,6 +96,7 @@ extension GeometryProxy {
 
 extension Toolbar {
     struct ToolbarItemsView: View {
+        @EnvironmentObject var applicationStore: ApplicationStore
         @Environment(\.presentationMode) var presentView
         @Binding var minimised: Bool
         @Binding var markschemeShowing: Bool

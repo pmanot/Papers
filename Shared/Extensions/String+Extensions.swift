@@ -19,3 +19,13 @@ extension String {
         return count
     }
 }
+
+extension String {
+    func isMarkscheme() -> Bool {
+        self.split(separator: "_")[2] == "ms"
+    }
+    
+    func isQuestionPaper() -> Bool {
+        self.split(separator: "_")[2] == "qp"
+    }
+}

@@ -4,8 +4,10 @@
 
 import Combine
 import Swift
+import FoundationX
 
-class ApplicationStore: ObservableObject {
+final public class ApplicationStore: ObservableObject {
+    @Published var childViewActive = false
     let papersDatabase = PapersDatabase()
     let settings: AppSettings
     

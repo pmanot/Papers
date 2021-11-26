@@ -5,40 +5,53 @@
 import SwiftUIX
 import PDFKit
 import Filesystem
+import SwiftUI
 
 struct PapersView: View {
-    @EnvironmentObject var papersDatabase: PapersDatabase
-        
+    @EnvironmentObject var applicationStore: ApplicationStore
+    @State var searchText: String = ""
+    
     var body: some View {
-        NavigationView {
-            ListView()
-                .environmentObject(papersDatabase)
+        ListView(paperBundles: applicationStore.papersDatabase.paperBundles)
+            .navigationTitle("Papers")
+            .navigationViewStyle(StackNavigationViewStyle())
+            .navigationSearchBar {
+                SearchBar(text: $searchText)
+            }
+    }
+}
+
+extension PapersView {
+    func filteredPapers() -> [CambridgeQuestionPaper] {
+        if searchText != "" {
+            return applicationStore.papersDatabase.papers.filter { $0.rawText.match(searchText) }
         }
+        
+        return applicationStore.papersDatabase.papers
     }
 }
 
 
 struct PapersView_Previews: PreviewProvider {
     static var previews: some View {
-        PapersView()
-            .environmentObject(PapersDatabase())
+        NavigationView {
+            PapersView()
+                .environmentObject(ApplicationStore())
+        }
     }
 }
 
 extension PapersView {
     struct ListView: View {
-        @EnvironmentObject var database: PapersDatabase
-        @State var showImportSheet: Bool = false
+        @State private var showImportSheet: Bool = false
+        let paperBundles: [CambridgePaperBundle]
         
         var body: some View {
-            List(database.papers, id: \.self) { paper in
-                Row(paper: paper)
+            List(paperBundles, id: \.metadata.paperCode){ bundle in
+                Row(paperBundle: bundle)
                     .buttonStyle(PlainButtonStyle())
-                    .id(UUID())
             }
             .listStyle(PlainListStyle())
-            .navigationTitle("Papers")
-            .navigationViewStyle(StackNavigationViewStyle())
             .toolbar {
                 SymbolButton("plus.circle.fill"){
                     showImportSheet.toggle()
@@ -54,69 +67,60 @@ extension PapersView {
 
 extension PapersView.ListView {
     struct Row: View {
-        let paper: CambridgeQuestionPaper
+        let paperBundle: CambridgePaperBundle
         
         var body: some View {
-            NavigationLink(destination: PaperContentsView(paper: paper)) {
+            NavigationLink(destination: PaperContentsView(bundle: paperBundle)) {
                 VStack(alignment: .leading) {
                     HStack {
-                        Text("\(paper.metadata.subject.rawValue)")
+                        Text("\(paperBundle.metadata.subject.rawValue)")
                             .font(.title3)
                             .fontWeight(.black)
                             .padding(6)
                         
-                        Text("\(paper.questions.count) questions")
+                        Text(paperBundle.metadata.questionPaperCode)
                             .font(.subheadline)
-                            .fontWeight(.light)
+                            .fontWeight(.black)
                             .foregroundColor(.primary)
-                            .opacity(0.8)
                             .padding(6)
-                        
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
                     }
                     
                     HStack {
-                        Text("\(paper.metadata.month.rawValue)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                        Text("\(paperBundle.metadata.month.rawValue)")
+                            .modifier(TagTextStyle())
                         
-                        Text("20\(paper.metadata.year)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                        Text("20\(paperBundle.metadata.year)")
+                            .modifier(TagTextStyle())
                         
-                        Text("Paper \(paper.metadata.paperNumber.rawValue)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                        Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
+                            .modifier(TagTextStyle())
                         
-                        Text("Variant \(paper.metadata.paperVariant.rawValue)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                        Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
+                            .modifier(TagTextStyle())
                     }
                     .padding(.leading, 5)
                     
+                    if paperBundle.metadata.paperType == .questionPaper {
+                        Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
+                            .font(.subheadline)
+                            .fontWeight(.light)
+                            .foregroundColor(.secondary)
+                            .padding(6)
+                    } else {
+                        Text("Markscheme")
+                            .font(.subheadline)
+                            .fontWeight(.light)
+                            .foregroundColor(.secondary)
+                            .padding(6)
+                    }
+                    
                 }
                 .padding(5)
-            }
-            .contextMenu {
-                NavigationLink(destination: PaperContentsView(paper: paper)) {
-                    Label(paper.metadata.paperCode, systemImage: "doc.text")
-                }
                 
+            }
+            .buttonStyle(PlainButtonStyle())
+            .contextMenu {
                 Label("Markscheme", systemImage: "doc.on.clipboard")
                 
                 Button {
@@ -149,4 +153,15 @@ extension PapersView {
 enum ViewMode {
     case boxStyle
     case listStyle
+}
+
+struct TagTextStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(.primary)
+            .font(.caption)
+            .opacity(0.8)
+            .padding(6)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+    }
 }

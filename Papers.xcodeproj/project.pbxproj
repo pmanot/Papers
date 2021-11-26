@@ -57,7 +57,17 @@
 		843AD265270B508B00B6131A /* CambridgePaperPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD255270B508B00B6131A /* CambridgePaperPage.swift */; };
 		843AD266270B508B00B6131A /* ApplicationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD257270B508B00B6131A /* ApplicationStore.swift */; };
 		843AD267270B508B00B6131A /* PaperDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD258270B508B00B6131A /* PaperDatabase.swift */; };
-		843AD269270B594600B6131A /* CustomPDFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD268270B594600B6131A /* CustomPDFView.swift */; };
+		843AD273270C346500B6131A /* QuestionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD272270C346500B6131A /* QuestionView.swift */; };
+		843AD275270C4D6F00B6131A /* FuzzyMatching.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD274270C4D6F00B6131A /* FuzzyMatching.swift */; };
+		84879215272CC8D200E8ED91 /* Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84879214272CC8D200E8ED91 /* Toolbar.swift */; };
+		84879217272D8FD300E8ED91 /* CambridgePaperBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84879216272D8FD300E8ED91 /* CambridgePaperBundle.swift */; };
+		8490D56A274CB5DB00BDD6B1 /* 9702_s18_qp_11.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8490D569274CB5DB00BDD6B1 /* 9702_s18_qp_11.pdf */; };
+		8490D56C274CB5E100BDD6B1 /* 9702_s18_ms_11.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 8490D56B274CB5E100BDD6B1 /* 9702_s18_ms_11.pdf */; };
+		8490D56E274CB5ED00BDD6B1 /* MCQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8490D56D274CB5ED00BDD6B1 /* MCQView.swift */; };
+		8490D579274E214800BDD6B1 /* CambridgeMultipleChoiceMarkscheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8490D578274E214800BDD6B1 /* CambridgeMultipleChoiceMarkscheme.swift */; };
+		84CD480927415C0600EC51CA /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CD480827415C0600EC51CA /* Home.swift */; };
+		84CD480E274B61FC00EC51CA /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CD480D274B61FC00EC51CA /* SearchView.swift */; };
+		84E541E5275039CE0087A242 /* PaperSolvedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E541E4275039CE0087A242 /* PaperSolvedData.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -129,7 +139,18 @@
 		843AD255270B508B00B6131A /* CambridgePaperPage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CambridgePaperPage.swift; sourceTree = "<group>"; };
 		843AD257270B508B00B6131A /* ApplicationStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ApplicationStore.swift; sourceTree = "<group>"; };
 		843AD258270B508B00B6131A /* PaperDatabase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaperDatabase.swift; sourceTree = "<group>"; };
-		843AD268270B594600B6131A /* CustomPDFView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomPDFView.swift; sourceTree = "<group>"; };
+		843AD272270C346500B6131A /* QuestionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionView.swift; sourceTree = "<group>"; };
+		843AD274270C4D6F00B6131A /* FuzzyMatching.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FuzzyMatching.swift; sourceTree = "<group>"; };
+		843AD276270CEB4300B6131A /* Papers--iOS--Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "Papers--iOS--Info.plist"; sourceTree = "<group>"; };
+		84879214272CC8D200E8ED91 /* Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toolbar.swift; sourceTree = "<group>"; };
+		84879216272D8FD300E8ED91 /* CambridgePaperBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CambridgePaperBundle.swift; sourceTree = "<group>"; };
+		8490D569274CB5DB00BDD6B1 /* 9702_s18_qp_11.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = 9702_s18_qp_11.pdf; sourceTree = "<group>"; };
+		8490D56B274CB5E100BDD6B1 /* 9702_s18_ms_11.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = 9702_s18_ms_11.pdf; sourceTree = "<group>"; };
+		8490D56D274CB5ED00BDD6B1 /* MCQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MCQView.swift; sourceTree = "<group>"; };
+		8490D578274E214800BDD6B1 /* CambridgeMultipleChoiceMarkscheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CambridgeMultipleChoiceMarkscheme.swift; sourceTree = "<group>"; };
+		84CD480827415C0600EC51CA /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
+		84CD480D274B61FC00EC51CA /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		84E541E4275039CE0087A242 /* PaperSolvedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperSolvedData.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -169,6 +190,7 @@
 		843AD1AA270B4E6C00B6131A = {
 			isa = PBXGroup;
 			children = (
+				843AD276270CEB4300B6131A /* Papers--iOS--Info.plist */,
 				843AD1AF270B4E6C00B6131A /* Shared */,
 				843AD1BE270B4E6E00B6131A /* macOS */,
 				843AD1C7270B4E6E00B6131A /* Tests iOS */,
@@ -232,7 +254,14 @@
 			children = (
 				843AD1B2270B4E6E00B6131A /* Assets.xcassets */,
 				843AD1F3270B501000B6131A /* 9702_s19_ms_21.pdf */,
+				8490D56B274CB5E100BDD6B1 /* 9702_s18_ms_11.pdf */,
+				843AD1F8270B501000B6131A /* 9702_s18_qp_42.pdf */,
 				843AD1F6270B501000B6131A /* 9702_s18_ms_21.pdf */,
+				843AD1F7270B501000B6131A /* 9702_w20_qp_22.pdf */,
+				8490D569274CB5DB00BDD6B1 /* 9702_s18_qp_11.pdf */,
+				843AD1F5270B501000B6131A /* 9701_m20_qp_42.pdf */,
+				843AD1F9270B501000B6131A /* 9702_s19_qp_21.pdf */,
+				843AD1FA270B501000B6131A /* 9702_s18_qp_21.pdf */,
 				843AD1F4270B501000B6131A /* Question Papers */,
 			);
 			path = "Bundle Resources";
@@ -241,11 +270,6 @@
 		843AD1F4270B501000B6131A /* Question Papers */ = {
 			isa = PBXGroup;
 			children = (
-				843AD1F5270B501000B6131A /* 9701_m20_qp_42.pdf */,
-				843AD1F7270B501000B6131A /* 9702_w20_qp_22.pdf */,
-				843AD1F8270B501000B6131A /* 9702_s18_qp_42.pdf */,
-				843AD1F9270B501000B6131A /* 9702_s19_qp_21.pdf */,
-				843AD1FA270B501000B6131A /* 9702_s18_qp_21.pdf */,
 			);
 			path = "Question Papers";
 			sourceTree = "<group>";
@@ -253,11 +277,13 @@
 		843AD21B270B506D00B6131A /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				843AD225270B506D00B6131A /* ContentView.swift */,
+				84CD480827415C0600EC51CA /* Home.swift */,
+				84CD480D274B61FC00EC51CA /* SearchView.swift */,
 				843AD26E270B5A5100B6131A /* Papers */,
 				843AD26A270B5A0600B6131A /* PDF */,
 				843AD26F270B5A7A00B6131A /* Test */,
 				843AD26D270B5A3200B6131A /* Pencil */,
-				843AD225270B506D00B6131A /* ContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -281,6 +307,7 @@
 			children = (
 				843AD242270B508700B6131A /* Vision.swift */,
 				843AD243270B508700B6131A /* DocumentDirectory.swift */,
+				843AD274270C4D6F00B6131A /* FuzzyMatching.swift */,
 			);
 			path = Helpers;
 			sourceTree = "<group>";
@@ -288,9 +315,9 @@
 		843AD246270B508B00B6131A /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				843AD247270B508B00B6131A /* UI Elements */,
-				843AD249270B508B00B6131A /* Cambridge Models */,
 				843AD256270B508B00B6131A /* Store */,
+				843AD249270B508B00B6131A /* Cambridge Models */,
+				843AD247270B508B00B6131A /* UI Elements */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -299,6 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				843AD248270B508B00B6131A /* SymbolButton.swift */,
+				84879214272CC8D200E8ED91 /* Toolbar.swift */,
 			);
 			path = "UI Elements";
 			sourceTree = "<group>";
@@ -306,17 +334,20 @@
 		843AD249270B508B00B6131A /* Cambridge Models */ = {
 			isa = PBXGroup;
 			children = (
+				843AD252270B508B00B6131A /* CambridgePaperMetadata.swift */,
+				84E541E4275039CE0087A242 /* PaperSolvedData.swift */,
+				84879216272D8FD300E8ED91 /* CambridgePaperBundle.swift */,
 				843AD24A270B508B00B6131A /* CambridgeSubject.swift */,
 				843AD24B270B508B00B6131A /* CambridgePaperNumber.swift */,
 				843AD24C270B508B00B6131A /* CambridgeQuestionPaper.swift */,
-				843AD24D270B508B00B6131A /* CambridgePaperType.swift */,
+				843AD251270B508B00B6131A /* CambridgeMultipleChoicePaper.swift */,
+				8490D578274E214800BDD6B1 /* CambridgeMultipleChoiceMarkscheme.swift */,
+				843AD254270B508B00B6131A /* CambridgeMarkscheme.swift */,
 				843AD24E270B508B00B6131A /* CambridgePaperVariant.swift */,
+				843AD24D270B508B00B6131A /* CambridgePaperType.swift */,
 				843AD24F270B508B00B6131A /* CambridgePaperMonth.swift */,
 				843AD250270B508B00B6131A /* Question.swift */,
-				843AD251270B508B00B6131A /* CambridgeMultipleChoicePaper.swift */,
-				843AD252270B508B00B6131A /* CambridgePaperMetadata.swift */,
 				843AD253270B508B00B6131A /* Answer.swift */,
-				843AD254270B508B00B6131A /* CambridgeMarkscheme.swift */,
 				843AD255270B508B00B6131A /* CambridgePaperPage.swift */,
 			);
 			path = "Cambridge Models";
@@ -335,7 +366,6 @@
 			isa = PBXGroup;
 			children = (
 				843AD21D270B506D00B6131A /* PDFView.swift */,
-				843AD268270B594600B6131A /* CustomPDFView.swift */,
 			);
 			path = PDF;
 			sourceTree = "<group>";
@@ -356,6 +386,8 @@
 			children = (
 				843AD224270B506D00B6131A /* PapersView.swift */,
 				843AD220270B506D00B6131A /* PaperContentsView.swift */,
+				843AD272270C346500B6131A /* QuestionView.swift */,
+				8490D56D274CB5ED00BDD6B1 /* MCQView.swift */,
 			);
 			path = Papers;
 			sourceTree = "<group>";
@@ -453,7 +485,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1300;
-				LastUpgradeCheck = 1300;
+				LastUpgradeCheck = 1310;
 				TargetAttributes = {
 					843AD1B6270B4E6E00B6131A = {
 						CreatedOnToolsVersion = 13.0;
@@ -506,7 +538,9 @@
 				843AD1DC270B4E6E00B6131A /* Assets.xcassets in Resources */,
 				843AD201270B501000B6131A /* 9702_s19_qp_21.pdf in Resources */,
 				843AD1FD270B501000B6131A /* 9701_m20_qp_42.pdf in Resources */,
+				8490D56A274CB5DB00BDD6B1 /* 9702_s18_qp_11.pdf in Resources */,
 				843AD1FC270B501000B6131A /* 9702_s19_ms_21.pdf in Resources */,
+				8490D56C274CB5E100BDD6B1 /* 9702_s18_ms_11.pdf in Resources */,
 				843AD200270B501000B6131A /* 9702_s18_qp_42.pdf in Resources */,
 				843AD1FF270B501000B6131A /* 9702_w20_qp_22.pdf in Resources */,
 			);
@@ -541,11 +575,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8490D56E274CB5ED00BDD6B1 /* MCQView.swift in Sources */,
 				843AD22F270B506D00B6131A /* PapersView.swift in Sources */,
 				843AD23A270B508200B6131A /* Array<Paper>+Extensions.swift in Sources */,
+				84CD480927415C0600EC51CA /* Home.swift in Sources */,
 				843AD230270B506D00B6131A /* ContentView.swift in Sources */,
 				843AD260270B508B00B6131A /* Question.swift in Sources */,
 				843AD23B270B508200B6131A /* PDFDocument+Extensions.swift in Sources */,
+				84879217272D8FD300E8ED91 /* CambridgePaperBundle.swift in Sources */,
 				843AD22B270B506D00B6131A /* PaperContentsView.swift in Sources */,
 				843AD265270B508B00B6131A /* CambridgePaperPage.swift in Sources */,
 				843AD229270B506D00B6131A /* PencilCanvasView.swift in Sources */,
@@ -556,8 +593,11 @@
 				843AD244270B508700B6131A /* Vision.swift in Sources */,
 				843AD1D8270B4E6E00B6131A /* PapersApp.swift in Sources */,
 				843AD266270B508B00B6131A /* ApplicationStore.swift in Sources */,
+				84E541E5275039CE0087A242 /* PaperSolvedData.swift in Sources */,
 				843AD267270B508B00B6131A /* PaperDatabase.swift in Sources */,
+				843AD273270C346500B6131A /* QuestionView.swift in Sources */,
 				843AD22C270B506D00B6131A /* DrawingOverlayView.swift in Sources */,
+				84CD480E274B61FC00EC51CA /* SearchView.swift in Sources */,
 				843AD23F270B508200B6131A /* PDFPage+Extensions.swift in Sources */,
 				843AD25C270B508B00B6131A /* CambridgeQuestionPaper.swift in Sources */,
 				843AD25B270B508B00B6131A /* CambridgePaperNumber.swift in Sources */,
@@ -566,16 +606,18 @@
 				843AD23E270B508200B6131A /* Character+Extensions.swift in Sources */,
 				843AD23C270B508200B6131A /* String+Extensions.swift in Sources */,
 				843AD231270B506D00B6131A /* TestCrop.swift in Sources */,
+				84879215272CC8D200E8ED91 /* Toolbar.swift in Sources */,
 				843AD261270B508B00B6131A /* CambridgeMultipleChoicePaper.swift in Sources */,
 				843AD263270B508B00B6131A /* Answer.swift in Sources */,
 				843AD228270B506D00B6131A /* PDFView.swift in Sources */,
 				843AD23D270B508200B6131A /* NSRegularExpression+Extensions.swift in Sources */,
 				843AD262270B508B00B6131A /* CambridgePaperMetadata.swift in Sources */,
+				843AD275270C4D6F00B6131A /* FuzzyMatching.swift in Sources */,
+				8490D579274E214800BDD6B1 /* CambridgeMultipleChoiceMarkscheme.swift in Sources */,
 				843AD240270B508200B6131A /* Color+Extensions.swift in Sources */,
 				843AD25D270B508B00B6131A /* CambridgePaperType.swift in Sources */,
 				843AD227270B506D00B6131A /* Rendition.swift in Sources */,
 				843AD245270B508700B6131A /* DocumentDirectory.swift in Sources */,
-				843AD269270B594600B6131A /* CustomPDFView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -742,6 +784,8 @@
 				DEVELOPMENT_TEAM = 7Z59B7C4MB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Papers--iOS--Info.plist";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -772,6 +816,8 @@
 				DEVELOPMENT_TEAM = 7Z59B7C4MB;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Papers--iOS--Info.plist";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -799,6 +845,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -827,6 +874,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = macOS/macOS.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
