@@ -7,7 +7,7 @@ import SwiftUIX
 
 struct MCQView: View {
     @EnvironmentObject var papersDatabase: PapersDatabase
-    @State var answers: Answers = Dictionary(uniqueKeysWithValues: (1...40).map { (QuestionIndex($0), AnswerValue.multipleChoice(choice: .none)) })
+    @State var answers: [Answer] = (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
     @State var saveAnswers: Bool = false
     
     var paper: CambridgeMultipleChoicePaper
@@ -34,7 +34,7 @@ struct MCQView_Previews: PreviewProvider {
 
 
 struct MCQAnswerOverlay: View {
-    @Binding var answers: Answers
+    @Binding var answers: [Answer]
     @Binding var save: Bool
     @State var selectedIndex: QuestionIndex = QuestionIndex(1)
     
@@ -57,19 +57,19 @@ struct MCQAnswerOverlay: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
-                    .frame(width: answers[selectedIndex]!.selected(.none) ? 0 : Screen.size.width, height: 2)
+                    .frame(width: answers[selectedIndex.number - 1].selected(.none) ? 0 : Screen.size.width, height: 2)
                     .foregroundColor(.green)
                 TabView(selection: $selectedIndex) {
-                    ForEach([QuestionIndex](answers.keys), id: \.number){ index in
+                    ForEach(answers, id: \.index){ answer in
                         HStack {
                             Button(action: {
                                 withAnimation {
-                                    answers[selectedIndex].toggleChoice(.A)
+                                    answers[selectedIndex.number - 1].toggleChoice(.A)
                                 }
                                 if selectedIndex.number != 40 {
                                     withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
                                         if answers[selectedIndex.number - 1].selected(.A) {
-                                            selectedIndex.increment()
+                                            selectedIndex = answers[selectedIndex.number].index
                                         }
                                     }
                                 }
@@ -77,7 +77,7 @@ struct MCQAnswerOverlay: View {
                                 Text("A")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answers[index]!.selected(.A) ? .green : .primaryInverted)
+                            .foregroundColor(answer.selected(.A) ? .green : .primaryInverted)
                             .buttonStyle(PlainButtonStyle())
                             .padding(.horizontal, 10)
                             
@@ -87,8 +87,8 @@ struct MCQAnswerOverlay: View {
                                 }
                                 if selectedIndex.number != 40 {
                                     withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex].selected(.B) {
-                                            selectedIndex.increment()
+                                        if answers[selectedIndex.number - 1].selected(.B) {
+                                            selectedIndex = answers[selectedIndex.number].index
                                         }
                                     }
                                 }
@@ -96,18 +96,18 @@ struct MCQAnswerOverlay: View {
                                 Text("B")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answers[index]!.selected(.B) ? .green : .primaryInverted)
+                            .foregroundColor(answer.selected(.B) ? .green : .primaryInverted)
                             .buttonStyle(PlainButtonStyle())
                             .padding(.horizontal, 10)
                             
                             Button(action: {
                                 withAnimation {
-                                    answers[selectedIndex].toggleChoice(.C)
+                                    answers[selectedIndex.number - 1].toggleChoice(.C)
                                 }
                                 if selectedIndex.number != 40 {
                                     withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex].selected(.C) {
-                                            selectedIndex.increment()
+                                        if answers[selectedIndex.number - 1].selected(.C) {
+                                            selectedIndex = answers[selectedIndex.number].index
                                         }
                                     }
                                 }
@@ -115,18 +115,18 @@ struct MCQAnswerOverlay: View {
                                 Text("C")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answers[index]!.selected(.C) ? .green : .primaryInverted)
+                            .foregroundColor(answer.selected(.C) ? .green : .primaryInverted)
                             .buttonStyle(PlainButtonStyle())
                             .padding(.horizontal, 10)
                             
                             Button(action: {
                                 withAnimation {
-                                    answers[selectedIndex].toggleChoice(.D)
+                                    answers[selectedIndex.number - 1].toggleChoice(.D)
                                 }
                                 if selectedIndex.number != 40 {
                                     withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex].selected(.D) {
-                                            selectedIndex.increment()
+                                        if answers[selectedIndex.number - 1].selected(.D) {
+                                            selectedIndex = answers[selectedIndex.number].index
                                         }
                                     }
                                 }
@@ -134,12 +134,12 @@ struct MCQAnswerOverlay: View {
                                 Text("D")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answers[index]!.selected(.D) ? .green : .primaryInverted)
+                            .foregroundColor(answer.selected(.D) ? .green : .primaryInverted)
                             .buttonStyle(PlainButtonStyle())
                             .padding(.horizontal, 10)
                         }
                         .padding(.vertical, 10)
-                        .tag(index)
+                        .tag(answer.index)
                     }
                     
                 }
