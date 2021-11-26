@@ -5,7 +5,7 @@
 import Foundation
 
 public enum CambridgePaperType: String, Codable, Hashable {
-    case markscheme = "Marking Scheme"
+    case markScheme = "Marking Scheme"
     case questionPaper = "Question Paper"
     case datasheet = "Data Sheet"
     case other = "Uncategorised"
@@ -22,7 +22,7 @@ extension CambridgePaperType {
         case "qp":
             self = .questionPaper
         case "ms":
-            self = .markscheme
+            self = .markScheme
         default:
             self = .datasheet
         }

@@ -60,8 +60,8 @@ extension SearchView.ListView {
         let paperBundle: CambridgePaperBundle
         @ViewBuilder var destinationView: some View {
             switch paperBundle.metadata.paperType {
-                case .markscheme:
-                    Group { PDFView(paperBundle.markscheme!.pdf) }
+                case .markScheme:
+                    Group { PDFView(paperBundle.markScheme!.pdf) }
                 default:
                     Group { PaperContentsView(paper: paperBundle.questionPaper!, search: $searchText) }
             }

@@ -2,36 +2,43 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUI
+import SwiftUIX
 
 struct ContentView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+
     var body: some View {
-        ZStack {
-            TabView {
-                NavigationView {
-                    Home()
-                }
-                .tabItem {
-                    Label("Home", systemImage: "tray.full.fill")
-                }
-                NavigationView {
-                    PapersView()
-                }
-                .tabItem {
-                    Label("Papers", systemImage: "list.dash")
-                }
-                NavigationView {
-                    SearchView()
-                }
-                .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
-                }
-                
+        TabView {
+            NavigationView {
+                HomeView()
             }
-            .zIndex(0)
-            .environmentObject(applicationStore)
+            .tabItem {
+                Label("Home", systemImage: .trayFullFill)
+            }
+
+            NavigationView {
+                PapersView()
+            }
+            .tabItem {
+                Label("Papers", systemImage: .listDash)
+            }
+
+            NavigationView {
+                SearchView()
+            }
+            .tabItem {
+                Label("Search", systemImage: .magnifyingglass)
+            }
+
+            NavigationView {
+                DebugView()
+                    .navigationTitle("Debug")
+            }
+            .tabItem {
+                Label("Debug", systemImage: .gear)
+            }
         }
+        .environmentObject(applicationStore)
     }
 }
 

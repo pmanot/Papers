@@ -17,6 +17,8 @@ class PapersSolvedData {
     
     
     func check(metadata: CambridgePaperMetadata){
+        let indexToAnswerMap = Dictionary(metadata.answers.map({ ($0.index, $0) }), uniquingKeysWith: { x, y in x })
+        
         if (answersByPaperCode[metadata.paperCode] != nil) {
             let userAnswers = answersByPaperCode[metadata.paperCode]!
             for index in userAnswers.inputtedAnswers.map { $0.inputtedAnswer.index } {

@@ -9,7 +9,7 @@ struct Toolbar: View {
     @EnvironmentObject var applicationStore: ApplicationStore
     @State private var dragOffset: CGSize = .zero
     @State private var minimised: Bool = false
-    @Binding var markschemeToggle: Bool
+    @Binding var markSchemeToggle: Bool
     @Namespace private var toolbar
     
     var body: some View {
@@ -20,7 +20,7 @@ struct Toolbar: View {
                     .matchedGeometryEffect(id: "1", in: toolbar)
                     .frame(height: !minimised ? 50 : 45)
                     .position(!minimised ? screen.bottom : CGPoint(x: 60, y: screen.bottom.y))
-                ToolbarItemsView(minimised: $minimised, markschemeShowing: $markschemeToggle)
+                ToolbarItemsView(minimised: $minimised, markSchemeShowing: $markSchemeToggle)
                     .position(!minimised ? screen.bottom : CGPoint(x: 60, y: screen.bottom.y))
 
             }
@@ -78,7 +78,7 @@ struct Toolbar: View {
 
 struct Toolbar_Previews: PreviewProvider {
     static var previews: some View {
-        Toolbar(markschemeToggle: .constant(true))
+        Toolbar(markSchemeToggle: .constant(true))
             .environmentObject(ApplicationStore())
     }
 }
@@ -99,11 +99,11 @@ extension Toolbar {
         @EnvironmentObject var applicationStore: ApplicationStore
         @Environment(\.presentationMode) var presentView
         @Binding var minimised: Bool
-        @Binding var markschemeShowing: Bool
+        @Binding var markSchemeShowing: Bool
         
-        init(minimised: Binding<Bool>, markschemeShowing: Binding<Bool>){
+        init(minimised: Binding<Bool>, markSchemeShowing: Binding<Bool>){
             self._minimised = minimised
-            self._markschemeShowing = markschemeShowing
+            self._markSchemeShowing = markSchemeShowing
             
             UISegmentedControl.appearance().backgroundColor = .clear
             UISegmentedControl.appearance().tintColor = .white
@@ -122,9 +122,9 @@ extension Toolbar {
                 
                 if !minimised {
                     
-                    Picker("", selection: $markschemeShowing){
-                        Image(systemName: !markschemeShowing ? "doc.text.fill" : "doc.text").tag(false)
-                        Image(systemName: markschemeShowing ? "doc.on.doc.fill" : "doc.on.doc").tag(true)
+                    Picker("", selection: $markSchemeShowing){
+                        Image(systemName: !markSchemeShowing ? "doc.text.fill" : "doc.text").tag(false)
+                        Image(systemName: markSchemeShowing ? "doc.on.doc.fill" : "doc.on.doc").tag(true)
                     }
                     .width(80)
                     .background(Color.white.cornerRadius(8))

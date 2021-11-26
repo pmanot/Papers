@@ -7,7 +7,7 @@ import SwiftUI
 struct QuestionView: View {
     
     let question: Question
-    @State var markschemeToggle: Bool = false
+    @State var markSchemeToggle: Bool = false
     
     init(_ question: Question){
         self.question = question
@@ -18,7 +18,7 @@ struct QuestionView: View {
             WrappedPDFView(pdf: question.pdf, pages: question.pages)
                 .background(Color.white)
                 .edgesIgnoringSafeArea(.all)
-            Toolbar(markschemeToggle: $markschemeToggle)
+            Toolbar(markSchemeToggle: $markSchemeToggle)
         }
         .navigationBarHidden(true)
         .edgesIgnoringSafeArea(.all)

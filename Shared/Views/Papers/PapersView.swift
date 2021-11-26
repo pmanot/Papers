@@ -9,10 +9,11 @@ import SwiftUI
 
 struct PapersView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+    
     @State var searchText: String = ""
     
     var body: some View {
-        ListView(paperBundles: applicationStore.papersDatabase.paperBundles)
+        ListView(papersDatabase: applicationStore.papersDatabase)
             .navigationTitle("Papers")
             .navigationViewStyle(StackNavigationViewStyle())
             .navigationSearchBar {
@@ -43,8 +44,13 @@ struct PapersView_Previews: PreviewProvider {
 
 extension PapersView {
     struct ListView: View {
+        @ObservedObject var papersDatabase: PapersDatabase
+
         @State private var showImportSheet: Bool = false
-        let paperBundles: [CambridgePaperBundle]
+
+        var paperBundles: [CambridgePaperBundle] {
+            papersDatabase.paperBundles
+        }
         
         var body: some View {
             List(paperBundles, id: \.metadata.paperCode){ bundle in

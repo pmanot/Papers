@@ -2,26 +2,24 @@
 // Copyright (c) Purav Manot
 //
 
-
 import Foundation
+import Swift
 
+/// A bundle of the question paper and the mark scheme.
 struct CambridgePaperBundle: Hashable {
-    var questionPaperCode: String
-    
     var questionPaper: CambridgeQuestionPaper?
-    var markscheme: CambridgeMarkscheme?
-    var metadata: CambridgePaperMetadata
-    
-    init(questionPaper: CambridgeQuestionPaper?, markscheme: CambridgeMarkscheme?){
-        self.questionPaper = questionPaper
-        self.markscheme = markscheme
-        questionPaperCode = markscheme?.metadata.questionPaperCode ?? questionPaper?.metadata.questionPaperCode ?? ""
-        switch questionPaper {
-            case nil:
-                self.metadata = markscheme!.metadata
-            default:
-                self.metadata = questionPaper!.metadata
-        }
+    var markScheme: CambridgeMarkscheme?
+
+    var metadata: CambridgePaperMetadata {
+        markScheme?.metadata ?? questionPaper!.metadata
     }
-    
+
+    var questionPaperCode: String {
+        markScheme?.metadata.questionPaperCode ?? questionPaper!.metadata.questionPaperCode
+    }
+
+    init(questionPaper: CambridgeQuestionPaper?, markScheme: CambridgeMarkscheme?) {
+        self.questionPaper = questionPaper
+        self.markScheme = markScheme
+    }
 }

@@ -9,7 +9,7 @@ struct PaperContentsView: View {
     @Binding var searchText: String
     
     init(paper: CambridgeQuestionPaper, search: Binding<String> = Binding.constant("")){
-        self.paperBundle = CambridgePaperBundle(questionPaper: paper, markscheme: nil)
+        self.paperBundle = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
         self._searchText = search
     }
     
@@ -26,9 +26,9 @@ struct PaperContentsView: View {
                 }
             }
             
-            if paperBundle.markscheme != nil {
+            if paperBundle.markScheme != nil {
                 Section(header: "Markscheme"){
-                    PaperRow(paperBundle.markscheme!)
+                    PaperRow(paperBundle.markScheme!)
                 }
             }
             
@@ -85,17 +85,17 @@ extension PaperContentsView {
     struct PaperRow: View {
         let paper: CambridgePaperBundle
         init(_ paper: CambridgeQuestionPaper){
-            self.paper = CambridgePaperBundle(questionPaper: paper, markscheme: nil)
+            self.paper = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
         }
         
         init(_ paper: CambridgeMarkscheme){
-            self.paper = CambridgePaperBundle(questionPaper: nil, markscheme: paper)
+            self.paper = CambridgePaperBundle(questionPaper: nil, markScheme: paper)
         }
         
         @ViewBuilder var destination: some View {
             switch paper.questionPaper {
                 case nil:
-                    WrappedPDFView(pdf: paper.markscheme!.pdf)
+                    WrappedPDFView(pdf: paper.markScheme!.pdf)
                 default:
                     switch paper.metadata.paperNumber {
                         case .paper1:

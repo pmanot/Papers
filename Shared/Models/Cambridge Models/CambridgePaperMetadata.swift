@@ -58,21 +58,21 @@ struct CambridgePaperMetadata: Codable, Hashable {
     
     mutating func fetchPageData(pdf: PDFDocument) {
         switch paperType {
-        case .markscheme:
+        case .markScheme:
             for i in 0..<pdf.pageCount {
                 switch paperNumber {
                     case .paper1: // paper 1 (mcq)
                         let pageNumber = i + 1
                         let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
                         let rawPageText = page.string ?? "" // extract text from the page
-                        pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
+                        pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
 
                         
                     default: // paper 4
                         let pageNumber = i + 1
                         let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
                         let rawPageText = page.string ?? "" // extract text from the page
-                        pageData.append(CambridgePaperPage(type: .markschemePage, rawText: rawPageText, pageNumber: pageNumber))
+                        pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
                 }
             }
         case .questionPaper:
