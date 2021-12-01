@@ -34,7 +34,7 @@ extension String {
     
     func match(_ needle: String) -> Bool {
         if needle.removing(allOf: " ").isEmpty {
-            return true
+            return false
         }
         if self.localizedCaseInsensitiveContains(needle){
             return true

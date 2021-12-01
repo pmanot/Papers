@@ -30,5 +30,6 @@ struct SymbolButton: View {
         }){
             Image(systemName: self.toggled ? toggledSystemName : systemName)
         }
+        .buttonStyle(PlainButtonStyle())
     }
 }

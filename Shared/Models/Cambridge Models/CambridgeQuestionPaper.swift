@@ -25,13 +25,15 @@ struct CambridgeQuestionPaper: Hashable {
     }
     
     mutating func fetchQuestionsFromPages(){
-        var question: Question
-        for i in 1..<(metadata.numberOfQuestions + 1) {
-            question = Question(pdf: pdf, index: QuestionIndex(i), pages: pages.filter { $0.type == .questionPaperPage(index: QuestionIndex(i)) }, metadata: metadata)
-            if question.pages != [] {
-                questions.append(question)
-            } else {
-                break
+        if metadata.paperNumber == .paper4 {
+            var question: Question
+            for i in 1..<(metadata.numberOfQuestions + 1) {
+                question = Question(pdf: pdf, index: QuestionIndex(i), pages: pages.filter { $0.type == .questionPaperPage(index: QuestionIndex(i)) }, metadata: metadata)
+                if question.pages != [] {
+                    questions.append(question)
+                } else {
+                    break
+                }
             }
         }
     }

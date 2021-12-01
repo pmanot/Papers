@@ -5,7 +5,6 @@
 import Foundation
 import PDFKit
 
-
 struct CambridgeMarkscheme: Hashable {
     let pdf: PDFDocument
     let metadata: CambridgePaperMetadata

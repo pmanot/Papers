@@ -48,12 +48,9 @@ struct PDFView: View {
     }
     
     var body: some View {
-        WrappedPDFView(pdf: pdf)
-            .navigationBarItems(leading:
-                SymbolButton("pencil.circle"){
-                    drawingOverlay.toggle()
-                }
-            )
+        ZStack {
+            WrappedPDFView(pdf: pdf)
+        }
     }
 }
 

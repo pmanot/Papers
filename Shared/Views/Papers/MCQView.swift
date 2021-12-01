@@ -6,37 +6,51 @@ import SwiftUI
 import SwiftUIX
 
 struct MCQView: View {
-    @EnvironmentObject var papersDatabase: PapersDatabase
-    @State var answers: [Answer] = (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
-    @State var saveAnswers: Bool = false
+    var paperBundle: CambridgePaperBundle
     
-    var paper: CambridgeMultipleChoicePaper
+    @State var answers: [Answer] = (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
+    @State private var showResults: Bool = false
+    let timer = Timer.publish(every: 1, on: .current, in: .default, options: .none)
+    
+    private var correctAnswersByIndex: [QuestionIndex : AnswerValue] {
+        paperBundle.markScheme?.metadata.answers.getAnswersByIndex() ?? (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A)) }.getAnswersByIndex()
+    }
+    
+    @State private var solvedPaper: SolvedPaper? = nil
     
     var body: some View {
         ZStack(alignment: .bottom) {
-            WrappedPDFView(pdf: PapersDatabase.exampleMCQ!)
+            WrappedPDFView(pdf: paperBundle.questionPaper!.pdf)
                 .background(Color.white)
-            MCQAnswerOverlay(answers: $answers, save: $saveAnswers)
+                .edgesIgnoringSafeArea(.top)
+            
+            
+            MCQAnswerOverlay(answers: $answers, correctAnswers: correctAnswersByIndex, onSave: {
+                solvedPaper = SolvedPaper(bundle: paperBundle, answers: answers)
+                if solvedPaper != nil {
+                    showResults.toggle()
+                }
+            })
+            
         }
-        .edgesIgnoringSafeArea(.all)
-        .onChange(of: saveAnswers){ _ in
-            print(answers)
-            saveAnswers = false
+        .sheet(isPresented: $showResults){
+            MCQSolvedView($solvedPaper)
         }
     }
 }
 
 struct MCQView_Previews: PreviewProvider {
     static var previews: some View {
-        MCQView(paper: CambridgeMultipleChoicePaper(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_11", ofType: ".pdf")!), metadata: CambridgePaperMetadata(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_11", ofType: ".pdf")!))))
+        MCQView(paperBundle: CambridgePaperBundle(questionPaper: PapersDatabase.exampleMCQ, markScheme: nil))
     }
 }
 
 
 struct MCQAnswerOverlay: View {
     @Binding var answers: [Answer]
-    @Binding var save: Bool
     @State var selectedIndex: QuestionIndex = QuestionIndex(1)
+    let correctAnswers: Answers
+    var onSave: () -> ()
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -44,32 +58,41 @@ struct MCQAnswerOverlay: View {
                 Text("\(selectedIndex.number)")
                     .font(.title)
                     .fontWeight(.heavy)
+                    .foregroundColor(.primary)
+                    .frame(width: 40, height: 40)
+                    .background(Color.primaryInverted)
+                    .border(.black, width: 2, cornerRadius: 10)
                 Spacer()
-                SymbolButton("chevron.right.circle.fill"){
-                    save.toggle()
+                SymbolButton("checkmark.circle.fill"){
+                    onSave()
                 }
                 .buttonStyle(PlainButtonStyle())
-                .font(.largeTitle)
+                .font(.system(size: 40), weight: .light)
+                .foregroundColor(.black)
             }
             .foregroundColor(.black)
             .padding(.horizontal)
-            .padding(.vertical, 5)
             
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
                     .frame(width: answers[selectedIndex.number - 1].selected(.none) ? 0 : Screen.size.width, height: 2)
                     .foregroundColor(.green)
+                Line()
+                    .stroke()
+                    .frame(height: 2)
                 TabView(selection: $selectedIndex) {
                     ForEach(answers, id: \.index){ answer in
-                        HStack {
+                        HStack(spacing: 30) {
                             Button(action: {
                                 withAnimation {
                                     answers[selectedIndex.number - 1].toggleChoice(.A)
                                 }
                                 if selectedIndex.number != 40 {
-                                    withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex.number - 1].selected(.A) {
-                                            selectedIndex = answers[selectedIndex.number].index
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
+                                        withAnimation(.easeOut(duration: 0.5)) {
+                                            if answers[selectedIndex.number - 1].selected(.A) {
+                                                selectedIndex = answers[selectedIndex.number].index
+                                            }
                                         }
                                     }
                                 }
@@ -77,18 +100,18 @@ struct MCQAnswerOverlay: View {
                                 Text("A")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answer.selected(.A) ? .green : .primaryInverted)
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10)
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .A)))
                             
                             Button(action: {
                                 withAnimation {
                                     answers[selectedIndex.number - 1].toggleChoice(.B)
                                 }
                                 if selectedIndex.number != 40 {
-                                    withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex.number - 1].selected(.B) {
-                                            selectedIndex = answers[selectedIndex.number].index
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
+                                        withAnimation(.easeOut(duration: 0.5)) {
+                                            if answers[selectedIndex.number - 1].selected(.B) {
+                                                selectedIndex = answers[selectedIndex.number].index
+                                            }
                                         }
                                     }
                                 }
@@ -96,18 +119,18 @@ struct MCQAnswerOverlay: View {
                                 Text("B")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answer.selected(.B) ? .green : .primaryInverted)
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10)
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .B)))
                             
                             Button(action: {
                                 withAnimation {
                                     answers[selectedIndex.number - 1].toggleChoice(.C)
                                 }
                                 if selectedIndex.number != 40 {
-                                    withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex.number - 1].selected(.C) {
-                                            selectedIndex = answers[selectedIndex.number].index
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
+                                        withAnimation(.easeOut(duration: 0.5)) {
+                                            if answers[selectedIndex.number - 1].selected(.C) {
+                                                selectedIndex = answers[selectedIndex.number].index
+                                            }
                                         }
                                     }
                                 }
@@ -115,18 +138,18 @@ struct MCQAnswerOverlay: View {
                                 Text("C")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answer.selected(.C) ? .green : .primaryInverted)
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10)
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .C)))
                             
                             Button(action: {
                                 withAnimation {
                                     answers[selectedIndex.number - 1].toggleChoice(.D)
                                 }
                                 if selectedIndex.number != 40 {
-                                    withAnimation(after: DispatchTimeInterval.milliseconds(1000)) {
-                                        if answers[selectedIndex.number - 1].selected(.D) {
-                                            selectedIndex = answers[selectedIndex.number].index
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
+                                        withAnimation(.easeOut(duration: 0.5)) {
+                                            if answers[selectedIndex.number - 1].selected(.D) {
+                                                selectedIndex = answers[selectedIndex.number].index
+                                            }
                                         }
                                     }
                                 }
@@ -134,19 +157,15 @@ struct MCQAnswerOverlay: View {
                                 Text("D")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answer.selected(.D) ? .green : .primaryInverted)
-                            .buttonStyle(PlainButtonStyle())
-                            .padding(.horizontal, 10)
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .D)))
                         }
                         .padding(.vertical, 10)
                         .tag(answer.index)
                     }
-                    
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .indexViewStyle(PageIndexViewStyle())
-                .background(Color.primaryInverted.border(.black))
-                .frame(height: 130)
+                .background(Color.primaryInverted.edgesIgnoringSafeArea(.all))
+                .frame(height: 100)
             }
         }
         
@@ -173,4 +192,20 @@ func toggleMCQValue(answer: inout Answer, value: MCQSelection){
         default:
             answer.updateValue(value: AnswerValue.multipleChoice(choice: .none))
     }
+}
+
+
+func answerColor(selected: AnswerValue, correct: AnswerValue, for button: AnswerValue) -> Color {
+    if !(selected == .multipleChoice(choice: .none)) {
+        if button == correct {
+            return Color.green
+        }
+        
+        if selected == button {
+            return selected == correct ? Color.green : Color.red
+        }
+        
+        return Color.primaryInverted
+    }
+    return Color.primaryInverted
 }

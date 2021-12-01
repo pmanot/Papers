@@ -18,11 +18,12 @@ struct PaperContentsView: View {
         self._searchText = search
     }
     
+    
     var body: some View {
         List {
             if paperBundle.questionPaper != nil {
                 Section(header: "Question Paper"){
-                    PaperRow(paperBundle.questionPaper!)
+                    PaperRow(paperBundle)
                 }
             }
             
@@ -92,6 +93,10 @@ extension PaperContentsView {
             self.paper = CambridgePaperBundle(questionPaper: nil, markScheme: paper)
         }
         
+        init(_ paperBundle: CambridgePaperBundle){
+            self.paper = paperBundle
+        }
+        
         @ViewBuilder var destination: some View {
             switch paper.questionPaper {
                 case nil:
@@ -99,7 +104,7 @@ extension PaperContentsView {
                 default:
                     switch paper.metadata.paperNumber {
                         case .paper1:
-                            MCQView(paper: CambridgeMultipleChoicePaper(url: paper.questionPaper!.pdf.documentURL!, metadata: paper.metadata))
+                            MCQView(paperBundle: paper)
                         default:
                             WrappedPDFView(pdf: paper.questionPaper!.pdf)
                     }
@@ -111,50 +116,25 @@ extension PaperContentsView {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(paper.metadata.subject.rawValue)")
-                            .font(.title)
-                            .fontWeight(.black)
+                            .font(.title, weight: .black)
                             .padding(6)
                         
                         Text(paper.metadata.questionPaperCode)
-                            .font(.subheadline)
-                            .fontWeight(.black)
-                            .foregroundColor(.primary)  
-                            .padding(6)
-                            .border(Color.primary, width: 1, cornerRadius: 10, style: .circular)
+                            .modifier(PaperTagStyle(outlineWidth: 1))
                     }
                     
                     HStack {
                         Text("\(paper.metadata.month.rawValue)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
+                            .modifier(PaperTagStyle())
                         
                         Text("20\(paper.metadata.year)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
+                            .modifier(PaperTagStyle())
                         
                         Text("Paper \(paper.metadata.paperNumber.rawValue)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
+                            .modifier(PaperTagStyle())
                         
                         Text("Variant \(paper.metadata.paperVariant.rawValue)")
-                            .font(.caption)
-                            .fontWeight(.regular)
-                            .foregroundColor(.primary)
-                            .opacity(0.8)
-                            .padding(6)
-                            .border(Color.primary, width: 0.5, cornerRadius: 10, style: .circular)
+                            .modifier(PaperTagStyle())
                     }
                     .padding(.leading, 5)
                     
@@ -164,3 +144,16 @@ extension PaperContentsView {
         }
     }
 }
+
+struct PaperTagStyle: ViewModifier {
+    var outlineWidth: CGFloat = 0.5
+    func body(content: Content) -> some View {
+        content
+            .font(.caption, weight: .regular)
+            .foregroundColor(.primary)
+            .opacity(0.8)
+            .padding(6)
+            .border(Color.primary, width: outlineWidth, cornerRadius: 10, style: .circular)
+    }
+}
+

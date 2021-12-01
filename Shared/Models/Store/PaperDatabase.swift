@@ -32,7 +32,8 @@ final public class PapersDatabase: ObservableObject {
             }
         }
     }
-
+    
+    /// Erases all existing metadata from disk and erases all stored properties
     func eraseAllData() throws {
         metadata = [:]
         papers = []
@@ -78,11 +79,11 @@ final public class PapersDatabase: ObservableObject {
             .removingDuplicates()
 
         let questionPaperURLs = Dictionary(uniqueKeysWithValues: urls.getQuestionPaperURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
-        let markSchemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
+        let markschemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
 
         for code in standardPaperCodes {
             let questionPaperURL = questionPaperURLs[code]
-            let markSchemeURL = markSchemeURLs[code]
+            let markSchemeURL = markschemeURLs[code]
 
             result.append(
                 CambridgePaperBundle(
@@ -115,7 +116,10 @@ extension PapersDatabase {
         .map {
             URL(fileURLWithPath: Bundle.main.path(forResource: $0, ofType: "pdf")!)
         }
-    static let exampleMCQ = PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_11", ofType: ".pdf")!))
+    static let exampleMCQ = CambridgeQuestionPaper(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_11", ofType: ".pdf")!), metadata: CambridgePaperMetadata(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_11", ofType: ".pdf")!)))
+    static let exampleMCQms = CambridgeMarkscheme(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_ms_11", ofType: ".pdf")!), metadata: CambridgePaperMetadata(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_ms_11", ofType: ".pdf")!)))
+    
+    static let MCQBundle = CambridgePaperBundle(questionPaper: exampleMCQ, markScheme: exampleMCQms)
 }
 
 extension URL {

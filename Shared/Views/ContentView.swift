@@ -10,7 +10,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             NavigationView {
-                HomeView()
+                HomeView(papersDatabase: applicationStore.papersDatabase)
             }
             .tabItem {
                 Label("Home", systemImage: .trayFullFill)
@@ -36,6 +36,11 @@ struct ContentView: View {
             }
             .tabItem {
                 Label("Debug", systemImage: .gear)
+            }
+            
+            TestCrop()
+            .tabItem {
+                Label("Cropping", systemImage: .crop)
             }
         }
         .environmentObject(applicationStore)

@@ -6,11 +6,11 @@ import SwiftUI
 import PDFKit
 
 struct HomeView: View {
-    @EnvironmentObject var applicationStore: ApplicationStore
+    @ObservedObject var papersDatabase: PapersDatabase
 
     // TODO: Move this to PapersDatabase, and shuffle it there.
     var allQuestions: [Question] {
-        applicationStore.papersDatabase.paperBundles.compactMap { $0.questionPaper }.questions()
+        papersDatabase.paperBundles.compactMap { $0.questionPaper }.questions()
     }
 
     var body: some View {
@@ -75,8 +75,9 @@ struct HomeView: View {
 struct Home_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            HomeView()
+            HomeView(papersDatabase: PapersDatabase())
                 .environmentObject(ApplicationStore())
+                .environmentObject(PapersDatabase())
         }
     }
 }
