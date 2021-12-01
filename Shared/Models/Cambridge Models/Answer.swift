@@ -99,3 +99,8 @@ enum MCQSelection: String, Codable, Hashable {
     case D = "D"
     case none = "N"
 }
+
+extension Array where Element == Answer {
+    static var exampleAnswers: [Answer] = (1...40).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A))}
+    static var exampleCorrectAnswers: [Answer] = (1...10).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A))} + (11...35).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .C))} + (36...40).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .B))}
+}
