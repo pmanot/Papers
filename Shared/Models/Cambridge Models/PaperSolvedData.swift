@@ -6,39 +6,63 @@
 import Foundation
 
 
-
-class PapersSolvedData {
+struct SolvedPaper: Codable, Hashable {
+    var paperCode: String
+    var solvedOn: Date = Date()
+    var answers: [Answer] = []
+    var correctAnswers: [Answer] = []
+    var incorrectAnswers: [Answer] = []
+    var unsolvedAnswers: [Answer] = []
     
-    @Published var answersByPaperCode: [String : UserAnswers] = [:]
+    var allAnswers: [Answer] {
+        correctAnswers + incorrectAnswers + unsolvedAnswers
+    }
     
-    init(){
-        
+    init(bundle: CambridgePaperBundle, answers: [Answer]){
+        paperCode = bundle.metadata.paperCode
+        self.answers = answers
+        if bundle.markScheme != nil {
+            self.check(markschemeAnswers: bundle.markScheme!.metadata.answers)
+        }
     }
     
     
-    func check(metadata: CambridgePaperMetadata){
-        let indexToAnswerMap = Dictionary(metadata.answers.map({ ($0.index, $0) }), uniquingKeysWith: { x, y in x })
+    init(paper: CambridgeQuestionPaper, answers: [Answer]){
+        self.paperCode = paper.metadata.paperCode
+        self.answers = answers
+    }
+    
+    
+    // testing and debugging
+    init(answers: [Answer], correctAnswers: [Answer]){
+        self.paperCode = "9702_s18_qp_11"
+        self.answers = answers
+        self.check(markschemeAnswers: correctAnswers)
+    }
+    
+    mutating func check(markschemeAnswers: [Answer]){
+        let correctAnswersByIndex = markschemeAnswers.getAnswersByIndex()
+        let answersByIndex = answers.getAnswersByIndex()
         
-        if (answersByPaperCode[metadata.paperCode] != nil) {
-            let userAnswers = answersByPaperCode[metadata.paperCode]!
-            for index in userAnswers.inputtedAnswers.map { $0.inputtedAnswer.index } {
-                //userAnswers.inputtedAnswers.first { $0.inputtedAnswer }
+        for i in [Int](1...40).map({ QuestionIndex($0) }) {
+            if answersByIndex[i] == .multipleChoice(choice: .none){
+                unsolvedAnswers.append(Answer(index: i, value: answersByIndex[i]!))
+            } else {
+                if answersByIndex[i] == correctAnswersByIndex[i] {
+                    correctAnswers.append(Answer(index: i, value: answersByIndex[i]!))
+                } else {
+                    incorrectAnswers.append(Answer(index: i, value: answersByIndex[i]!))
+                }
             }
         }
     }
-}
-
-
-
-struct UserAnswers: Codable, Hashable {
-    var solveDate: Date = Date()
-    var inputtedAnswers: [UserAnswer]
-    var checked: Bool = false
-}
-
-struct UserAnswer: Codable, Hashable {
-    var inputtedAnswer: Answer
-    var correctAnswer: Answer?
-    var check: QuestionCheck = .unsolved
     
+}
+
+
+
+extension Array where Element == Answer {
+    func getAnswersByIndex() -> Answers {
+        Dictionary(uniqueKeysWithValues: self.map { ($0.index, $0.value) })
+    }
 }
