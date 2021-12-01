@@ -59,22 +59,48 @@ struct CambridgePaperMetadata: Codable, Hashable {
     mutating func fetchPageData(pdf: PDFDocument) {
         switch paperType {
         case .markScheme:
-            for i in 0..<pdf.pageCount {
                 switch paperNumber {
                     case .paper1: // paper 1 (mcq)
-                        let pageNumber = i + 1
-                        let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                        let rawPageText = page.string ?? "" // extract text from the page
-                        pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
-
+                        var multipleChoiceAnswerArray: [AnswerValue] = [] // initialize empty array that will store extracted answers from mcq
+                        for i in 1..<pdf.pageCount {
+                            let pageNumber = i + 1
+                            let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                            let rawPageText = page.string ?? "" // extract text from the page
+                            pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
+                            
+                            var numberOfAnswers: Int {
+                                i == 1 ? 28 : 12
+                            }
+                            
+                            let snapshot = pdf.page(at: i)!.snapshot().cgImage!
+                            
+                            for n in 0..<numberOfAnswers {
+                                if let croppedImage = snapshot.cropping(to: CGRect(origin: CGPoint(x: 230, y: 177 + 49*n), size: CGSize(width: 74, height: 45))){
+                                    let choice = recogniseAllText(from: croppedImage, .accurate, lookFor: ["A", "B", "C", "D"]).removing(allOf: " ")
+                                    print(choice)
+                                    if ["A", "B", "C", "D"].contains(choice) {
+                                        multipleChoiceAnswerArray.append(.multipleChoice(choice: MCQSelection(rawValue: choice)!))
+                                    }
+                                }
+                                print(n)
+                            }
+                        }
+                        
+                        if multipleChoiceAnswerArray.length == 40 {
+                            answers = [Int](1...40).map { Answer(index: QuestionIndex($0), value: multipleChoiceAnswerArray[$0 - 1]) }
+                        } else {
+                            print(multipleChoiceAnswerArray)
+                        }
+                        
                         
                     default: // paper 4
-                        let pageNumber = i + 1
-                        let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                        let rawPageText = page.string ?? "" // extract text from the page
-                        pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
+                        for i in 1..<(pdf.pageCount - 1) {
+                            let pageNumber = i + 1
+                            let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                            let rawPageText = page.string ?? "" // extract text from the page
+                            pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
+                        }
                 }
-            }
         case .questionPaper:
                 switch paperNumber {
                     case .paper1: // paper 1 (mcq)
@@ -89,7 +115,7 @@ struct CambridgePaperMetadata: Codable, Hashable {
                         var nextQuestionNumber: Int = 1 // question number to look for
                         var runningQuestionNumber: Int = 0 // current question number (last question number detected)
                         
-                        for i in 0..<pdf.pageCount {
+                        for i in 1..<pdf.pageCount {
                             let pageNumber = i + 1
                             let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
                             let rawPageText = page.string ?? "" // extract text from the page
@@ -98,9 +124,11 @@ struct CambridgePaperMetadata: Codable, Hashable {
                                 pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
                             } else {
                                 let snapshot = page.snapshot().cgImage!
-                                let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 50, y: 0), size: CGSize(width: 100, height: 1000)))! // crop page snapshot to only include page number
+                                let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 450)))! // crop page snapshot to only include page number
+                                let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
+                                print("WHY THE FUCK: ", recognisedText)
                                 
-                                if recogniseText(from: croppedSnapshot).contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
+                                if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
                                     runningQuestionNumber = nextQuestionNumber
                                     nextQuestionNumber += 1
                                     
