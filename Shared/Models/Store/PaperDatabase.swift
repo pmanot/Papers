@@ -10,8 +10,8 @@ final public class PapersDatabase: ObservableObject {
     let directory = PaperRelatedDataDirectory()
     
     @Published var metadata: [String: CambridgePaperMetadata] = [:]
-    @Published var papers: [CambridgeQuestionPaper] = []
     @Published var paperBundles: [CambridgePaperBundle] = []
+    @Published var solvedPapers: [String: SolvedPaper] = [:]
     @Published var questions: [Question] = []
 
     init() {
@@ -24,10 +24,12 @@ final public class PapersDatabase: ObservableObject {
 
             let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
             let paperBundles = self.computePaperBundles(from: urls, metadata: metadata)
+            let solvedPapers = try! self.readSolvedPaperData()
 
             DispatchQueue.main.async {
                 self.metadata = metadata
                 self.paperBundles = paperBundles
+                self.solvedPapers = solvedPapers
                 self.questions = self.paperBundles.compactMap({ $0.questionPaper }).questions()
             }
         }
@@ -36,7 +38,6 @@ final public class PapersDatabase: ObservableObject {
     /// Erases all existing metadata from disk and erases all stored properties
     func eraseAllData() throws {
         metadata = [:]
-        papers = []
         paperBundles = []
         questions = []
         
@@ -50,7 +51,7 @@ final public class PapersDatabase: ObservableObject {
         var result: [String: CambridgePaperMetadata]
 
         if let data = directory.read(from: "metadata") {
-            result = try JSONDecoder().decode([String: CambridgePaperMetadata].self, from: data)
+            result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: data)
         } else {
             result = [:]
 
@@ -71,7 +72,7 @@ final public class PapersDatabase: ObservableObject {
     }
 
     /// Creates paper bundles from the given paper URLs.
-    private func computePaperBundles(from urls: [URL], metadata: [String: CambridgePaperMetadata]) -> [CambridgePaperBundle] {
+    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
         var result: [CambridgePaperBundle] = []
 
         let standardPaperCodes = urls
@@ -104,6 +105,26 @@ final public class PapersDatabase: ObservableObject {
         }
 
         return result
+    }
+    
+    private func readSolvedPaperData() throws -> [String : SolvedPaper] {
+        let result: [String : SolvedPaper]
+        
+        if let data = directory.read(from: "solvedPaperData") {
+            result = try JSONDecoder().decode([String : SolvedPaper].self, from: data)
+        } else {
+            result = [:]
+        }
+        
+        return result
+    }
+    
+    func writeSolvedPaperData(_ solved: SolvedPaper) {
+        self.solvedPapers[solved.paperCode] = solved
+        
+        DispatchQueue.main.async(qos: .userInitiated){
+            try! self.directory.write(self.solvedPapers, toDocumentNamed: "solvedPaperData")
+        }
     }
 }
 

@@ -45,11 +45,7 @@ struct PaperRelatedDataDirectory {
 
     // MARK: - Writing
 
-    func write<T: Encodable>(
-        _ object: T,
-        toDocumentNamed documentName: String,
-        encodedUsing encoder: JSONEncoder = .init()
-    ) throws {
+    func write<T: Encodable>(_ object: T, toDocumentNamed documentName: String, encodedUsing encoder: JSONEncoder = JSONEncoder()) throws {
         let nestedFolderURL = url
 
         if !manager.fileExists(atPath: nestedFolderURL.relativePath){

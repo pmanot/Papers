@@ -7,8 +7,6 @@ import FoundationX
 import Swift
 
 final public class ApplicationStore: ObservableObject {
-    @Published var childViewActive = false
-    
     let papersDatabase = PapersDatabase()
     let settings: AppSettings
     
