@@ -11,7 +11,7 @@ final public class PapersDatabase: ObservableObject {
     
     @Published var metadata: [String: CambridgePaperMetadata] = [:]
     @Published var paperBundles: [CambridgePaperBundle] = []
-    @Published var solvedPapers: [String: SolvedPaper] = [:]
+    @Published var solvedPapers: [String: [SolvedPaper]] = [:]
     @Published var questions: [Question] = []
 
     init() {
@@ -107,11 +107,11 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
-    private func readSolvedPaperData() throws -> [String : SolvedPaper] {
-        let result: [String : SolvedPaper]
+    private func readSolvedPaperData() throws -> [String : [SolvedPaper]] {
+        let result: [String : [SolvedPaper]]
         
         if let data = directory.read(from: "solvedPaperData") {
-            result = try JSONDecoder().decode([String : SolvedPaper].self, from: data)
+            result = try JSONDecoder().decode([String : [SolvedPaper]].self, from: data)
         } else {
             result = [:]
         }
@@ -120,7 +120,12 @@ final public class PapersDatabase: ObservableObject {
     }
     
     func writeSolvedPaperData(_ solved: SolvedPaper) {
-        self.solvedPapers[solved.paperCode] = solved
+        let key = solved.paperCode
+        if self.solvedPapers[key].isNilOrEmpty {
+            self.solvedPapers[key] = [solved]
+        } else {
+            self.solvedPapers[key]!.append(solved)
+        }
         
         DispatchQueue.main.async(qos: .userInitiated){
             try! self.directory.write(self.solvedPapers, toDocumentNamed: "solvedPaperData")
