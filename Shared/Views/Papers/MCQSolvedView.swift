@@ -226,6 +226,33 @@ extension MCQSolvedView {
             .padding(3)
         }
     }
+    
+    var miniSolvedPaperWidget: some View {
+        HStack(alignment: .top) {
+            barChartWidget
+            
+            VStack{
+                HStack(spacing: 0){
+                    Text("\(solvedPaper.correctAnswers.count)")
+                        .font(.title2, weight: .black)
+                    Text("/")
+                        .font(.title, weight: .light)
+                    Text("\(solvedPaper.allAnswers.count)")
+                        .font(.largeTitle, weight: .black)
+                }
+                .padding(3)
+                .border(.gray, width: 0.5, cornerRadius: 8)
+                .padding(.leading, 5)
+                .padding(.vertical, 5)
+                
+                Text("")
+            }
+            
+            
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 10).shadow(radius: 3).foregroundColor(.primaryInverted))
+    }
 }
 
 
