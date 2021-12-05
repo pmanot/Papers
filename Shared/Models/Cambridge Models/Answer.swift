@@ -5,6 +5,7 @@
 import Foundation
 
 struct Answer: Codable, Hashable {
+    var time: TimeInterval? = nil
     let index: QuestionIndex
     var value: AnswerValue
     
@@ -17,13 +18,19 @@ struct Answer: Codable, Hashable {
         return self.value == .multipleChoice(choice: selection)
     }
     
-    mutating func toggleChoice(_ choice: MCQSelection){
+    mutating func toggleChoice(_ choice: MCQSelection, timed: TimeInterval? = nil){
         switch self.value {
             case .multipleChoice(choice: choice):
                 self.updateValue(value: AnswerValue.multipleChoice(choice: .none))
             default:
                 self.updateValue(value: AnswerValue.multipleChoice(choice: choice))
         }
+        if self.time == nil {
+            self.time = timed
+        } else {
+            self.time! += timed!
+        }
+        
     }
 }
 
