@@ -22,16 +22,6 @@ struct PapersView: View {
     }
 }
 
-extension PapersView {
-    func filteredPapers() -> [CambridgeQuestionPaper] {
-        if searchText != "" {
-            return applicationStore.papersDatabase.papers.filter { $0.rawText.match(searchText) }
-        }
-        
-        return applicationStore.papersDatabase.papers
-    }
-}
-
 
 struct PapersView_Previews: PreviewProvider {
     static var previews: some View {

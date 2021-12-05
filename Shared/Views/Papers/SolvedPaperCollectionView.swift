@@ -1,10 +1,6 @@
 //
-//  SolvedPaperScrollView.swift
-//  Papers (iOS)
+// Copyright (c) Purav Manot
 //
-//  Created by Purav Manot on 04/12/21.
-//
-
 import SwiftUI
 
 struct SolvedPaperCollectionView: View {
