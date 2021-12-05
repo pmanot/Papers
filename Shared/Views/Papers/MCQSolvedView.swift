@@ -1,13 +1,11 @@
 //
-//  MCQSolvedView.swift
-//  Papers (iOS)
-//
-//  Created by Purav Manot on 27/11/21.
+// Copyright (c) Purav Manot
 //
 
 import SwiftUI
 
 struct MCQSolvedView: View {
+    @Environment(\.presentationMode) var presentationMode
     @Binding var solvedPaper: SolvedPaper!
     
     var calculatedPercentage: Double {
@@ -16,6 +14,10 @@ struct MCQSolvedView: View {
 
     var correctPercentage: Double {
         Double(solvedPaper.correctAnswers.count)/Double(solvedPaper.correctAnswers.count + solvedPaper.incorrectAnswers.count)*100
+    }
+    
+    var timeTaken: Double {
+        solvedPaper.answers.map { $0.time ?? 0 }.reduce(0, +)
     }
     
     private var calculatedGrade: String {
@@ -34,6 +36,10 @@ struct MCQSolvedView: View {
         self._solvedPaper = solved
     }
     
+    init(_ solved: SolvedPaper){
+        self._solvedPaper = Binding.constant(solved)
+    }
+    
     var body: some View {
         ZStack {
             Color.primaryInverted
@@ -46,7 +52,7 @@ struct MCQSolvedView: View {
                     
                     Line()
                         .stroke(lineWidth: 0.3)
-                        .frame(height: 4)
+                        .frame(height: 1)
             
                     HStack(alignment: .firstTextBaseline) {
                         percentageWidget
@@ -56,27 +62,28 @@ struct MCQSolvedView: View {
                     .frame(height: 60)
                     .padding(.horizontal)
                 }
-                .border(Color.black, width: 0.3, cornerRadius: 10)
+                .border(Color.black, width: 0.3, cornerRadius: 10, antialiased: true)
                 .padding()
                 
-                ZStack {
-                    pieChartWidget
-                        .aspectRatio(1, contentMode: .fit)
-                    pieChartLegend
-                }
-                .padding()
+                pieChartWidget
                 
                 SymbolButton("checkmark.circle.fill"){
-                    save(solvedPaper)
+                    save(solvedPaper, database: PapersDatabase())
+                    withAnimation {
+                        presentationMode.wrappedValue.dismiss()
+                    }
                 }
                 .font(.system(size: 45), weight: .light)
+                .padding()
             }
             .padding()
             .edgesIgnoringSafeArea(.all)
             .foregroundColor(.primary)
         }
     }
-    
+}
+
+extension MCQSolvedView {
     private var totalMarksWidget: some View {
         HStack {
             Text("Final Score:")
@@ -115,14 +122,14 @@ struct MCQSolvedView: View {
         }
     }
     
-    private var pieChartWidget: some View {
-        PieChart(colors: [.green, .pink, .yellow], values: [solvedPaper.correctAnswers.count, solvedPaper.incorrectAnswers.count, 10])
+    private var pieChart: some View {
+        PieChart(colors: [.green, .pink, .yellow], values: [Double(solvedPaper.correctAnswers.count), Double(solvedPaper.incorrectAnswers.count), Double(solvedPaper.unsolvedAnswers.count)])
             .border(Color.black.opacity(0.5), width: 1, cornerRadius: .infinity)
             .overlay(
                 Circle()
                     .frame(width: 250, height: 250)
                     .foregroundColor(.primaryInverted)
-                    .border(Color.black.opacity(0.8), width: 1, cornerRadius: .infinity)
+                    .border(Color.black.opacity(0.8), width: 1, cornerRadius: .infinity, antialiased: true)
             )
             .shadow(radius: 5)
     }
@@ -133,30 +140,27 @@ struct MCQSolvedView: View {
                 Color.green.clipShape(Circle())
                     .frame(width: 10, height: 10)
                 Text("Correct answers:")
-                    .italic()
-                    .font(.subheadline, weight: .regular)
+                    .font(.caption, weight: .regular)
                 Text("\(solvedPaper.correctAnswers.count)")
-                    .fontWeight(.bold)
+                    .font(.subheadline, weight: .heavy)
             }
             
             HStack {
                 Color.pink.clipShape(Circle())
                     .frame(width: 10, height: 10)
                 Text("Incorrect answers:")
-                    .italic()
-                    .font(.subheadline, weight: .regular)
+                    .font(.caption, weight: .regular)
                 Text("\(solvedPaper.incorrectAnswers.count)")
-                    .fontWeight(.bold)
+                    .font(.subheadline, weight: .heavy)
             }
             
             HStack {
                 Color.yellow.clipShape(Circle())
                     .frame(width: 10, height: 10)
                 Text("Unattempted:")
-                    .italic()
-                    .font(.subheadline, weight: .regular)
+                    .font(.caption, weight: .regular)
                 Text("\(solvedPaper.unsolvedAnswers.count)")
-                    .fontWeight(.bold)
+                    .font(.subheadline, weight: .heavy)
             }
         }
     }
@@ -166,19 +170,23 @@ struct MCQSolvedView: View {
 
 struct MCQSolvedView_Previews: PreviewProvider {
     static var previews: some View {
-        MCQSolvedView(Binding.constant(SolvedPaper(answers: [Answer].exampleAnswers, correctAnswers: [Answer].exampleCorrectAnswers)))
+        MCQSolvedView(.constant(SolvedPaper.example))
     }
 }
 
 
 
 struct BarView: View {
+    var color: Color
     let value: CGFloat
     let maxValue: CGFloat
     
-    init(value: Int, maxValue: Int){
+    @State var width: CGFloat = 0
+    
+    init(_ color: Color = Color.green, value: Int, maxValue: Int){
         self.value = CGFloat(value)
         self.maxValue = CGFloat(maxValue)
+        self.color = color
     }
     
     var body: some View {
@@ -188,11 +196,21 @@ struct BarView: View {
                     .foregroundColor(.black)
                     .frame(width: screen.size.width, height: screen.size.height)
                     
-                Capsule()
-                    .foregroundColor(.green)
-                    .frame(width: (value*screen.size.width/maxValue <= screen.size.height ? screen.size.height : value*screen.size.width/maxValue) - 6*value/maxValue)
+                Rectangle()
+                    .cornerRadius(.infinity)
+                    .foregroundColor(color)
+                    .frame(width: width)
                     .padding(3)
-                    .overlay(Text("\(Int(value))").font(.caption))
+            }
+            .onAppear {
+                let relativewidth = value/maxValue
+                if value == 0 {
+                    width = 0
+                } else if relativewidth*screen.size.width <= (screen.size.height - 6) {
+                    width = (screen.size.width - 6)
+                } else {
+                    width = relativewidth*screen.size.width
+                }
             }
         }
     }
@@ -200,7 +218,7 @@ struct BarView: View {
 
 struct PieChart: View {
     var colors: [Color] = [Color.green, Color.red, Color.blue, Color.yellow]
-    var values: [Int] = [2, 4, 6, 20]
+    var values: [Double] = [2, 4, 6, 20]
     var angles: [Angle] {
         let sum: CGFloat = CGFloat(values.reduce(0, +))
         let mappedAngles: [Angle] = values.map {
@@ -269,6 +287,6 @@ struct Line: Shape {
 }
 
 
-func save(_ solved: SolvedPaper){
-    
+func save(_ solved: SolvedPaper, database: PapersDatabase){
+    database.writeSolvedPaperData(solved)
 }
