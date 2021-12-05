@@ -11,7 +11,7 @@ struct CambridgePaperBundle: Hashable {
     var markScheme: CambridgeMarkscheme?
 
     var metadata: CambridgePaperMetadata {
-        markScheme?.metadata ?? questionPaper!.metadata
+        questionPaper?.metadata ?? markScheme!.metadata
     }
 
     var questionPaperCode: String {
