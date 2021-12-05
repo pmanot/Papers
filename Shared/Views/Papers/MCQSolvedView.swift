@@ -180,6 +180,52 @@ extension MCQSolvedView {
             pieChartLegend
         }
     }
+    
+    var barChartWidget: some View {
+        VStack(spacing: 1) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Correct answers:")
+                        .font(.caption, weight: .light)
+                    Text("\(solvedPaper.correctAnswers.count)")
+                        .font(.subheadline, weight: .bold)
+                }
+                .padding(.leading, 6)
+                    
+                BarView(Color.green, value: solvedPaper.correctAnswers.count, maxValue: solvedPaper.allAnswers.count)
+                    .frame(width: 150, height: 25)
+            }
+            .padding(3)
+                
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Incorrect answers:")
+                        .font(.caption, weight: .light)
+                    Text("\(solvedPaper.incorrectAnswers.count)")
+                        .font(.subheadline, weight: .bold)
+                }
+                .padding(.leading, 6)
+                
+                BarView(Color.red, value: solvedPaper.incorrectAnswers.count, maxValue: solvedPaper.allAnswers.count)
+                    .frame(width: 150, height: 25)
+            }
+            .padding(3)
+                
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Unsolved answers:")
+                        .font(.caption, weight: .light)
+                    Text("\(solvedPaper.unsolvedAnswers.count)")
+                        .font(.subheadline, weight: .bold)
+                }
+                .padding(.leading, 6)
+                
+                BarView(Color.yellow, value: solvedPaper.unsolvedAnswers.count, maxValue: solvedPaper.allAnswers.count)
+                    .frame(width: 150, height: 25)
+            }
+            .padding(3)
+        }
+    }
 }
 
 
