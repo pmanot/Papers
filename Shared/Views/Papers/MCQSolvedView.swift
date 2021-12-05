@@ -165,6 +165,21 @@ extension MCQSolvedView {
         }
     }
     
+    var pieChartWidget: some View {
+        ZStack {
+            pieChart
+                .aspectRatio(1, contentMode: .fit)
+            PieChart(colors: [.blue, .white], values: [timeTaken, (40*60)])
+                .frame(width: 245, height: 245)
+                .overlay(
+                    Circle()
+                        .frame(width: 220, height: 220)
+                        .foregroundColor(.primaryInverted)
+                        .border(Color.black.opacity(0.8), width: 0.5, cornerRadius: .infinity)
+                )
+            pieChartLegend
+        }
+    }
 }
 
 
