@@ -15,7 +15,6 @@ final public class PapersDatabase: ObservableObject {
     @Published var questions: [Question] = []
 
     init() {
-        
     }
 
     func load() {
@@ -121,14 +120,18 @@ final public class PapersDatabase: ObservableObject {
     
     func writeSolvedPaperData(_ solved: SolvedPaper) {
         let key = solved.paperCode
-        if self.solvedPapers[key].isNilOrEmpty {
-            self.solvedPapers[key] = [solved]
+        var solvedPapers = try! readSolvedPaperData()
+        if solvedPapers[key].isNilOrEmpty {
+            print("this \(solvedPapers[key])")
+            solvedPapers[key] = [solved]
+            print("WHY")
         } else {
-            self.solvedPapers[key]!.append(solved)
+            solvedPapers[key]!.append(solved)
+            print("appended")
         }
         
         DispatchQueue.main.async(qos: .userInitiated){
-            try! self.directory.write(self.solvedPapers, toDocumentNamed: "solvedPaperData")
+            try! self.directory.write(solvedPapers, toDocumentNamed: "solvedPaperData")
         }
     }
 }

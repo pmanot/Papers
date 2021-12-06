@@ -7,9 +7,9 @@ import SwiftUIX
 
 struct MCQView: View {
     @Environment(\.presentationMode) var presentationMode
-    var paperBundle: CambridgePaperBundle
+    let paperBundle: CambridgePaperBundle
     
-    @State var answers: [Answer] = (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
+    @State private var answers: [Answer] = initialisedAnswers
     @State private var showResults: Bool = false
     
     let timer = Timer.publish(every: 1, on: .current, in: .default, options: .none)
@@ -27,7 +27,7 @@ struct MCQView: View {
                 .edgesIgnoringSafeArea(.top)
             
             
-            MCQAnswerOverlay(answers: $answers, correctAnswers: correctAnswersByIndex, onSave: {
+            MCQAnswerOverlay(answers: $answers, correctAnswersByIndex: correctAnswersByIndex, onSave: {
                 solvedPaper = SolvedPaper(bundle: paperBundle, answers: answers)
                 if solvedPaper != nil {
                     showResults.toggle()
@@ -50,14 +50,19 @@ struct MCQView_Previews: PreviewProvider {
 
 struct MCQAnswerOverlay: View {
     @Binding var answers: [Answer]
-    @State var selectedIndex: QuestionIndex = QuestionIndex(1)
-    @State var timeTaken: TimeInterval = .zero
-    
+    @State private var selectedIndex: QuestionIndex
+    @State private var timeTaken: TimeInterval
+    let correctAnswersByIndex: [QuestionIndex : AnswerValue]
     let timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
-    let correctAnswers: Answers
     var onSave: () -> ()
     
-    
+    init(answers: Binding<[Answer]>, correctAnswersByIndex: [QuestionIndex : AnswerValue], onSave: @escaping () -> ()){
+        self._answers = answers
+        self.correctAnswersByIndex = correctAnswersByIndex
+        self.selectedIndex = QuestionIndex(1)
+        self.timeTaken = .zero
+        self.onSave = onSave
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -70,12 +75,12 @@ struct MCQAnswerOverlay: View {
                     .background(Color.primaryInverted)
                     .border(.black, width: 2, cornerRadius: 10)
                 Spacer()
-                SymbolButton("checkmark.circle.fill"){
+                SymbolButton("checkmark.circle"){
                     onSave()
                 }
                 .buttonStyle(PlainButtonStyle())
-                .font(.system(size: 40), weight: .light)
-                .foregroundColor(.black)
+                .font(.system(size: 44), weight: .light)
+                .background(Color.white.frame(width: 43, height: 43).cornerRadius(.infinity))
             }
             .foregroundColor(.black)
             .padding(.horizontal)
@@ -94,25 +99,25 @@ struct MCQAnswerOverlay: View {
                                 Text("A")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .A)))
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .A)))
                             
                             Button(action: {buttonPressed(selection: .B)}){
                                 Text("B")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .B)))
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .B)))
                             
                             Button(action: {buttonPressed(selection: .C)}){
                                 Text("C")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .C)))
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .C)))
                             
                             Button(action: {buttonPressed(selection: .D)}){
                                 Text("D")
                             }
                             .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswers[answer.index]!, for: .multipleChoice(choice: .D)))
+                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .D)))
                         }
                         .padding(.vertical, 10)
                         .tag(answer.index)
@@ -126,12 +131,11 @@ struct MCQAnswerOverlay: View {
         .onReceive(timer){ _ in
             timeTaken += 0.01
         }
-        
     }
 }
 
 extension MCQAnswerOverlay {
-    func completionAnimation(selection: MCQSelection){
+    private func completionAnimation(selection: MCQSelection){
         if selectedIndex.number != 40 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
                 withAnimation(.easeOut(duration: 0.5)) {
@@ -143,13 +147,44 @@ extension MCQAnswerOverlay {
         }
     }
     
-    func buttonPressed(selection: MCQSelection){
+    private func buttonPressed(selection: MCQSelection){
         withAnimation {
             answers[selectedIndex.number - 1].toggleChoice(selection, timed: timeTaken)
             timeTaken = .zero
         }
         
         completionAnimation(selection: selection)
+    }
+    
+    private func toggleMCQValue(answer: inout Answer, value: MCQSelection){
+        switch answer.value {
+            case .multipleChoice(choice: .none):
+                answer.updateValue(value: AnswerValue.multipleChoice(choice: value))
+            default:
+                answer.updateValue(value: AnswerValue.multipleChoice(choice: .none))
+        }
+    }
+
+
+    private func answerColor(selected: AnswerValue, correct: AnswerValue, for button: AnswerValue) -> Color {
+        if !(selected == .multipleChoice(choice: .none)) {
+            if button == correct {
+                return Color.green
+            }
+            
+            if selected == button {
+                return selected == correct ? Color.green : Color.red
+            }
+            
+            return Color.primaryInverted
+        }
+        return Color.primaryInverted
+    }
+}
+
+extension MCQView {
+    static var initialisedAnswers: [Answer] {
+        return (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
     }
 }
 
@@ -163,30 +198,4 @@ struct MCQButtonStyle: ViewModifier {
             .padding(2)
             .border(Color.primary, width: 2, cornerRadius: .infinity, style: .circular)
     }
-}
-
-
-func toggleMCQValue(answer: inout Answer, value: MCQSelection){
-    switch answer.value {
-        case .multipleChoice(choice: .none):
-            answer.updateValue(value: AnswerValue.multipleChoice(choice: value))
-        default:
-            answer.updateValue(value: AnswerValue.multipleChoice(choice: .none))
-    }
-}
-
-
-func answerColor(selected: AnswerValue, correct: AnswerValue, for button: AnswerValue) -> Color {
-    if !(selected == .multipleChoice(choice: .none)) {
-        if button == correct {
-            return Color.green
-        }
-        
-        if selected == button {
-            return selected == correct ? Color.green : Color.red
-        }
-        
-        return Color.primaryInverted
-    }
-    return Color.primaryInverted
 }

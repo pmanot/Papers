@@ -241,17 +241,16 @@ extension MCQSolvedView {
                         .font(.largeTitle, weight: .black)
                 }
                 .padding(3)
-                .border(.gray, width: 0.5, cornerRadius: 8)
+                .border(.black, width: 0.5, cornerRadius: 8)
                 .padding(.leading, 5)
                 .padding(.vertical, 5)
-                
-                Text("")
             }
             
             
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 10).shadow(radius: 3).foregroundColor(.primaryInverted))
+        .border(Color.white, width: 0.5, cornerRadius: 10)
+        .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.primaryInverted).shadow(radius: 3))
     }
 }
 

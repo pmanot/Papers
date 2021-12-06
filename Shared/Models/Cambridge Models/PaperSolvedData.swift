@@ -44,7 +44,7 @@ struct SolvedPaper: Codable, Hashable {
         let correctAnswersByIndex = markschemeAnswers.getAnswersByIndex()
         let answersByIndex = answers.getAnswersByIndex()
         
-        for i in [Int](1...40).map({ QuestionIndex($0) }) {
+        for i in [Int](1...40).map({ QuestionIndex($0) }){
             if answersByIndex[i] == .multipleChoice(choice: .none){
                 unsolvedAnswers.append(Answer(index: i, value: answersByIndex[i]!))
             } else {
@@ -57,6 +57,10 @@ struct SolvedPaper: Codable, Hashable {
         }
     }
     
+}
+
+extension SolvedPaper {
+    static let example = SolvedPaper(answers: [Answer].exampleAnswers, correctAnswers: [Answer].exampleCorrectAnswers)
 }
 
 

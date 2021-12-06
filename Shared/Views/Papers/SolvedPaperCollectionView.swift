@@ -5,22 +5,20 @@ import SwiftUI
 
 struct SolvedPaperCollectionView: View {
     var solvedPapers: [SolvedPaper] = [SolvedPaper.example, SolvedPaper.example, SolvedPaper.example, SolvedPaper.example]
-    @State var expanded: Bool = false
+    @State private var expanded: Bool = false
     var body: some View {
         GeometryReader { screen in
             ScrollView(.vertical) {
-                ZStack(alignment: .bottomTrailing) {
+                ZStack {
                     ForEach(0..<solvedPapers.count){ i in
                         MCQSolvedView(solvedPapers[i])
                             .miniSolvedPaperWidget
                             .zIndex(Double(-i))
-                            .frame(height: 400)
                             .rotationEffect(rotationValue(i))
                             .position(positionValue(i, screen))
-                            
                     }
                 }
-                .frame(height: expanded ? 300*CGFloat(solvedPapers.count) : 400)
+                .frame(height: expanded ? 200*CGFloat(solvedPapers.count) + 100 : 400)
                 .onTapGesture {
                     withAnimation(.spring(dampingFraction: 0.8)) {
                         expanded.toggle()
@@ -28,8 +26,11 @@ struct SolvedPaperCollectionView: View {
                 }
             }
         }
+        .frame(width: 400, height: 550)
     }
-    
+}
+
+extension SolvedPaperCollectionView {
     private func rotationValue(_ i: Int) -> Angle {
         return expanded ? .degrees(0) : .degrees(-min(i, 3)*4)
     }
