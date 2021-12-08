@@ -122,12 +122,9 @@ final public class PapersDatabase: ObservableObject {
         let key = solved.paperCode
         var solvedPapers = try! readSolvedPaperData()
         if solvedPapers[key].isNilOrEmpty {
-            print("this \(solvedPapers[key])")
             solvedPapers[key] = [solved]
-            print("WHY")
         } else {
             solvedPapers[key]!.append(solved)
-            print("appended")
         }
         
         DispatchQueue.main.async(qos: .userInitiated){

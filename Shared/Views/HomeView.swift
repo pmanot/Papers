@@ -7,6 +7,7 @@ import PDFKit
 
 struct HomeView: View {
     @ObservedObject var papersDatabase: PapersDatabase
+    @State var expand: Bool = false
 
     // TODO: Move this to PapersDatabase, and shuffle it there.
     var allQuestions: [Question] {
@@ -15,7 +16,7 @@ struct HomeView: View {
     
 
     var body: some View {
-        ScrollView(.vertical){
+        ScrollView(.vertical, showsIndicators: false){
             ZStack {
                 VStack {
                     VStack(alignment: .leading) {
@@ -29,9 +30,11 @@ struct HomeView: View {
                     VStack(alignment: .leading) {
                         Text("Papers you've solved:")
                             .font(.title3, weight: .heavy)
+                            .zIndex(1)
                         solvedPaperScrollView
                     }
                     .padding(10)
+                    .padding(.bottom, 30)
                 }
             }
             .navigationTitle("Home")
@@ -48,8 +51,7 @@ extension HomeView {
             NavigationLink(destination: QuestionView(question)) {
                 VStack {
                     RoundedRectangle(cornerRadius: 20)
-                        .foregroundColor(.white)
-                        .opacity(0.2)
+                        .foregroundColor(.nearDark)
                         .overlay(
                             Text(question.rawText)
                                 .padding()
@@ -89,12 +91,12 @@ extension HomeView {
     
     private var solvedPaperScrollView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
+            HStack(alignment: .top) {
                 ForEach([String](papersDatabase.solvedPapers.keys), id: \.self) { paperCode in
-                    SolvedPaperCollectionView(solvedPapers: papersDatabase.solvedPapers[paperCode]!)
-                        .onAppear{print(papersDatabase.solvedPapers[paperCode]!.count)}
+                    SolvedPaperCollectionView(solvedPapers: papersDatabase.solvedPapers[paperCode]!, expanded: $expand)
+                        .frame(width: 320)
+                        .frame(minHeight: 280)
                 }
-                .frame(width: 300, height: 400)
             }
         }
     }

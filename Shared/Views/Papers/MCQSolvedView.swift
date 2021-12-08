@@ -181,7 +181,7 @@ extension MCQSolvedView {
         }
     }
     
-    var barChartWidget: some View {
+    private var barChartWidget: some View {
         VStack(spacing: 1) {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
@@ -241,7 +241,7 @@ extension MCQSolvedView {
                         .font(.largeTitle, weight: .black)
                 }
                 .padding(3)
-                .border(.black, width: 0.5, cornerRadius: 8)
+                .border(Color.secondary, width: 0.5, cornerRadius: 8, antialiased: true)
                 .padding(.leading, 5)
                 .padding(.vertical, 5)
             }
@@ -249,8 +249,8 @@ extension MCQSolvedView {
             
         }
         .padding()
-        .border(Color.white, width: 0.5, cornerRadius: 10)
-        .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.primaryInverted).shadow(radius: 3))
+        .border(Color.secondary, width: 1, cornerRadius: 10, antialiased: true)
+        .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.nearDark).shadow(radius: 3))
     }
 }
 
@@ -279,10 +279,6 @@ struct BarView: View {
     var body: some View {
         GeometryReader { screen in
             ZStack(alignment: .leading) {
-                Capsule()
-                    .foregroundColor(.black)
-                    .frame(width: screen.size.width, height: screen.size.height)
-                    
                 Rectangle()
                     .cornerRadius(.infinity)
                     .foregroundColor(color)
@@ -294,7 +290,7 @@ struct BarView: View {
                 if value == 0 {
                     width = 0
                 } else if relativewidth*screen.size.width <= (screen.size.height - 6) {
-                    width = (screen.size.width - 6)
+                    width = (screen.size.height - 6)
                 } else {
                     width = relativewidth*screen.size.width
                 }
