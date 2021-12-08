@@ -7,16 +7,19 @@ import PDFKit
 
 struct HomeView: View {
     @ObservedObject var papersDatabase: PapersDatabase
-    @State var expand: Bool = false
+
+    @State private var isExpanded: Bool = false
 
     // TODO: Move this to PapersDatabase, and shuffle it there.
     var allQuestions: [Question] {
-        papersDatabase.paperBundles.compactMap { $0.questionPaper }.questions()
+        papersDatabase.paperBundles
+            .compactMap({ $0.questionPaper })
+            .questions()
+            .sorted(by: { $0.id.uuidString < $1.id.uuidString })
     }
-    
 
     var body: some View {
-        ScrollView(.vertical, showsIndicators: false){
+        ScrollView(.vertical, showsIndicators: false) {
             ZStack {
                 VStack {
                     VStack(alignment: .leading) {
@@ -26,12 +29,13 @@ struct HomeView: View {
                             .frame(height: 300)
                     }
                     .padding(10)
-                    
+
                     VStack(alignment: .leading) {
                         Text("Papers you've solved:")
                             .font(.title3, weight: .heavy)
                             .zIndex(1)
-                        solvedPaperScrollView
+
+                        SolvedPapersScrollView(papersDatabase: papersDatabase, isExpanded: $isExpanded)
                     }
                     .padding(10)
                     .padding(.bottom, 30)
@@ -88,14 +92,23 @@ extension HomeView {
             }
         }
     }
-    
-    private var solvedPaperScrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(alignment: .top) {
-                ForEach([String](papersDatabase.solvedPapers.keys), id: \.self) { paperCode in
-                    SolvedPaperCollectionView(solvedPapers: papersDatabase.solvedPapers[paperCode]!, expanded: $expand)
+
+    struct SolvedPapersScrollView: View {
+        @ObservedObject var papersDatabase: PapersDatabase
+
+        @Binding var isExpanded: Bool
+
+        var body: some View {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(alignment: .top) {
+                    ForEach([String](papersDatabase.solvedPapers.keys.sorted()), id: \.self) { paperCode in
+                        SolvedPaperCollectionView(
+                            solvedPapers: papersDatabase.solvedPapers[paperCode]!,
+                            expanded: $isExpanded
+                        )
                         .frame(width: 320)
                         .frame(minHeight: 280)
+                    }
                 }
             }
         }
