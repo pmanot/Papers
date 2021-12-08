@@ -6,9 +6,10 @@ import Foundation
 import SwiftUI
 
 extension Color {
-    init(_ r: Int, g: Int, b: Int) {
-        self.init(UIColor(red: CGFloat(r/255), green: CGFloat(g/255), blue: CGFloat(b/255), alpha: 0.5))
+    init(_ r: Double, _ g: Double, _ b: Double) {
+        self.init(red: Double(r/255), green: Double(g/255), blue: Double(b/255))
     }
     
     static let primaryInverted = Color("primaryInverted", bundle: Bundle.main)
+    static let nearDark = Color(20, 20, 20)
 }
