@@ -26,15 +26,16 @@ struct MCQView: View {
                 .background(Color.white)
                 .edgesIgnoringSafeArea(.top)
             
-            
             MCQAnswerOverlay(answers: $answers, correctAnswersByIndex: correctAnswersByIndex, onSave: {
                 solvedPaper = SolvedPaper(bundle: paperBundle, answers: answers)
                 if solvedPaper != nil {
                     showResults.toggle()
                 }
             })
+                .frame(alignment: .top)
             
         }
+        .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showResults, onDismiss: {presentationMode.wrappedValue.dismiss()}){
             MCQSolvedView($solvedPaper)
         }

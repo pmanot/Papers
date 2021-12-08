@@ -19,11 +19,11 @@ struct SolvedPaperCollectionView: View {
             switch expanded {
                 case true:
                     VStack {
-                        
                         ForEach(0..<solvedPapers.count, id: \.self){ i in
                             MCQSolvedView(solvedPapers[i])
                                 .miniSolvedPaperWidget
                                 .frame(width: 400)
+                                .rotationEffect(.degrees(0))
                                 .matchedGeometryEffect(id: i, in: paperCards)
                                 .zIndex(Double(solvedPapers.count - i))
                                 .padding(5)
@@ -52,18 +52,10 @@ extension SolvedPaperCollectionView {
         expanded ? .degrees(0) : .degrees(-min(i, 3)*4)
     }
     
-    private func calculatedOffset(_ i: Int, screen: GeometryProxy) -> CGFloat {
-        expanded ? CGFloat(100) : screen.center.y - CGFloat(i)*CGFloat(solvedPapers.count - 1)*25
-    }
-    
     private func expand() {
         withAnimation(.spring(dampingFraction: 0.8)) {
             expanded.toggle()
         }
-    }
-    
-    private func calculatedHeight() -> CGFloat {
-        expanded ? CGFloat(200*solvedPapers.count) : CGFloat(300)
     }
 }
 
