@@ -5,15 +5,15 @@
 
 import Foundation
 
-
-struct SolvedPaper: Codable, Hashable {
+struct SolvedPaper: Codable, Hashable, Identifiable {
+    var id = UUID()
     var paperCode: String
     var solvedOn: Date = Date()
     var answers: [Answer] = []
     var correctAnswers: [Answer] = []
     var incorrectAnswers: [Answer] = []
     var unsolvedAnswers: [Answer] = []
-    
+
     var allAnswers: [Answer] {
         correctAnswers + incorrectAnswers + unsolvedAnswers
     }
@@ -60,7 +60,9 @@ struct SolvedPaper: Codable, Hashable {
 }
 
 extension SolvedPaper {
-    static let example = SolvedPaper(answers: [Answer].exampleAnswers, correctAnswers: [Answer].exampleCorrectAnswers)
+    static func makeNewExample() -> SolvedPaper {
+        SolvedPaper(answers: [Answer].exampleAnswers, correctAnswers: [Answer].exampleCorrectAnswers)
+    }
 }
 
 

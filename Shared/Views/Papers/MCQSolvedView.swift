@@ -3,6 +3,7 @@
 //
 
 import SwiftUI
+import SwiftUIX
 
 struct MCQSolvedView: View {
     @Environment(\.presentationMode) var presentationMode
@@ -245,19 +246,17 @@ extension MCQSolvedView {
                 .padding(.leading, 5)
                 .padding(.vertical, 5)
             }
-            
-            
         }
         .padding()
         .border(Color.secondary, width: 1, cornerRadius: 10, antialiased: true)
-        .background(RoundedRectangle(cornerRadius: 10).foregroundColor(.nearDark).shadow(radius: 3))
+        .background(VisualEffectBlurView(blurStyle: .systemThinMaterial).cornerRadius(10).shadow(radius: 3))
     }
 }
 
 
 struct MCQSolvedView_Previews: PreviewProvider {
     static var previews: some View {
-        MCQSolvedView(.constant(SolvedPaper.example))
+        MCQSolvedView(.constant(SolvedPaper.makeNewExample()))
     }
 }
 

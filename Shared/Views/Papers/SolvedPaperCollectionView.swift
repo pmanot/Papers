@@ -2,42 +2,74 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUI
+import SwiftUIX
 
 struct SolvedPaperCollectionView: View {
     var solvedPapers: [SolvedPaper]
+
     @Binding var expanded: Bool
+
     @Namespace private var paperCards
-    
-    init(solvedPapers: [SolvedPaper], expanded: Binding<Bool> = .constant(false)){
-        self.solvedPapers = solvedPapers
-        self._expanded = expanded
+
+    struct ItemView: View {
+        let index: Int
+        let paper: SolvedPaper
+        let isExpanded: Bool
+
+        @State var hasAppeared: Bool = false
+
+        var body: some View {
+            MCQSolvedView(paper)
+                .miniSolvedPaperWidget
+                .frame(width: Screen.main.width * 0.95)
+                .rotationEffect(
+                    hasAppeared
+                        ? rotation(forIndex: index, expanded: isExpanded)
+                        : rotation(forIndex: index, expanded: !isExpanded)
+                )
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) {
+                        withAnimation {
+                            hasAppeared = true
+                        }
+                    }
+                }
+        }
+
+        private func rotation(forIndex i: Int, expanded: Bool) -> Angle {
+            if expanded {
+                return .degrees(0)
+            } else {
+                return .degrees(-min(i, 3) * 4)
+            }
+        }
     }
-    
+
     var body: some View {
         ZStack {
             switch expanded {
                 case true:
                     VStack {
-                        ForEach(0..<solvedPapers.count, id: \.self){ i in
-                            MCQSolvedView(solvedPapers[i])
-                                .miniSolvedPaperWidget
-                                .frame(width: 400)
-                                .rotationEffect(.degrees(0))
-                                .matchedGeometryEffect(id: i, in: paperCards)
-                                .zIndex(Double(solvedPapers.count - i))
-                                .padding(5)
+                        ForEach(enumerating: solvedPapers) { (index, paper) in
+                            ItemView(
+                                index: index,
+                                paper: paper,
+                                isExpanded: expanded
+                            )
+                            .matchedGeometryEffect(id: paper.id, in: paperCards)
+                            .zIndex(Double(solvedPapers.count - index))
                         }
                     }
                     .zIndex(10)
                 case false:
-                    ForEach(0..<solvedPapers.count, id: \.self){ i in
-                        MCQSolvedView(solvedPapers[i])
-                            .miniSolvedPaperWidget
-                            .frame(width: 400)
-                            .rotationEffect(rotationValue(i))
-                            .matchedGeometryEffect(id: i, in: paperCards)
-                            .zIndex(Double(solvedPapers.count - i))
+                    ForEach(enumerating: solvedPapers) { (index, paper) in
+                        ItemView(
+                            index: index,
+                            paper: paper,
+                            isExpanded: expanded
+                        )
+                        .matchedGeometryEffect(id: paper.id, in: paperCards)
+                        .zIndex(Double(solvedPapers.count - index))
                     }
             }
         }
@@ -61,7 +93,24 @@ extension SolvedPaperCollectionView {
 
 struct SolvedPaperCollectionView_Previews: PreviewProvider {
     static var previews: some View {
-        SolvedPaperCollectionView(solvedPapers: [SolvedPaper.example, SolvedPaper.example, SolvedPaper.example, SolvedPaper.example])
+        Preview()
+            .preferredColorScheme(.dark)
+    }
+
+    struct Preview: View {
+        @State private var examples = [SolvedPaper.makeNewExample(), SolvedPaper.makeNewExample(), SolvedPaper.makeNewExample(), SolvedPaper.makeNewExample()
+        ]
+
+        @State private var isExpanded: Bool = false
+
+        var body: some View {
+            ScrollView {
+                VStack {
+                    Toggle("Expand", isOn: $isExpanded.animation(.default))
+
+                    SolvedPaperCollectionView(solvedPapers: examples, expanded: $isExpanded)
+                }
+            }
+        }
     }
 }
-
