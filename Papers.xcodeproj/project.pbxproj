@@ -71,6 +71,7 @@
 		84BAC870275F55C00021D9C1 /* 9702_s17_ms_13.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 84BAC86F275F55C00021D9C1 /* 9702_s17_ms_13.pdf */; };
 		84CD480927415C0600EC51CA /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CD480827415C0600EC51CA /* HomeView.swift */; };
 		84CD480E274B61FC00EC51CA /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84CD480D274B61FC00EC51CA /* SearchView.swift */; };
+		84DE65D227613A70007D68BA /* Date+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84DE65D127613A6F007D68BA /* Date+Extensions.swift */; };
 		84E541E5275039CE0087A242 /* PaperSolvedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E541E4275039CE0087A242 /* PaperSolvedData.swift */; };
 		D43E520C275148D200B16961 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E520B275148D200B16961 /* DebugView.swift */; };
 /* End PBXBuildFile section */
@@ -159,6 +160,7 @@
 		84BAC86F275F55C00021D9C1 /* 9702_s17_ms_13.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = 9702_s17_ms_13.pdf; sourceTree = "<group>"; };
 		84CD480827415C0600EC51CA /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		84CD480D274B61FC00EC51CA /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		84DE65D127613A6F007D68BA /* Date+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Extensions.swift"; sourceTree = "<group>"; };
 		84E541E4275039CE0087A242 /* PaperSolvedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperSolvedData.swift; sourceTree = "<group>"; };
 		D43E520B275148D200B16961 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -302,6 +304,7 @@
 				843AD234270B508200B6131A /* PDFDocument+Extensions.swift */,
 				843AD238270B508200B6131A /* PDFPage+Extensions.swift */,
 				843AD235270B508200B6131A /* String+Extensions.swift */,
+				84DE65D127613A6F007D68BA /* Date+Extensions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -621,6 +624,7 @@
 				843AD261270B508B00B6131A /* CambridgeMultipleChoicePaper.swift in Sources */,
 				843AD263270B508B00B6131A /* Answer.swift in Sources */,
 				843AD228270B506D00B6131A /* PDFView.swift in Sources */,
+				84DE65D227613A70007D68BA /* Date+Extensions.swift in Sources */,
 				843AD23D270B508200B6131A /* NSRegularExpression+Extensions.swift in Sources */,
 				843AD262270B508B00B6131A /* CambridgePaperMetadata.swift in Sources */,
 				84A35C41275B715500D5F9E5 /* SolvedPaperCollectionView.swift in Sources */,
