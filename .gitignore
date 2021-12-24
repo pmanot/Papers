@@ -8,3 +8,4 @@ xcuserdata/
 fastlane/*
 !fastlane/Fastfile
 !fastlane/Pluginfile
+*.pbxproj
