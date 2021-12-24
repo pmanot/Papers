@@ -96,6 +96,7 @@ struct PaperRelatedDataDirectory {
         return urls
     }
 
+    /// Finds the URLs for all question papers and mark-scheme papers in the app bundle
     func fetchAllAvailablePDFResourceURLs() -> [URL] {
         Bundle.main.urls(forResourcesWithExtension: "pdf", subdirectory: "/") ?? []
     }

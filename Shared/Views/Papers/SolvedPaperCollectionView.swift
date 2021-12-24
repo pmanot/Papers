@@ -19,8 +19,7 @@ struct SolvedPaperCollectionView: View {
         @State var hasAppeared: Bool = false
 
         var body: some View {
-            MCQSolvedView(paper)
-                .miniSolvedPaperWidget
+            SolvedPaperCard(paper)
                 .frame(width: Screen.main.width * 0.95)
                 .rotationEffect(
                     hasAppeared
@@ -80,10 +79,6 @@ struct SolvedPaperCollectionView: View {
 }
 
 extension SolvedPaperCollectionView {
-    private func rotationValue(_ i: Int) -> Angle {
-        expanded ? .degrees(0) : .degrees(-min(i, 3)*4)
-    }
-    
     private func expand() {
         withAnimation(.spring(dampingFraction: 0.8)) {
             expanded.toggle()

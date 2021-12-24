@@ -84,29 +84,37 @@ extension PaperContentsView {
 
 extension PaperContentsView {
     struct PaperRow: View {
-        let paper: CambridgePaperBundle
+        let bundle: CambridgePaperBundle
+        
         init(_ paper: CambridgeQuestionPaper){
-            self.paper = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
+            self.bundle = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
         }
         
         init(_ paper: CambridgeMarkscheme){
-            self.paper = CambridgePaperBundle(questionPaper: nil, markScheme: paper)
+            self.bundle = CambridgePaperBundle(questionPaper: nil, markScheme: paper)
         }
         
         init(_ paperBundle: CambridgePaperBundle){
-            self.paper = paperBundle
+            self.bundle = paperBundle
         }
         
         @ViewBuilder var destination: some View {
-            switch paper.questionPaper {
+            switch bundle.questionPaper {
                 case nil:
-                    WrappedPDFView(pdf: paper.markScheme!.pdf)
+                    // Using WrappedPDFView
+                    WrappedPDFView(pdf: bundle.markScheme!.pdf)
                 default:
-                    switch paper.metadata.paperNumber {
-                        case .paper1:
-                            MCQView(paperBundle: paper)
+                    switch bundle.metadata.paperNumber {
+                        case .paper1: // MCQ
+                            MCQView(paperBundle: bundle)
                         default:
-                            WrappedPDFView(pdf: paper.questionPaper!.pdf)
+                            // Using WrappedPDFView
+                            WrappedPDFView(pdf: bundle.questionPaper!.pdf)
+                            
+                            // Using QuickLook
+                            /*
+                            QuickLook(url: paper.questionPaper!.getPaperURL())
+                            */
                     }
             }
         }
@@ -115,25 +123,25 @@ extension PaperContentsView {
             NavigationLink(destination: destination) {
                 VStack(alignment: .leading) {
                     HStack {
-                        Text("\(paper.metadata.subject.rawValue)")
+                        Text("\(bundle.metadata.subject.rawValue)")
                             .font(.title, weight: .black)
                             .padding(6)
                         
-                        Text(paper.metadata.questionPaperCode)
+                        Text(bundle.metadata.questionPaperCode)
                             .modifier(PaperTagStyle(outlineWidth: 1))
                     }
                     
                     HStack {
-                        Text("\(paper.metadata.month.rawValue)")
+                        Text("\(bundle.metadata.month.rawValue)")
                             .modifier(PaperTagStyle())
                         
-                        Text("20\(paper.metadata.year)")
+                        Text("20\(bundle.metadata.year)")
                             .modifier(PaperTagStyle())
                         
-                        Text("Paper \(paper.metadata.paperNumber.rawValue)")
+                        Text("Paper \(bundle.metadata.paperNumber.rawValue)")
                             .modifier(PaperTagStyle())
                         
-                        Text("Variant \(paper.metadata.paperVariant.rawValue)")
+                        Text("Variant \(bundle.metadata.paperVariant.rawValue)")
                             .modifier(PaperTagStyle())
                     }
                     .padding(.leading, 5)

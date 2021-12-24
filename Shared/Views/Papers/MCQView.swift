@@ -12,8 +12,6 @@ struct MCQView: View {
     @State private var answers: [Answer] = initialisedAnswers
     @State private var showResults: Bool = false
     
-    let timer = Timer.publish(every: 1, on: .current, in: .default, options: .none)
-    
     private var correctAnswersByIndex: [QuestionIndex : AnswerValue] {
         paperBundle.markScheme?.metadata.answers.getAnswersByIndex() ?? (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A)) }.getAnswersByIndex()
     }
@@ -32,9 +30,9 @@ struct MCQView: View {
                     showResults.toggle()
                 }
             })
-                .frame(alignment: .top)
             
         }
+        .edgesIgnoringSafeArea(.all)
         .navigationBarBackButtonHidden(true)
         .sheet(isPresented: $showResults, onDismiss: {presentationMode.wrappedValue.dismiss()}){
             MCQSolvedView($solvedPaper)
@@ -53,6 +51,8 @@ struct MCQAnswerOverlay: View {
     @Binding var answers: [Answer]
     @State private var selectedIndex: QuestionIndex
     @State private var timeTaken: TimeInterval
+    @State private var correctAnswerTint: Bool = false
+    
     let correctAnswersByIndex: [QuestionIndex : AnswerValue]
     let timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     var onSave: () -> ()
@@ -68,6 +68,12 @@ struct MCQAnswerOverlay: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
+                SymbolButton("chevron.left.circle.fill") {
+                    goToPreviousIndex()
+                }
+                .font(.title2, weight: .heavy)
+                .background(Color.white.frame(width: 20, height: 20).cornerRadius(.infinity))
+                
                 Text("\(selectedIndex.number)")
                     .font(.title)
                     .fontWeight(.heavy)
@@ -75,12 +81,18 @@ struct MCQAnswerOverlay: View {
                     .frame(width: 40, height: 40)
                     .background(Color.primaryInverted)
                     .border(.black, width: 2, cornerRadius: 10)
+                SymbolButton("chevron.right.circle.fill") {
+                    goToNextIndex()
+                }
+                .font(.title2, weight: .heavy)
+                .background(Color.white.frame(width: 20, height: 20).cornerRadius(.infinity))
+                
                 Spacer()
-                SymbolButton("checkmark.circle"){
+                SymbolButton("checkmark.circle.fill"){
                     onSave()
                 }
                 .buttonStyle(PlainButtonStyle())
-                .font(.system(size: 44), weight: .light)
+                .font(.system(size: 38), weight: .semibold)
                 .background(Color.white.frame(width: 43, height: 43).cornerRadius(.infinity))
             }
             .foregroundColor(.black)
@@ -88,11 +100,11 @@ struct MCQAnswerOverlay: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
-                    .frame(width: answers[selectedIndex.number - 1].selected(.none) ? 0 : Screen.size.width, height: 2)
-                    .foregroundColor(.green)
+                    .frame(width: answers[selectedIndex.number - 1].selected(.none) ? 0 : Screen.size.width, height: 5)
+                    .foregroundColor(Color.indigo)
                 Line()
-                    .stroke()
-                    .frame(height: 2)
+                    .stroke(lineWidth: 1)
+                    .frame(height: 1)
                 TabView(selection: $selectedIndex) {
                     ForEach(answers, id: \.index){ answer in
                         HStack(spacing: 30) {
@@ -120,13 +132,12 @@ struct MCQAnswerOverlay: View {
                             .modifier(MCQButtonStyle())
                             .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .D)))
                         }
-                        .padding(.vertical, 10)
                         .tag(answer.index)
                     }
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                .tabViewStyle(PageTabViewStyle())
                 .background(Color.primaryInverted.edgesIgnoringSafeArea(.all))
-                .frame(height: 100)
+                .frame(height: 120)
             }
         }
         .onReceive(timer){ _ in
@@ -169,17 +180,39 @@ extension MCQAnswerOverlay {
 
     private func answerColor(selected: AnswerValue, correct: AnswerValue, for button: AnswerValue) -> Color {
         if !(selected == .multipleChoice(choice: .none)) {
-            if button == correct {
-                return Color.green
+            if correctAnswerTint {
+                    if button == correct {
+                        return Color.green
+                    }
+                    
+                    if selected == button {
+                        return selected == correct ? Color.green : Color.red
+                    }
+                    
+                    return Color.primaryInverted
+            } else {
+                if selected == button {
+                    return .indigo
+                }
             }
-            
-            if selected == button {
-                return selected == correct ? Color.green : Color.red
-            }
-            
-            return Color.primaryInverted
         }
         return Color.primaryInverted
+    }
+    
+    private func goToNextIndex() {
+        if selectedIndex.number != 40 {
+            withAnimation(.easeIn) {
+                selectedIndex = QuestionIndex(selectedIndex.number + 1)
+            }
+        }
+    }
+    
+    private func goToPreviousIndex() {
+        if selectedIndex.number != 1 {
+            withAnimation(.easeIn) {
+                selectedIndex = QuestionIndex(selectedIndex.number - 1)
+            }
+        }
     }
 }
 

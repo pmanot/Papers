@@ -28,6 +28,7 @@ struct PapersView_Previews: PreviewProvider {
         NavigationView {
             PapersView()
                 .environmentObject(ApplicationStore())
+                .environmentObject(ApplicationStore().papersDatabase)
         }
     }
 }
@@ -35,7 +36,6 @@ struct PapersView_Previews: PreviewProvider {
 extension PapersView {
     struct ListView: View {
         @ObservedObject var papersDatabase: PapersDatabase
-
         @State private var showImportSheet: Bool = false
 
         var paperBundles: [CambridgePaperBundle] {
