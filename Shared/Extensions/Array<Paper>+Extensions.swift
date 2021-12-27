@@ -33,3 +33,18 @@ extension Array where Element == URL {
         return self.filter { $0.getPaperCode().isMarkscheme() }
     }
 }
+
+extension Array {
+    mutating func rotate() {
+        self = self.rotated()
+    }
+    
+    func rotated() -> Self {
+        if self.isEmpty {
+            return self
+        }
+        var rotatedArray = self
+        rotatedArray.insert(rotatedArray.popLast()!)
+        return rotatedArray
+    }
+}
