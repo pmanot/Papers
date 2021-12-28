@@ -7,7 +7,9 @@ import Foundation
 enum CambridgeSubject: String, Codable, Hashable {
     case chemistry = "Chemistry"
     case physics = "Physics"
+    case biology = "Biology"
     case maths = "Maths"
+    case english = "English"
     case other = ""
 }
 
