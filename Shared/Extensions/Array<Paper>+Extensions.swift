@@ -48,3 +48,17 @@ extension Array {
         return rotatedArray
     }
 }
+
+extension Array where Element == URL {
+    func paperFiltered() -> [URL] {
+        var filteredURLs: [URL] = []
+        for url in self {
+            let codeChunks = url.getPaperCode().split(separator: "_")
+            if codeChunks[2] == "ms" || codeChunks[2] == "qp" {
+                filteredURLs.append(url)
+            }
+        }
+        
+        return filteredURLs
+    }
+}
