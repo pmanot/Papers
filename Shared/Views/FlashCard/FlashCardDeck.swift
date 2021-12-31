@@ -37,7 +37,9 @@ struct FlashCardDeck: View {
                 NavigationLink(destination: FlashCardCollectionView(stack: $deck[index])) {
                     VStack {
                         Text(stack.title)
+                            .fontWeight(.regular)
                             .font(.headline, weight: .regular)
+                            
                     }
                     .padding()
                 }

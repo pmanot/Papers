@@ -22,14 +22,14 @@ struct FlashCard: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(card.prompt)
-                .font(.title3, weight: .bold)
+                .font(.title3, weight: .regular)
                 .foregroundColor(flipped ? .secondary : .primary)
                 .onAppear(perform: startBlink)
                 .padding(5)
             
             if flipped {
                 Text(card.answer)
-                    .font(.headline, weight: .bold)
+                    .font(.headline, weight: .semibold)
                     .onAppear(perform: stopBlink)
                     .padding(5)
                     .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .opacity))

@@ -63,7 +63,7 @@ struct FlashCardCreationView: View {
 extension FlashCardCreationView {
     func save(){
         if !card.isEmpty() {
-            self.stack.cards.append(card.generate())
+            stack.cards.append(card.generate())
             card = Card.empty
         }
         
