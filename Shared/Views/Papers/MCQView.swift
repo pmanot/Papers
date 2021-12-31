@@ -13,7 +13,10 @@ struct MCQView: View {
     @State private var showResults: Bool = false
     
     private var correctAnswersByIndex: [QuestionIndex : AnswerValue] {
-        paperBundle.markScheme?.metadata.answers.getAnswersByIndex() ?? (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A)) }.getAnswersByIndex()
+        paperBundle.markScheme?.metadata.answers.getAnswersByIndex()
+        ??
+        // Testing
+        (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A)) }.getAnswersByIndex()
     }
     
     @State private var solvedPaper: SolvedPaper? = nil
@@ -23,6 +26,15 @@ struct MCQView: View {
             WrappedPDFView(pdf: paperBundle.questionPaper!.pdf)
                 .background(Color.white)
                 .edgesIgnoringSafeArea(.top)
+                // MARK: DEBUGGING
+                /*
+                .overlay(
+                    ZStack {
+                        Color.black.edgesIgnoringSafeArea(.all)
+                        DebugOverlay(correctAnswersByIndex: correctAnswersByIndex)
+                    }
+                )
+                */
             
             MCQAnswerOverlay(answers: $answers, correctAnswersByIndex: correctAnswersByIndex, onSave: {
                 solvedPaper = SolvedPaper(bundle: paperBundle, answers: answers)
@@ -42,7 +54,9 @@ struct MCQView: View {
 
 struct MCQView_Previews: PreviewProvider {
     static var previews: some View {
-        MCQView(paperBundle: CambridgePaperBundle(questionPaper: PapersDatabase.exampleMCQ, markScheme: nil))
+        NavigationView {
+            MCQView(paperBundle: CambridgePaperBundle(questionPaper: PapersDatabase.exampleMCQ, markScheme: nil))
+        }
     }
 }
 
@@ -68,12 +82,13 @@ struct MCQAnswerOverlay: View {
     var body: some View {
         VStack(alignment: .leading) {
             HStack {
+                /*
                 SymbolButton("chevron.left.circle.fill") {
                     goToPreviousIndex()
                 }
                 .font(.title2, weight: .heavy)
                 .background(Color.white.frame(width: 20, height: 20).cornerRadius(.infinity))
-                
+                */
                 Text("\(selectedIndex.number)")
                     .font(.title)
                     .fontWeight(.heavy)
@@ -81,19 +96,24 @@ struct MCQAnswerOverlay: View {
                     .frame(width: 40, height: 40)
                     .background(Color.primaryInverted)
                     .border(.black, width: 2, cornerRadius: 10)
+                /*
                 SymbolButton("chevron.right.circle.fill") {
                     goToNextIndex()
                 }
                 .font(.title2, weight: .heavy)
                 .background(Color.white.frame(width: 20, height: 20).cornerRadius(.infinity))
-                
+                */
                 Spacer()
                 SymbolButton("checkmark.circle.fill"){
                     onSave()
                 }
                 .buttonStyle(PlainButtonStyle())
                 .font(.system(size: 38), weight: .semibold)
-                .background(Color.white.frame(width: 43, height: 43).cornerRadius(.infinity))
+                .background {
+                    Color.white
+                        .frame(width: 35, height: 35)
+                        .cornerRadius(.infinity)
+                }
             }
             .foregroundColor(.black)
             .padding(.horizontal)
