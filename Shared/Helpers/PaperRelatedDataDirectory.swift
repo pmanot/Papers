@@ -17,8 +17,8 @@ struct PaperRelatedDataDirectory {
             )
             .appendingPathComponent("Paper Directory")
     }
-
     var manager = FileManager.default
+    var metadataURL: URL = Bundle.main.url(forResource: "metadata", withExtension: nil)!
 
     // MARK: - Reading
 
@@ -83,18 +83,21 @@ struct PaperRelatedDataDirectory {
     ///
     /// Note: If there are no papers available in the directory, it finds all available PDFs from the app's resources and writes them here.
     func findAllPaperURLs() -> [URL] {
-        var urls = findPapers()
-
+        let urls = fetchAllAvailablePDFResourceURLs().paperFiltered()
+        /*
         if urls == [] {
-            for url in fetchAllAvailablePDFResourceURLs() {
+            for url in fetchAllAvailablePDFResourceURLs().paperFiltered() {
                 writePDF(pdf: PDFDocument(url: url)!, to: url.getPaperCode())
             }
         }
-
+        
         urls = findPapers()
+        */
 
         return urls
     }
+    
+    
 
     /// Finds the URLs for all question papers and mark-scheme papers in the app bundle
     func fetchAllAvailablePDFResourceURLs() -> [URL] {
