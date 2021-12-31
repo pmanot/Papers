@@ -20,6 +20,7 @@ struct CambridgePaperMetadata: Codable, Hashable {
     var answers: [Answer] = []
     var numberOfQuestions: Int = 0
     var rawText: String = ""
+    var error: Bool = false
     
     init(paperCode: String){
         if regexMatches(string: paperCode, pattern: CambridgePaperMetadata.paperCodePattern) { // check if papercode is valid
@@ -61,37 +62,54 @@ struct CambridgePaperMetadata: Codable, Hashable {
         case .markScheme:
                 switch paperNumber {
                     case .paper1: // paper 1 (mcq)
-                        var multipleChoiceAnswerArray: [AnswerValue] = [] // initialize empty array that will store extracted answers from mcq
-                        for i in 1..<pdf.pageCount {
-                            let pageNumber = i + 1
-                            let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                            let rawPageText = page.string ?? "" // extract text from the page
-                            pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
-                            
-                            var numberOfAnswers: Int {
-                                i == 1 ? 28 : 12
-                            }
-                            
-                            let snapshot = pdf.page(at: i)!.snapshot().cgImage!
-                            
-                            for n in 0..<numberOfAnswers {
-                                if let croppedImage = snapshot.cropping(to: CGRect(origin: CGPoint(x: 230, y: 177 + 49*n), size: CGSize(width: 74, height: 45))){
-                                    let choice = recogniseAllText(from: croppedImage, .accurate, lookFor: ["A", "B", "C", "D"]).removing(allOf: " ")
-                                    print(choice)
-                                    if ["A", "B", "C", "D"].contains(choice) {
-                                        multipleChoiceAnswerArray.append(.multipleChoice(choice: MCQSelection(rawValue: choice)!))
-                                    }
+                        if self.year >= 17 {
+                            var multipleChoiceAnswerArray: [AnswerValue] = [] // initialize empty array that will store extracted answers from mcq
+                            for i in 1..<pdf.pageCount {
+                                let pageNumber = i + 1
+                                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                                let rawPageText = page.string ?? "" // extract text from the page
+                                pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
+                                
+                                var numberOfAnswers: Int {
+                                    i == 1 ? 28 : 12
                                 }
-                                print(n)
+                                
+                                let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
+                                
+                                if snapshot == nil {
+                                    print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
+                                    error = true
+                                    print("error toggled due to nil snapshot error")
+                                    break
+                                }
+                                
+                                for n in 0..<numberOfAnswers {
+                                    if let croppedImage = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 230, y: 177 + 49*n), size: CGSize(width: 74, height: 45))){
+                                        let choice = recogniseAllText(from: croppedImage, .accurate, lookFor: ["A", "B", "C", "D"]).removing(allOf: " ")
+                                        print(choice)
+                                        if ["A", "B", "C", "D"].contains(choice) {
+                                            multipleChoiceAnswerArray.append(.multipleChoice(choice: MCQSelection(rawValue: choice)!))
+                                        }
+                                    }
+                                    print(n)
+                                }
+                            }
+                            
+                            if multipleChoiceAnswerArray.length == 40 {
+                                answers = [Int](1...40).map { Answer(index: QuestionIndex($0), value: multipleChoiceAnswerArray[$0 - 1]) }
+                            } else {
+                                print(multipleChoiceAnswerArray)
+                                error = true
+                                print("error toggled due to MCQ answer detection problem")
+                            }
+                        } else {
+                            for i in 1..<pdf.pageCount {
+                                let pageNumber = i + 1
+                                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
+                                let rawPageText = page.string ?? "" // extract text from the page
+                                pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
                             }
                         }
-                        
-                        if multipleChoiceAnswerArray.length == 40 {
-                            answers = [Int](1...40).map { Answer(index: QuestionIndex($0), value: multipleChoiceAnswerArray[$0 - 1]) }
-                        } else {
-                            print(multipleChoiceAnswerArray)
-                        }
-                        
                         
                     default: // paper 4
                         for i in 1..<(pdf.pageCount - 1) {
@@ -111,11 +129,29 @@ struct CambridgePaperMetadata: Codable, Hashable {
                             pageData.append(CambridgePaperPage(type: .multipleChoicePage(indexes: []), rawText: rawPageText, pageNumber: pageNumber))
                         }
                         self.numberOfQuestions = 40 // Cambridge A level MCQ Papers always contain 40 questions
+                        
                     default: // paper 4
                         var nextQuestionNumber: Int = 1 // question number to look for
                         var runningQuestionNumber: Int = 0 // current question number (last question number detected)
+                        var startingPage: Int {
+                            switch self.subject {
+                                case .physics:
+                                    switch self.paperNumber {
+                                        case .paper1:
+                                            return 3
+                                        case .paper2:
+                                            return 3
+                                        case .paper4:
+                                            return 3
+                                        default:
+                                            return 1
+                                    }
+                                default:
+                                    return 1
+                            }
+                        }
                         
-                        for i in 1..<pdf.pageCount {
+                        for i in startingPage..<pdf.pageCount {
                             let pageNumber = i + 1
                             let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
                             let rawPageText = page.string ?? "" // extract text from the page
@@ -123,25 +159,78 @@ struct CambridgePaperMetadata: Codable, Hashable {
                             if rawPageText.contains("BLANK PAGE") { // check for blank page
                                 pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
                             } else {
-                                let snapshot = page.snapshot().cgImage!
-                                let croppedSnapshot = snapshot.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 450)))! // crop page snapshot to only include page number
-                                let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
-                                print("WHY THE FUCK: ", recognisedText)
-                                
-                                if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
-                                    runningQuestionNumber = nextQuestionNumber
-                                    nextQuestionNumber += 1
-                                    
-                                    let index = QuestionIndex(runningQuestionNumber)
-                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                     // debugging
+                                // alt
+                                //var snapshot = page.thumbnail(of: CGSize(width: page.bounds(for: .cropBox).size.width, height: page.bounds(for: .cropBox).size.height), for: .cropBox)
+                                // regular
+                                switch self.paperNumber {
+                                    case .paper3, .paper5:
+                                        if runningQuestionNumber == 2 {
+                                            let index = QuestionIndex(runningQuestionNumber)
+                                            pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                        } else {
+                                            let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
+                                            
+                                            if snapshot == nil {
+                                                print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
+                                                error = true
+                                                print("error toggled due to nil snapshot error")
+                                            }
+                                            // let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 60, height: 200)))! // crop page snapshot to only include question number
+                                            let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 400)))! // crop page snapshot to only include page number
+                                            
+                                            let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
+                                            print("This should be the question number: ", recognisedText, "in paper \(self.paperCode) page \(pageNumber)")
+                                            
+                                            if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
+                                                runningQuestionNumber = nextQuestionNumber
+                                                nextQuestionNumber += 1
+                                                
+                                                let index = QuestionIndex(runningQuestionNumber)
+                                                pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                                 // debugging
 
-                                    
-                                } else { //continuation of previous question
-                                    let index = QuestionIndex(runningQuestionNumber)
-                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                     // debugging
+                                                
+                                            } else { //continuation of previous question
+                                                let index = QuestionIndex(runningQuestionNumber)
+                                                pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                                 // debugging
+                                            }
+                                        }
+                                    default:
+                                        // alt
+                                        //var snapshot = page.thumbnail(of: CGSize(width: page.bounds(for: .cropBox).size.width, height: page.bounds(for: .cropBox).size.height), for: .cropBox)
+                                        // regular
+                                        let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
+                                        
+                                        if snapshot == nil {
+                                            print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
+                                            error = true
+                                            print("error toggled due to nil snapshot error")
+                                        }
+                                        
+                                        
+                                        // let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 60, height: 200)))! // crop page snapshot to only include question number
+                                        let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 400)))! // crop page snapshot to only include page number
+                                        
+                                        let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
+                                        print("This should be the question number: ", recognisedText, "in paper \(self.paperCode) page \(pageNumber)")
+                                        
+                                        if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
+                                            runningQuestionNumber = nextQuestionNumber
+                                            nextQuestionNumber += 1
+                                            
+                                            let index = QuestionIndex(runningQuestionNumber)
+                                            pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                             // debugging
+
+                                            
+                                        } else { //continuation of previous question
+                                            let index = QuestionIndex(runningQuestionNumber)
+                                            pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
+                                             // debugging
+                                        }
                                 }
+                                
                             }
                         }
                         numberOfQuestions = runningQuestionNumber
