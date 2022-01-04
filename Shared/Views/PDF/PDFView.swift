@@ -40,22 +40,92 @@ struct WrappedPDFView: UIViewRepresentable {
 }
 
 struct PDFView: View {
-    let pdf: PDFDocument
-    @State var drawingOverlay: Bool = false
+    @EnvironmentObject var applicationStore: ApplicationStore
     
-    init(_ pdf: PDFDocument){
-        self.pdf = pdf
+    @State var answerOverlayShowing: Bool = false
+    @State var markschemeShowing: Bool = false
+    @State var datasheetShowing: Bool = false
+    @State var testMode = false
+    
+    let bundle: CambridgePaperBundle
+    
+    var initialPaperShowing: CambridgePaperType
+    
+    init(bundle: CambridgePaperBundle, initialPaperShowing: CambridgePaperType = .questionPaper){
+        self.bundle = bundle
+        self.initialPaperShowing = initialPaperShowing
     }
     
     var body: some View {
-        ZStack {
-            WrappedPDFView(pdf: pdf)
+        ZStack(alignment: .bottom) {
+            ZStack {
+                Group {
+                    // Question paper
+                    WrappedPDFView(pdf: bundle.questionPaper!.pdf)
+                        .zIndex(calculatedQuestionPaperIndex())
+                    
+                    // Marking scheme
+                    if !bundle.markScheme.isNil {
+                        WrappedPDFView(pdf: bundle.markScheme!.pdf)
+                            .zIndex(calculatedMarkschemeIndex())
+                    }
+                    
+                    // Data sheet
+                    if !bundle.datasheetBySubject.isNil {
+                        WrappedPDFView(pdf: bundle.datasheetBySubject!)
+                            .zIndex(calculatedDatasheetIndex())
+                    }
+                    
+                }
+                .background(Color.white)
+                .edgesIgnoringSafeArea(.all)
+                
+                Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, testMode: $testMode, datasheetShowing: $datasheetShowing)
+                    .zIndex(3)
+            }
+            
+            if canShowMCQAnswerOverlay() {
+                MCQAnswerOverlay(bundle: bundle, showing: $answerOverlayShowing)
+                    .zIndex(4)
+                    .transition(.slide)
+            }
+        }
+        .navigationBarHidden(true)
+        .edgesIgnoringSafeArea(.all)
+        .onAppear {
+            switch initialPaperShowing {
+                case .markScheme:
+                    markschemeShowing = true
+                case .questionPaper:
+                    markschemeShowing = false
+                case .datasheet:
+                    datasheetShowing = false
+                case .other:
+                    return
+            }
         }
     }
 }
 
-struct PDFView_Previews: PreviewProvider {
-    static var previews: some View {
-        PDFView(PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_42", ofType: "pdf")!))!)
+extension PDFView {
+    func calculatedMarkschemeIndex() -> Double {
+        (bundle.markScheme != nil && markschemeShowing) ? 1 : 0
+    }
+    
+    func calculatedQuestionPaperIndex() -> Double {
+        (bundle.questionPaper != nil && !markschemeShowing) ? 1 : 0
+    }
+    
+    func calculatedDatasheetIndex() -> Double {
+        (bundle.questionPaper != nil && datasheetShowing) ? 2 : 0
+    }
+    
+    func canShowMCQAnswerOverlay() -> Bool {
+        (bundle.metadata.paperNumber == .paper1) && !(bundle.markScheme.map { $0.metadata.answers }).isNilOrEmpty && (answerOverlayShowing == true)
+    }
+    
+    func showMCQAnswerOverlay() {
+        answerOverlayShowing = true
+        markschemeShowing = false
     }
 }
