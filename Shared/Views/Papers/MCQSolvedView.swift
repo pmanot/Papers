@@ -6,6 +6,7 @@ import SwiftUI
 import SwiftUIX
 
 struct MCQSolvedView: View {
+    @EnvironmentObject var applicationStore: ApplicationStore
     @Environment(\.presentationMode) var presentationMode
     @Binding var solvedPaper: SolvedPaper!
     
@@ -69,7 +70,7 @@ struct MCQSolvedView: View {
                 pieChartWidget
                 
                 SymbolButton("checkmark.circle.fill"){
-                    save(solvedPaper, database: PapersDatabase())
+                    save(solvedPaper, database: applicationStore.papersDatabase)
                     withAnimation {
                         presentationMode.wrappedValue.dismiss()
                     }
@@ -264,7 +265,7 @@ struct MCQSolvedView_Previews: PreviewProvider {
 
 struct BarView: View {
     var color: Color
-    let value: CGFloat
+    var value: CGFloat
     let maxValue: CGFloat
     
     @State var width: CGFloat = 0

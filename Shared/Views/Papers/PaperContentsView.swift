@@ -22,24 +22,18 @@ struct PaperContentsView: View {
     var body: some View {
         List {
             if paperBundle.questionPaper != nil {
-                Section(header: "Question Paper"){
+                Section(header: "Paper"){
                     PaperRow(paperBundle)
-                }
-            }
-            
-            if paperBundle.markScheme != nil {
-                Section(header: "Markscheme"){
-                    PaperRow(paperBundle.markScheme!)
                 }
             }
             
             if paperBundle.questionPaper != nil {
                 Section(header: "Questions"){
                     ForEach(paperBundle.questionPaper!.questions){ question in
-                        NavigationLink(destination: QuestionView(question)) {
+                        NavigationLink(destination: QuestionView(question, bundle: paperBundle)) {
                             QuestionRow(question)
                         }
-                        .listRowBackground(!searchText.isEmpty ? Color.white.opacity(question.rawText.match(searchText) ? 0.4 : 0) : Color.clear)
+                        .listRowBackground(!searchText.isEmpty ? Color.primary.opacity(question.rawText.match(searchText) ? 0.4 : 0) : Color.clear)
                     }
                 }
             }
@@ -48,13 +42,15 @@ struct PaperContentsView: View {
     }
 }
 
+/*
 struct PaperContentsView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            PaperContentsView(paper: CambridgeQuestionPaper(url: PapersDatabase.urls[0], metadata: ApplicationStore().papersDatabase.examples[0]))
+            PaperContentsView()
         }
     }
 }
+*/
 
 extension PaperContentsView {
     struct QuestionRow: View {
@@ -66,16 +62,10 @@ extension PaperContentsView {
         var body: some View {
             HStack {
                 Text("\(self.question.index.number).")
-                    .font(.title)
-                    .fontWeight(.heavy)
+                    .font(.title, weight: .heavy)
                 
                 Text("\(question.pages.count) pages")
-                    .font(.caption)
-                    .fontWeight(.regular)
-                    .foregroundColor(.primary)
-                    .opacity(0.8)
-                    .padding(6)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                    .modifier(TagTextStyle())
             }
             .padding()
         }
@@ -98,29 +88,8 @@ extension PaperContentsView {
             self.bundle = paperBundle
         }
         
-        @ViewBuilder var destination: some View {
-            switch bundle.questionPaper {
-                case nil:
-                    // Using WrappedPDFView
-                    WrappedPDFView(pdf: bundle.markScheme!.pdf)
-                default:
-                    switch bundle.metadata.paperNumber {
-                        case .paper1: // MCQ
-                            MCQView(paperBundle: bundle)
-                        default:
-                            // Using WrappedPDFView
-                            WrappedPDFView(pdf: bundle.questionPaper!.pdf)
-                            
-                            // Using QuickLook
-                            /*
-                            QuickLook(url: paper.questionPaper!.getPaperURL())
-                            */
-                    }
-            }
-        }
-        
         var body: some View {
-            NavigationLink(destination: destination) {
+            NavigationLink(destination: PDFView(bundle: bundle)) {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(bundle.metadata.subject.rawValue)")
@@ -129,10 +98,17 @@ extension PaperContentsView {
                         
                         Text(bundle.metadata.questionPaperCode)
                             .modifier(PaperTagStyle(outlineWidth: 1))
+                        
+                        if bundle.metadata.paperNumber == .paper1 && bundle.markScheme != nil {
+                            if !bundle.markScheme!.metadata.answers.isEmpty {
+                                Image(systemName: .checkmarkCircle)
+                                    .font(.headline)
+                            }
+                        }
                     }
                     
                     HStack {
-                        Text("\(bundle.metadata.month.rawValue)")
+                        Text("\(bundle.metadata.month.compact())")
                             .modifier(PaperTagStyle())
                         
                         Text("20\(bundle.metadata.year)")

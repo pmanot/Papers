@@ -45,11 +45,44 @@ struct SolvedPaperCollectionView: View {
     }
 
     var body: some View {
-        ZStack {
-            switch expanded {
-                case true:
-                    VStack {
-                        ForEach(enumerating: solvedPapers) { (index, paper) in
+        VStack {
+            HStack {
+                Text(CambridgeSubject(paperCode: solvedPapers.first!.paperCode).rawValue)
+                    .fontWeight(.regular)
+                    .padding(8)
+                    .background(Color.background)
+                    .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+                Text(getQuestionPaperCode(solvedPapers.first!.paperCode))
+                    .fontWeight(.regular)
+                    .padding(8)
+                    .background(Color.background)
+                    .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+                Text("\(solvedPapers.count)")
+                    .fontWeight(.regular)
+                    .padding(8)
+                    .background(Color.background)
+                    .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+            }
+            .padding()
+            .zIndex(10)
+            
+            ZStack {
+                switch expanded {
+                    case true:
+                        VStack {
+                            ForEach(enumerating: solvedPapers.sorted(by: {$0.solvedOn >= $1.solvedOn})) { (index, paper) in
+                                ItemView(
+                                    index: index,
+                                    paper: paper,
+                                    isExpanded: expanded
+                                )
+                                .matchedGeometryEffect(id: paper.id, in: paperCards)
+                                .zIndex(Double(solvedPapers.count - index))
+                            }
+                        }
+                        .zIndex(10)
+                    case false:
+                        ForEach(enumerating: solvedPapers.sorted(by: {$0.solvedOn >= $1.solvedOn})) { (index, paper) in
                             ItemView(
                                 index: index,
                                 paper: paper,
@@ -58,20 +91,21 @@ struct SolvedPaperCollectionView: View {
                             .matchedGeometryEffect(id: paper.id, in: paperCards)
                             .zIndex(Double(solvedPapers.count - index))
                         }
-                    }
-                    .zIndex(10)
-                case false:
-                    ForEach(enumerating: solvedPapers) { (index, paper) in
-                        ItemView(
-                            index: index,
-                            paper: paper,
-                            isExpanded: expanded
-                        )
-                        .matchedGeometryEffect(id: paper.id, in: paperCards)
-                        .zIndex(Double(solvedPapers.count - index))
-                    }
+                }
             }
+            Group {
+                if solvedPapers.count > 1 {
+                    Image(systemName: expanded ? .chevronUp : .chevronDown)
+                        .padding()
+                } else {
+                    Rectangle()
+                        .foregroundColor(.clear)
+                }
+            }
+            .frame(width: 25, height: 25)
+            
         }
+       
         .onTapGesture {
             expand()
         }

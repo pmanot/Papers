@@ -12,9 +12,9 @@ struct SolvedPaperCard: View {
     }
     var body: some View {
         HStack(alignment: .top) {
-            barChartWidget
+            blockChartWidget
             
-            VStack{
+            VStack {
                 HStack(spacing: 0){
                     Text("\(solvedPaper.correctAnswers.count)")
                         .font(.title2, weight: .black)
@@ -27,11 +27,14 @@ struct SolvedPaperCard: View {
                 .border(Color.secondary, width: 0.5, cornerRadius: 8, antialiased: true)
                 .padding([.leading, .vertical], 5)
                 .padding(4)
+                
+                Text(solvedPaper.solvedOn.relativeDescription)
+                    .padding()
             }
         }
         .padding()
         .border(Color.secondary, width: 1, cornerRadius: 10, antialiased: true)
-        .background(VisualEffectBlurView(blurStyle: .systemThinMaterial).cornerRadius(10).shadow(radius: 3))
+        .background(VisualEffectBlurView(blurStyle: .systemThinMaterial).cornerRadius(10))
     }
 }
 
@@ -89,4 +92,53 @@ extension SolvedPaperCard {
             .padding(3)
         }
     }
+    
+    private var blockChartWidget: some View {
+        VStack(spacing: 1) {
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Correct answers:")
+                        .font(.caption, weight: .light)
+                    Text("\(solvedPaper.correctAnswers.count)")
+                        .font(.subheadline, weight: .bold)
+                }
+                .padding(.leading, 1)
+                .padding(.bottom, 1)
+                    
+                BlockChartView(Color.green, value: solvedPaper.correctAnswers.count/2, maxValue: solvedPaper.allAnswers.count/2)
+                    .frame(width: 150, height: 20)
+            }
+            .padding(8)
+                
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Incorrect answers:")
+                        .font(.caption, weight: .light)
+                    Text("\(solvedPaper.incorrectAnswers.count)")
+                        .font(.subheadline, weight: .bold)
+                }
+                .padding(.leading, 1)
+                
+                BlockChartView(Color.red, value: solvedPaper.incorrectAnswers.count/2, maxValue: solvedPaper.allAnswers.count/2)
+                    .frame(width: 150, height: 20)
+            }
+            .padding(8)
+                
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("Unsolved answers:")
+                        .font(.caption, weight: .light)
+                    Text("\(solvedPaper.unsolvedAnswers.count)")
+                        .font(.subheadline, weight: .bold)
+                }
+                .padding(.leading, 1)
+                .padding(.bottom, 1)
+                
+                BlockChartView(Color.yellow, value: solvedPaper.unsolvedAnswers.count/2, maxValue: solvedPaper.allAnswers.count/2)
+                    .frame(width: 150, height: 20)
+            }
+            .padding(8)
+        }
+    }
+    
 }
