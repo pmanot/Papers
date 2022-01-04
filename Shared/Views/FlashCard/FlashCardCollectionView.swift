@@ -6,31 +6,36 @@
 //
 
 import SwiftUI
+import Merge
 
 struct FlashCardCollectionView: View {
     @Binding var stack: Stack
     @State private var flashCardViewShowing: Bool = false
     
+    @ObservedObject var papersDatabase: PapersDatabase
+    
     var body: some View {
         Group {
             if !flashCardViewShowing {
-                ListView(stack: $stack)
-                .navigationTitle(stack.title)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing){
-                        SymbolButton("play.circle.fill"){
-                            withAnimation {
-                                flashCardViewShowing.toggle()
-                            }
-                        }
-                        .font(.title2, weight: .bold)
-                        .foregroundColor(.pink)
-                        .transition(.opacity)
-                    }
-                }
+                ListView(stack: $stack, papersDatabase: papersDatabase)
+                    .navigationTitle(stack.title)
             } else {
                 FlashCardView(cards: stack.cards)
                     .transition(.opacity)
+                    .navigationBarBackButtonHidden(true)
+            }
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing){
+                Button(action: {
+                    withAnimation {
+                        flashCardViewShowing.toggle()
+                    }
+                }){
+                    Image(systemName: flashCardViewShowing ? .pauseFill : .playFill)
+                        .font(.title2, weight: .bold)
+                }
+                .foregroundColor(.pink)
             }
         }
         
@@ -39,8 +44,10 @@ struct FlashCardCollectionView: View {
 
 extension FlashCardCollectionView {
     struct ListView: View {
-        @Binding var stack: Stack
         @State private var newCard: Card = Card.empty
+        @Binding var stack: Stack
+        
+        @ObservedObject var papersDatabase: PapersDatabase
         
         var body: some View {
             List {
@@ -57,6 +64,7 @@ extension FlashCardCollectionView {
                                     stack.cards.append(newCard.generate())
                                     newCard = Card.empty
                                 }
+                                papersDatabase.saveDeck()
                             }
                             .font(.title2, weight: .regular)
                             .foregroundColor(.blue)
@@ -107,6 +115,7 @@ extension FlashCardCollectionView.ListView {
     
     func delete(at offsets: IndexSet) {
         stack.cards.remove(atOffsets: offsets)
+        papersDatabase.saveDeck()
     }
 }
 
@@ -114,7 +123,7 @@ struct FlashCardCollectionView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
             VStack { /// necessary for transitions to work in canvas
-                FlashCardCollectionView(stack: .constant(Stack.example))
+                FlashCardCollectionView(stack: .constant(Stack.example), papersDatabase: ApplicationStore().papersDatabase)
             }
         }
     }

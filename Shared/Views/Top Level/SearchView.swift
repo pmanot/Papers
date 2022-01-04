@@ -58,53 +58,59 @@ extension SearchView.ListView {
     struct Row: View {
         @Binding var searchText: String
         let paperBundle: CambridgePaperBundle
-        @ViewBuilder var destinationView: some View {
-            switch paperBundle.metadata.paperType {
-                case .markScheme:
-                    Group { PDFView(paperBundle.markScheme!.pdf) }
-                default:
-                    Group { PaperContentsView(paper: paperBundle.questionPaper!, search: $searchText) }
-            }
-        }
         
         var body: some View {
-            NavigationLink(destination: destinationView) {
+            NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: $searchText)) {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(paperBundle.metadata.subject.rawValue)")
-                            .font(.title3)
-                            .fontWeight(.black)
-                            .padding(6)
+                            .font(.title3, weight: .black)
                         
                         Text(paperBundle.metadata.questionPaperCode)
-                            .font(.subheadline)
-                            .fontWeight(.black)
                             .foregroundColor(.primary)
-                            .padding(6)
-                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.primary, lineWidth: 0.5))
+                            .modifier(TagTextStyle())
                     }
                     
                     HStack {
-                        Text("\(paperBundle.metadata.month.rawValue)")
+                        Text("\(paperBundle.metadata.month.compact())")
+                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
                         Text("20\(paperBundle.metadata.year)")
+                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
                         Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
+                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
                         Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
+                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                     }
-                    .padding(.leading, 5)
                     
                     if paperBundle.metadata.paperType == .questionPaper {
-                        Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
-                            .font(.subheadline)
-                            .fontWeight(.light)
-                            .foregroundColor(.secondary)
-                            .padding(6)
+                        HStack {
+                            Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
+                                .font(.subheadline)
+                                .fontWeight(.light)
+                                .foregroundColor(.secondary)
+                                .padding(6)
+                            
+                            if paperBundle.metadata.paperNumber == .paper1 && paperBundle.markScheme != nil {
+                                if !paperBundle.markScheme!.metadata.answers.isEmpty {
+                                    Group {
+                                        Image(systemName: .aCircleFill)
+                                        Image(systemName: .bCircleFill)
+                                        Image(systemName: .cCircleFill)
+                                        Image(systemName: .dCircleFill)
+                                    }
+                                    .font(.headline)
+                                    .frame(width: 15)
+                                }
+                            }
+                        }
+                        
                     } else {
                         Text("Markscheme")
                             .font(.subheadline)
@@ -117,6 +123,7 @@ extension SearchView.ListView {
                 .padding(5)
                 
             }
+            .buttonStyle(PlainButtonStyle())
             .buttonStyle(PlainButtonStyle())
             .contextMenu {
                 Label("Markscheme", systemImage: "doc.on.clipboard")

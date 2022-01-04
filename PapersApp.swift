@@ -2,7 +2,7 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUI
+import SwiftUIX
 
 @main
 struct PapersApp: App {
@@ -11,7 +11,9 @@ struct PapersApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(applicationStore)
-                .environmentObject(applicationStore.papersDatabase)
+                .onAppear {
+                    print("This please: ", NSHomeDirectory())
+                }
         }
     }
 }

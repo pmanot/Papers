@@ -97,6 +97,15 @@ extension AnswerValue {
                 try container.encode(string, forKey: .associatedValue)
         }
     }
+    
+    func getValue() -> String {
+        switch self {
+            case .multipleChoice(choice: let choice):
+                return choice.rawValue
+            default:
+                return "NOT MCQ"
+        }
+    }
 }
 
 enum MCQSelection: String, Codable, Hashable {

@@ -19,17 +19,17 @@ struct TestCrop: View {
         }
         return t
     }
-    let pdf = PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_ms_11", ofType: "pdf")!))!
+    let pdf = PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_42", ofType: "pdf")!))!
     var body: some View {
         VStack {
             ScrollView {
                 LazyVStack {
                     ForEach(1..<(pdf.pageCount)){ i in
-                        Image(cgImage: pdf.page(at: i)!.snapshot().cgImage!)
+                        Image(uiImage: pdf.page(at: i)!.thumbnail(of: CGSize(width: pdf.page(at: i)!.bounds(for: .mediaBox).size.width, height: pdf.page(at: i)!.bounds(for: .mediaBox).size.height), for: .mediaBox))
                             .resizable()
                             .overlay {
                                 VStack {
-                                    Image(cgImage: pdf.page(at: i)!.snapshot().cgImage!.cropping(to: CGRect(origin: CGPoint(x: 230, y: 171 + 49*number), size: CGSize(width: 74, height: 55)))!)
+                                    Image(cgImage: pdf.page(at: i)!.thumbnail(of: CGSize(width: pdf.page(at: i)!.bounds(for: .mediaBox).size.width, height: pdf.page(at: i)!.bounds(for: .mediaBox).size.height), for: .mediaBox).cgImage!.cropping(to: CGRect(origin: CGPoint(x: 20, y: 30), size: CGSize(width: 50, height: 70)))!)
                                         .border(Color.black)
                                 }
                             }

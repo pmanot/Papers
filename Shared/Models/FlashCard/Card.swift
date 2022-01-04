@@ -4,8 +4,10 @@
 
 import Foundation
 
-struct Card: Identifiable, Hashable {
-    let id = UUID()
+struct Card: Identifiable, Hashable, Codable {
+    var id: String {
+        prompt + answer
+    }
     var prompt: String
     var answer: String
     var keywords: [String] = []
@@ -26,7 +28,7 @@ extension Card {
 }
 
 
-struct Stack: Identifiable, Hashable {
+struct Stack: Identifiable, Hashable, Codable {
     var id = UUID()
     var title: String
     var cards: [Card]

@@ -9,6 +9,7 @@ import Swift
 final public class ApplicationStore: ObservableObject {
     let papersDatabase = PapersDatabase()
     let settings: AppSettings
+    @Published var tabViewShowing: Bool = true
     
     init() {
         papersDatabase.load()

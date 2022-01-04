@@ -5,8 +5,8 @@
 import SwiftUI
 
 struct FlashCardDeck: View {
-    @EnvironmentObject var papersDatabase: PapersDatabase
-    @State var deck: [Stack] = [Stack(title: "Example", cards: Card.exampleDeck), Stack(title: "Another example", cards: Card.exampleDeck), Stack(title: "Yet another fucking example", cards: Card.exampleDeck)]
+    @ObservedObject var papersDatabase: PapersDatabase
+    @State var deck: [Stack] = []
     @State var newStack: Stack = Stack.empty
     
     var body: some View {
@@ -22,6 +22,7 @@ struct FlashCardDeck: View {
                             withAnimation {
                                 papersDatabase.deck.insert(newStack)
                                 deck.append(newStack)
+                                save()
                                 newStack = Stack.empty
                             }
                             
@@ -33,8 +34,8 @@ struct FlashCardDeck: View {
                 }
             }
             
-            ForEach(enumerating: deck) { (index, stack) in
-                NavigationLink(destination: FlashCardCollectionView(stack: $deck[index])) {
+            ForEach(enumerating: papersDatabase.deck) { (index, stack) in
+                NavigationLink(destination: FlashCardCollectionView(stack: $papersDatabase.deck[index], papersDatabase: papersDatabase)) {
                     VStack {
                         Text(stack.title)
                             .fontWeight(.regular)
@@ -52,14 +53,19 @@ struct FlashCardDeck: View {
 
 extension FlashCardDeck {
     func delete(at offsets: IndexSet) {
-        deck.remove(atOffsets: offsets)
+        papersDatabase.deck.remove(atOffsets: offsets)
+        papersDatabase.saveDeck()
+    }
+    
+    func save(){
+        papersDatabase.saveDeck()
     }
 }
 
 struct FlashCardDeck_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            FlashCardDeck()
+            FlashCardDeck(papersDatabase: PapersDatabase())
         }
     }
 }

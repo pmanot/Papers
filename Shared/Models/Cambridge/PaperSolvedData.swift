@@ -5,6 +5,38 @@
 
 import Foundation
 
+struct PaperHistory {
+    var openCount: Int
+    var solvedData: [PaperSolvedData] = []
+}
+
+struct PaperSolvedData {
+    init(_ solvedPaper: SolvedPaper){
+        self.paperCode = solvedPaper.paperCode
+        self.correct = solvedPaper.correctAnswers.count
+        self.incorrect = solvedPaper.incorrectAnswers.count
+        self.unattempted = solvedPaper.unsolvedAnswers.count
+        self.timeTaken = 0
+        self.solvedOn = solvedPaper.solvedOn
+    }
+    init(paperCode: String, correct: Int, incorrect: Int, unattempted: Int, timeTaken: TimeInterval){
+        self.paperCode = paperCode
+        self.correct = correct
+        self.incorrect = incorrect
+        self.unattempted = unattempted
+        self.timeTaken = timeTaken
+    }
+    
+    var paperCode: String
+    
+    var solvedOn: Date = Date()
+    var correct: Int
+    var incorrect: Int
+    var unattempted: Int
+    var timeTaken: TimeInterval
+    
+}
+
 struct SolvedPaper: Codable, Hashable, Identifiable {
     var id = UUID()
     var paperCode: String

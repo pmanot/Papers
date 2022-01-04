@@ -25,4 +25,15 @@ extension CambridgePaperMonth {
             self = .febMarch
         }
     }
+    
+    func compact() -> String {
+        switch self {
+            case .febMarch:
+                return "Feb-March"
+            case .mayJune:
+                return "May-June"
+            case .octNov:
+                return "Oct-Nov"
+        }
+    }
 }

@@ -8,20 +8,29 @@
 import SwiftUI
 
 struct FlashCardCreationView: View {
-    @Binding var stack: Stack
+    @EnvironmentObject var applicationStore: ApplicationStore
+    @State private var selectedStackIndex = 0
     @State private var card = Card.empty
     @State var keyword: String = ""
     @Binding var isShowing: Bool
     
-    init(stack: Binding<Stack>, showing: Binding<Bool>){
-        self._stack = stack
+    init(showing: Binding<Bool>){
         self._isShowing = showing
     }
     var body: some View {
         VStack(alignment: .center) {
             Spacer(minLength: 40)
-            
             VStack(alignment: .leading, spacing: 15) {
+                HStack {
+                    Text("Save in")
+                    Picker("", selection: $selectedStackIndex){
+                        ForEach(enumerating: applicationStore.papersDatabase.deck){ (index, stack) in
+                            Text(stack.title)
+                                .tag(Int(index))
+                        }
+                    }
+                    .padding(5)
+                }
                 Text("Prompt")
                     .font(.title, weight: .heavy)
                 TextField("This is where your prompt goes", text: $card.prompt)
@@ -48,7 +57,7 @@ struct FlashCardCreationView: View {
             
             Spacer(minLength: 20)
             
-            Button(action: save){
+            Button(action: {save(database: applicationStore.papersDatabase)}){
                 Image(systemName: card.isEmpty() ? .chevronDownCircleFill : .checkmarkCircleFill)
                     .font(.largeTitle)
                     .padding()
@@ -61,10 +70,13 @@ struct FlashCardCreationView: View {
 }
 
 extension FlashCardCreationView {
-    func save(){
+    func save(database: PapersDatabase){
+        var deck = database.deck
         if !card.isEmpty() {
-            stack.cards.append(card.generate())
+            deck[selectedStackIndex].cards.append(card)
+            database.deck = deck
             card = Card.empty
+            database.saveDeck()
         }
         
         self.isShowing.toggle()
@@ -73,6 +85,6 @@ extension FlashCardCreationView {
 
 struct FlashCardCreationView_Previews: PreviewProvider {
     static var previews: some View {
-        FlashCardCreationView(stack: .constant(Stack.empty), showing: .constant(true))
+        FlashCardCreationView(showing: .constant(true))
     }
 }
