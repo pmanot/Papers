@@ -54,8 +54,10 @@ extension Array where Element == URL {
         var filteredURLs: [URL] = []
         for url in self {
             let codeChunks = url.getPaperCode().split(separator: "_")
-            if codeChunks[2] == "ms" || codeChunks[2] == "qp" {
-                filteredURLs.append(url)
+            if codeChunks.count > 2 {
+                if codeChunks[2] == "ms" || codeChunks[2] == "qp" {
+                    filteredURLs.append(url)
+                }
             }
         }
         

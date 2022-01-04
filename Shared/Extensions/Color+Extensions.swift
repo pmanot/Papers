@@ -12,5 +12,5 @@ extension Color {
     
     static let primaryInverted = Color("primaryInverted", bundle: Bundle.main)
     static let background = Color("background", bundle: Bundle.main)
-    static let nearDark = Color(20, 20, 20)
+    static let dark = Color(18, 18, 18)
 }

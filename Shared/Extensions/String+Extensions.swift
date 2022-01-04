@@ -29,3 +29,10 @@ extension String {
         self.split(separator: "_")[2] == "qp"
     }
 }
+
+extension String {
+    func formattedQuestionText() -> String {
+        self.removing(contentsOf: (0..<10).map { String($0) }.reduce("", +))
+    }
+}
+
