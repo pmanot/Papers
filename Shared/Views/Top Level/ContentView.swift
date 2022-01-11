@@ -2,16 +2,111 @@
 // Copyright (c) Purav Manot
 //
 
+import SwiftUI
 import SwiftUIX
+import UXKit
 
 struct ContentView: View {
-    @State var isLoading: Bool = true
+    enum Destination: String, CaseIterable, Codable, HashIdentifiable {
+        case home
+        case papers
+        case search
+        case flashCards
+        case credits
+        
+        var title: String {
+            switch self {
+                case .home:
+                    return "Home"
+                case .papers:
+                    return "Papers"
+                case .search:
+                    return "Search"
+                case .flashCards:
+                    return "Flashcards"
+                case .credits:
+                    return "Credits"
+            }
+        }
+        
+        var icon: SFSymbolName {
+            switch self {
+                case .home:
+                    return .trayFullFill
+                case .papers:
+                    return .listDash
+                case .search:
+                    return .magnifyingglass
+                case .flashCards:
+                    return .rectangleStack
+                case .credits:
+                    return .heart
+            }
+        }
+    }
+    
+    @EnvironmentObject var applicationStore: ApplicationStore
+
+    @Environment(\.userInterfaceIdiom) var userInterfaceIdiom
+
+    @UserStorage("rootView.selection") private var selection: Destination = .home
+    
+    @State private var isLoading: Bool = true
+    
     var body: some View {
-        CustomTabView()
-            .edgesIgnoringSafeArea(.all)
+        navigationView
             .fullScreenCover(isPresented: $isLoading){
                 LoadingView(loading: $isLoading)
             }
+    }
+    
+    @ViewBuilder
+    var navigationView: some View {
+        if userInterfaceIdiom == .pad || userInterfaceIdiom == .mac {
+            AdaptiveNavigationView("Papers", selection: $selection) {
+                HomeView()
+                    .environmentObject(applicationStore)
+                    .initialSidebarVisibility(.visible)
+                    .navigatableItem(tag: Destination.home) {
+                        TabItem(item: .home)
+                    }
+                
+                PapersView()
+                    .environmentObject(applicationStore)
+                    .initialSidebarVisibility(.visible)
+                    .navigatableItem(tag: Destination.papers) {
+                        TabItem(item: .papers)
+                    }
+                
+                SearchView()
+                    .initialSidebarVisibility(.visible)
+                    .navigatableItem(tag: Destination.search) {
+                        TabItem(item: .search)
+                    }
+                
+                FlashCardDeck(papersDatabase: applicationStore.papersDatabase)
+                    .environmentObject(applicationStore)
+                    .initialSidebarVisibility(.visible)
+                    .navigatableItem(tag: Destination.flashCards) {
+                        TabItem(item: .flashCards)
+                    }
+                
+                CreditsView()
+                    .initialSidebarVisibility(.visible)
+
+                    .navigatableItem(tag: Destination.credits) {
+                        TabItem(item: .credits)
+                    }
+
+            } placeholder: {
+                Text("No Selection")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+            }
+        } else {
+            CustomTabView(selection: $selection)
+                .edgesIgnoringSafeArea(.all)
+        }
     }
 }
 
@@ -25,10 +120,9 @@ struct ContentView_Previews: PreviewProvider {
 extension ContentView {
     struct CustomTabView: View {
         @EnvironmentObject var applicationStore: ApplicationStore
+        
         @State var showingTabView: Bool = true
-        @State var selectedIndex: Int = 0
-        let tabItemSymbols: [SFSymbolName] = [.trayFullFill, .listDash, .magnifyingglass, .rectangleStack, .heart]
-        let tabItems: [String] = ["Home", "Papers", "Search", "Flashcards", "Credits"]
+        @Binding var selection: Destination
         
         var body: some View {
             VStack(spacing: 0) {
@@ -37,49 +131,44 @@ extension ContentView {
                         HomeView()
                             .environmentObject(applicationStore)
                     }
-                    .zIndex(getIndex(0))
-                
+                    .zIndex(getIndex(for: .home))
+
                     NavigationView {
                         PapersView()
                             .environmentObject(applicationStore)
                     }
-                    .zIndex(getIndex(1))
-                    
-                
+                    .zIndex(getIndex(for: .papers))
+
                     NavigationView {
                         SearchView()
                     }
-                    .zIndex(getIndex(2))
-                
-                
+                    .zIndex(getIndex(for: .search))
+
                     NavigationView {
                         FlashCardDeck(papersDatabase: applicationStore.papersDatabase)
                             .environmentObject(applicationStore)
                     }
-                    .zIndex(getIndex(3))
+                    .zIndex(getIndex(for: .flashCards))
                     
                     NavigationView {
                         CreditsView()
                     }
-                    .zIndex(getIndex(4))
+                    .zIndex(getIndex(for: .credits))
                 }
                 
                 Divider()
                 
                 HStack {
-                    ForEach(enumerating: tabItems, id: \.self){ (index, item) in
-                        Button(action: {selectedIndex = index}) {
+                    ForEach(Destination.allCases) { item in
+                        Button(action: { selection = item }) {
                             Spacer()
-                            VStack(spacing: 5) {
-                                Image(systemName: tabItemSymbols[index])
-                                    .font(.title3)
-                                Text(item)
-                                    .font(.caption)
-                            }
+                            
+                            TabItem(item: item)
+                            
                             Spacer()
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .foregroundColor(index == selectedIndex ? .systemPink : .secondaryLabel)
+                        .foregroundColor(item == selection ? .systemPink : .secondaryLabel)
                     }
                 }
                 .padding(5)
@@ -87,10 +176,30 @@ extension ContentView {
             }
         }
     }
+    
+    struct TabItem: View {
+        @Environment(\.userInterfaceIdiom) private var userInterfaceIdiom
+
+        let item: Destination
+        
+        var body: some View {
+            if userInterfaceIdiom == .pad || userInterfaceIdiom == .mac {
+                Label(item.title, systemImage: item.icon)
+            } else {
+                VStack(spacing: 5) {
+                    Image(systemName: item.icon)
+                        .font(.title3)
+                    
+                    Text(item.title)
+                        .font(.caption)
+                }
+            }
+        }
+    }
 }
 
 extension ContentView.CustomTabView {
-    func getIndex(_ selfValue: Int) -> Double {
-        selectedIndex == selfValue ? 4 : 0
+    func getIndex(for destination: ContentView.Destination) -> Double {
+        selection == destination ? 4 : 0
     }
 }

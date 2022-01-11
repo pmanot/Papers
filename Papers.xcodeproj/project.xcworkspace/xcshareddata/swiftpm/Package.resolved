@@ -6,7 +6,7 @@
         "repositoryURL": "https://github.com/vmanot/Compute.git",
         "state": {
           "branch": "master",
-          "revision": "c4b3a37d9be4aa17fe258020fe988fd612631d25",
+          "revision": "b0d4b69b6258394d980cccf442eb2d58ad493dbf",
           "version": null
         }
       },
@@ -15,7 +15,16 @@
         "repositoryURL": "https://github.com/vmanot/Data.git",
         "state": {
           "branch": "master",
-          "revision": "39b10a56e461eac5aab9ce9b3285e44f123d034a",
+          "revision": "2936f7b86bb43196ceb6205b2aa0d5f023102bbf",
+          "version": null
+        }
+      },
+      {
+        "package": "Diagnostics",
+        "repositoryURL": "https://github.com/vmanot/Diagnostics.git",
+        "state": {
+          "branch": "master",
+          "revision": "0333f51a768e69201918a6789dd602e9fbd6f80e",
           "version": null
         }
       },
@@ -24,7 +33,7 @@
         "repositoryURL": "https://github.com/vmanot/Filesystem",
         "state": {
           "branch": "master",
-          "revision": "3f478d0c3b7786469059de665d9635c156c1e717",
+          "revision": "35d80bc2c2ac0bf522c5acb33a660cac41423cb6",
           "version": null
         }
       },
@@ -33,7 +42,7 @@
         "repositoryURL": "https://github.com/vmanot/FoundationX.git",
         "state": {
           "branch": "master",
-          "revision": "5c1f1e8d96cf2d6f5cc4e0b7e5fb283d33052272",
+          "revision": "075f79fd06a9b2cf6f7e8d677843f5547ba7a9d2",
           "version": null
         }
       },
@@ -42,7 +51,7 @@
         "repositoryURL": "https://github.com/vmanot/Merge.git",
         "state": {
           "branch": "master",
-          "revision": "3295e201a1f4ab186208f689a842eee2f83bf7c5",
+          "revision": "45acce187c694209d22a0a5aefa076ed8f9c2ba6",
           "version": null
         }
       },
@@ -51,7 +60,7 @@
         "repositoryURL": "https://github.com/vmanot/POSIX.git",
         "state": {
           "branch": "master",
-          "revision": "e4345c617a66316712bc701d31feed433efc6cea",
+          "revision": "80faa5d7fab487ae0164c38782a4cdea541a9f35",
           "version": null
         }
       },
@@ -69,8 +78,17 @@
         "repositoryURL": "https://github.com/vmanot/Swallow.git",
         "state": {
           "branch": "master",
-          "revision": "d1623d833832a9f948db7cade45a711f67f26822",
+          "revision": "af3fb5807b08fa18ecc3e123a8fa8364c18e81ba",
           "version": null
+        }
+      },
+      {
+        "package": "swift-log",
+        "repositoryURL": "https://github.com/apple/swift-log.git",
+        "state": {
+          "branch": null,
+          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
+          "version": "1.4.2"
         }
       },
       {
@@ -78,7 +96,16 @@
         "repositoryURL": "https://github.com/SwiftUIX/SwiftUIX",
         "state": {
           "branch": "master",
-          "revision": "b76a589f4f3c5bc6f0ec49c0ada3bc00e5a8b052",
+          "revision": "ee2361e8b37f021f45bf80b499e7368e632aff88",
+          "version": null
+        }
+      },
+      {
+        "package": "UXKit",
+        "repositoryURL": "https://github.com/vmanot/UXKit",
+        "state": {
+          "branch": "master",
+          "revision": "f9ab47640abef20c7234c29c1c8a82fc84c5b9ad",
           "version": null
         }
       }
