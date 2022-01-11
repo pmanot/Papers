@@ -55,6 +55,7 @@ struct ContentView: View {
     
     var body: some View {
         navigationView
+            .titleBarHidden(true)
             .fullScreenCover(isPresented: $isLoading){
                 LoadingView(loading: $isLoading)
             }
