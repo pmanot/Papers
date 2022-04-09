@@ -21,7 +21,7 @@ struct WrappedPDFView: UIViewRepresentable {
         self.pdf = compiledPDF
     }
     
-    init(pdf: PDFDocument, pages: [CambridgePaperPage]){
+    init(pdf: PDFDocument, pages: [OldCambridgePaperPage]){
         self.init(pages: pages.map { $0.getPage(pdf: pdf) })
     }
     
@@ -49,9 +49,9 @@ struct PDFView: View {
     
     let bundle: CambridgePaperBundle
     
-    var initialPaperShowing: CambridgePaperType
+    var initialPaperShowing: OldCambridgePaperType
     
-    init(bundle: CambridgePaperBundle, initialPaperShowing: CambridgePaperType = .questionPaper){
+    init(bundle: CambridgePaperBundle, initialPaperShowing: OldCambridgePaperType = .questionPaper){
         self.bundle = bundle
         self.initialPaperShowing = initialPaperShowing
     }

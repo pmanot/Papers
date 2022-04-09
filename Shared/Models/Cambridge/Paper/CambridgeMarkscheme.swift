@@ -10,15 +10,15 @@ struct CambridgeMarkscheme: Hashable {
     var pdf: PDFDocument {
         PDFDocument(url: url)!
     }
-    let metadata: CambridgePaperMetadata
-    let pages: [CambridgePaperPage]
+    let metadata: OldCambridgePaperMetadata
+    let pages: [OldCambridgePaperPage]
     
-    init(url: URL, metadata: CambridgePaperMetadata){
+    init(url: URL, metadata: OldCambridgePaperMetadata){
         self.url = url
         if metadata.paperCode == url.getPaperCode() {
             self.metadata = metadata
         } else {
-            self.metadata = CambridgePaperMetadata(paperCode: url.deletingPathExtension().lastPathComponent)
+            self.metadata = OldCambridgePaperMetadata(paperCode: url.deletingPathExtension().lastPathComponent)
         }
         pages = metadata.pageData
     }

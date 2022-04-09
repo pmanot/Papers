@@ -76,7 +76,7 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
         let correctAnswersByIndex = markschemeAnswers.getAnswersByIndex()
         let answersByIndex = answers.getAnswersByIndex()
         
-        for i in [Int](1...40).map({ QuestionIndex($0) }){
+        for i in [Int](1...40).map({ OldQuestionIndex($0) }){
             if answersByIndex[i] == .multipleChoice(choice: .none){
                 unsolvedAnswers.append(Answer(index: i, value: answersByIndex[i]!))
             } else {

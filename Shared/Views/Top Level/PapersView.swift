@@ -53,7 +53,7 @@ extension PapersView {
         @Binding var sortInsideBy: SortType
 
         var sortedBundles: [SortArgument : [CambridgePaperBundle]] {
-            sortBundles(papersDatabase.paperBundles, sortBy: sortBy)
+            sortBundles(papersDatabase.oldPaperBundles, sortBy: sortBy)
         }
         
         var body: some View {

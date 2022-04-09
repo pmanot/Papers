@@ -56,7 +56,7 @@ extension HomeView {
         @State private var selectedPaperNumber: CambridgePaperNumber = .paper2
         @State private var selectedPageCount: Int = 1
         private var filteredBundles: [CambridgePaperBundle] {
-            papersDatabase.paperBundles.filter { $0.metadata.paperNumber == selectedPaperNumber }
+            papersDatabase.oldPaperBundles.filter { $0.metadata.paperNumber == selectedPaperNumber }
         }
         private func pageCountFilter(_ question: Question) -> Bool {
             switch selectedPageCount {

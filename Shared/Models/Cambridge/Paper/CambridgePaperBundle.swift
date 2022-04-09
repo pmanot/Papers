@@ -15,7 +15,7 @@ struct CambridgePaperBundle: Hashable {
         PapersDatabase.datasheetBySubject[self.metadata.subject]
     }
 
-    var metadata: CambridgePaperMetadata {
+    var metadata: OldCambridgePaperMetadata {
         questionPaper?.metadata ?? markScheme!.metadata
     }
 

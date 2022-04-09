@@ -9,11 +9,11 @@ struct MCQAnswerOverlay: View {
     let timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     
     let bundle: CambridgePaperBundle
-    let correctAnswersByIndex: [QuestionIndex : AnswerValue]
+    let correctAnswersByIndex: [OldQuestionIndex : AnswerValue]
     
     @State private var solvedPaper: SolvedPaper! = nil
     @State private var answers: [Answer] = initialisedAnswers
-    @State private var selectedIndex: QuestionIndex = QuestionIndex(1)
+    @State private var selectedIndex: OldQuestionIndex = OldQuestionIndex(1)
     @State private var timeTaken: TimeInterval = .zero
     @State private var correctAnswerTint: Bool = false
     @State private var showingResults: Bool = false
@@ -68,7 +68,7 @@ struct MCQAnswerOverlay: View {
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
                     .frame(width: answers[selectedIndex.number - 1].selected(.none) ? 0 : Screen.size.width, height: 5)
-                    .foregroundColor(Color.indigo)
+                    .foregroundColor(Color.systemIndigo)
                 Divider()
                 TabView(selection: $selectedIndex) {
                     ForEach(answers, id: \.index){ answer in
@@ -160,7 +160,7 @@ extension MCQAnswerOverlay {
                     return Color.background
             } else {
                 if selected == button {
-                    return .indigo
+                    return .systemIndigo
                 }
             }
         }
@@ -170,7 +170,7 @@ extension MCQAnswerOverlay {
     private func goToNextIndex() {
         if selectedIndex.number != 40 {
             withAnimation(.easeIn) {
-                selectedIndex = QuestionIndex(selectedIndex.number + 1)
+                selectedIndex = OldQuestionIndex(selectedIndex.number + 1)
             }
         }
     }
@@ -178,7 +178,7 @@ extension MCQAnswerOverlay {
     private func goToPreviousIndex() {
         if selectedIndex.number != 1 {
             withAnimation(.easeIn) {
-                selectedIndex = QuestionIndex(selectedIndex.number - 1)
+                selectedIndex = OldQuestionIndex(selectedIndex.number - 1)
             }
         }
     }
@@ -193,11 +193,11 @@ extension MCQAnswerOverlay {
 
 extension MCQAnswerOverlay {
     struct DebugOverlay: View {
-        let correctAnswersByIndex: [QuestionIndex : AnswerValue]
+        let correctAnswersByIndex: [OldQuestionIndex : AnswerValue]
         var body: some View {
             VStack {
                 ForEach(0..<40){ index in
-                    Text("\(index) : \(correctAnswersByIndex[QuestionIndex(index + 1)]!.getValue())")
+                    Text("\(index) : \(correctAnswersByIndex[OldQuestionIndex(index + 1)]!.getValue())")
                 }
             }
             
@@ -206,7 +206,7 @@ extension MCQAnswerOverlay {
     
     
     static var initialisedAnswers: [Answer] {
-        return (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
+        return (1...40).map { Answer(index: OldQuestionIndex($0), value: .multipleChoice(choice: .none)) }
     }
 }
 
@@ -226,6 +226,6 @@ struct MCQButtonStyle: ViewModifier {
 struct MCQAnswerOverlay_Previews: PreviewProvider {
     static var previews: some View {
         MCQAnswerOverlay(answers: Answer, correctAnswersByIndex: <#[QuestionIndex : AnswerValue]#>, onSave: <#() -> ()#>)
-    }
+    }f
 }
 */

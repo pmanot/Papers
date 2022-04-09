@@ -9,8 +9,8 @@ import PDFKit
 final public class PapersDatabase: ObservableObject {
     let directory = PaperRelatedDataDirectory()
     
-    @Published var calculatedMetadata: [String: CambridgePaperMetadata] = [:]
-    @Published var metadata: [String: CambridgePaperMetadata] = [:]
+    @Published var calculatedMetadata: [String: OldCambridgePaperMetadata] = [:]
+    @Published var metadata: [String: OldCambridgePaperMetadata] = [:]
     @Published var paperBundles: [CambridgePaperBundle] = []
     @Published var solvedPapers: [String: [SolvedPaper]] = [:]
     @Published var questions: [Question] = []
@@ -65,23 +65,23 @@ final public class PapersDatabase: ObservableObject {
     }
 
     /// Reads existing metadata from disk, or create and write new metadata for the given paper URLs.
-    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [String: CambridgePaperMetadata] {
+    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [String: OldCambridgePaperMetadata] {
         // TODO: Account for the fact that `paperURLs` might change.
-        var result: [String: CambridgePaperMetadata]
+        var result: [String: OldCambridgePaperMetadata]
         
         if calculatingMetadata {
             if let data = directory.read(from: "metadata") {
                 // Read the metadata
-                result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: data)
+                result = try JSONDecoder().decode([String : OldCambridgePaperMetadata].self, from: data)
             } else {
                 if let metadataURL = Bundle.main.url(forResource: "metadata", withExtension: nil) {
                     let bundleMetadata = try Data(contentsOf: metadataURL)
-                    result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: bundleMetadata)
+                    result = try JSONDecoder().decode([String : OldCambridgePaperMetadata].self, from: bundleMetadata)
                     for url in paperURLs {
                         print("checking metadata...")
                         if result[url.getPaperCode()] == nil {
                             print("adding new paper: \(url.getPaperCode())!")
-                            result[url.getPaperCode()] = CambridgePaperMetadata(url: url)
+                            result[url.getPaperCode()] = OldCambridgePaperMetadata(url: url)
                         } else {
                             print("\(url.getPaperCode()) this one's here!")
                         }
@@ -92,7 +92,7 @@ final public class PapersDatabase: ObservableObject {
 
                     // Create the metadata.
                     for url in paperURLs {
-                        let paperMetadata = CambridgePaperMetadata(url: url)
+                        let paperMetadata = OldCambridgePaperMetadata(url: url)
                         result[paperMetadata.paperCode] = paperMetadata
                     }
                 }
@@ -106,7 +106,7 @@ final public class PapersDatabase: ObservableObject {
                             if result[url.getPaperCode()]!.answers == [] {
                                 print("MCQ PROBLEM", url.getPaperCode())
                                 print("trying to compute again: ")
-                                result[url.getPaperCode()] = CambridgePaperMetadata(url: url)
+                                result[url.getPaperCode()] = OldCambridgePaperMetadata(url: url)
                                 if result[url.getPaperCode()]!.answers == [] {
                                     print("ACTUAL PROBLEM", url.getPaperCode())
                                     problemCount += 1
@@ -127,7 +127,7 @@ final public class PapersDatabase: ObservableObject {
             }
         } else {
             let bundleMetadata = try Data(contentsOf: directory.metadataURL)
-            result = try JSONDecoder().decode([String: CambridgePaperMetadata].self, from: bundleMetadata)
+            result = try JSONDecoder().decode([String: OldCambridgePaperMetadata].self, from: bundleMetadata)
         }
         
         // MARK: Testing
@@ -135,13 +135,13 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
-    private func readMetadataFromBundle() -> [String: CambridgePaperMetadata] {
+    private func readMetadataFromBundle() -> [String: OldCambridgePaperMetadata] {
         let bundleMetadata = try! Data(contentsOf: directory.metadataURL)
-        return try! JSONDecoder().decode([String: CambridgePaperMetadata].self, from: bundleMetadata)
+        return try! JSONDecoder().decode([String: OldCambridgePaperMetadata].self, from: bundleMetadata)
     }
 
     /// Creates paper bundles from the given paper URLs.
-    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
+    private func computePaperBundles(from urls: [URL], metadata: [String : OldCambridgePaperMetadata]) -> [CambridgePaperBundle] {
         var result: [CambridgePaperBundle] = []
 
         let standardPaperCodes = urls
@@ -230,8 +230,8 @@ final public class PapersDatabase: ObservableObject {
 extension PapersDatabase {
     
     // MARK: - Examples
-    var examples: [CambridgePaperMetadata] {
-        PaperRelatedDataDirectory().fetchAllAvailablePDFResourceURLs().map { CambridgePaperMetadata(bundleResourceName: $0.getPaperCode()) }
+    var examples: [OldCambridgePaperMetadata] {
+        PaperRelatedDataDirectory().fetchAllAvailablePDFResourceURLs().map { OldCambridgePaperMetadata(bundleResourceName: $0.getPaperCode()) }
     }
     
     // MARK: - Datasheets
@@ -241,6 +241,9 @@ extension PapersDatabase {
     ]
     
     // MARK: - PaperBundle sort data
+    
+    static var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    static var numerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"]
     static var years: [Int] = [20, 19, 18, 17, 16]
     static var months: [CambridgePaperMonth] = [.febMarch, .mayJune, .octNov]
     static var subjects: [CambridgeSubject] = [.physics, .chemistry, .biology, .english, .maths]

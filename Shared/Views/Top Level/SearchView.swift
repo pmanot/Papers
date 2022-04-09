@@ -15,7 +15,7 @@ struct SearchView: View {
     }
     
     var paperBundles: [CambridgePaperBundle] {
-        return applicationStore.papersDatabase.paperBundles.filter({ paperBundle in
+        return applicationStore.papersDatabase.oldPaperBundles.filter({ paperBundle in
             paperBundle.metadata.rawText.match(searchText)
         })
     }

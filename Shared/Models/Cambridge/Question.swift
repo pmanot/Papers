@@ -7,15 +7,15 @@ import PDFKit
 
 struct Question: Hashable, Identifiable {
     let id = UUID()
-    let metadata: CambridgePaperMetadata
+    let metadata: OldCambridgePaperMetadata
 
-    let index: QuestionIndex
+    let index: OldQuestionIndex
     var check: QuestionCheck = .unsolved
-    var subQuestions: [QuestionIndex] = []
-    var pages: [CambridgePaperPage]
+    var subQuestions: [OldQuestionIndex] = []
+    var pages: [OldCambridgePaperPage]
     let rawText: String
     
-    init(index: QuestionIndex, pages: [CambridgePaperPage], metadata: CambridgePaperMetadata){
+    init(index: OldQuestionIndex, pages: [OldCambridgePaperPage], metadata: OldCambridgePaperMetadata){
         self.index = index
         self.pages = pages
         self.rawText = pages.map { $0.rawText }.reduce("", +)
@@ -30,7 +30,7 @@ enum QuestionCheck: Int, Codable {
     case incorrect = 2
 }
 
-struct QuestionIndex: Hashable, Codable {
+struct OldQuestionIndex: Hashable, Codable {
     var number: Int = 1
     var letter: String? = nil
     var numeral: String? = nil
