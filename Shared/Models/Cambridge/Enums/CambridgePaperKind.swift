@@ -15,23 +15,22 @@ extension CambridgePaperKind {
         self = .other
     }
     
-    init(paperCode: String) {
-        let subject = CambridgeSubject(paperCode: paperCode)
-        let number = CambridgePaperNumber(paperCode: paperCode)
-        
-        switch subject {
+    init(details: CambridgePaperDetails?) {
+        switch details!.subject {
             case .chemistry, .physics, .biology:
-                switch number {
+                switch details!.number {
                     case .paper1:
                         self = .multipleChoice
                     case .paper2, .paper3, .paper4, .paper5, .paper6:
                         self = .longAnswer
+                    case .none:
+                        self = .other
                 }
             case .maths:
                 self = .longAnswer
             case .english:
                 self = .longAnswer
-            case .other:
+            case .other, .none:
                 self = .other
         }
     }

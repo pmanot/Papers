@@ -18,7 +18,6 @@ struct PaperRelatedDataDirectory {
             .appendingPathComponent("Paper Directory")
     }
     var manager = FileManager.default
-    var metadataURL: URL = Bundle.main.url(forResource: "metadata", withExtension: nil)!
 
     // MARK: - Reading
 

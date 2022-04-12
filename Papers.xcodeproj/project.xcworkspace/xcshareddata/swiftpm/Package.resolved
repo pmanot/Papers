@@ -1,115 +1,104 @@
 {
-  "object": {
-    "pins": [
-      {
-        "package": "Compute",
-        "repositoryURL": "https://github.com/vmanot/Compute.git",
-        "state": {
-          "branch": "master",
-          "revision": "b0d4b69b6258394d980cccf442eb2d58ad493dbf",
-          "version": null
-        }
-      },
-      {
-        "package": "Data",
-        "repositoryURL": "https://github.com/vmanot/Data.git",
-        "state": {
-          "branch": "master",
-          "revision": "2936f7b86bb43196ceb6205b2aa0d5f023102bbf",
-          "version": null
-        }
-      },
-      {
-        "package": "Diagnostics",
-        "repositoryURL": "https://github.com/vmanot/Diagnostics.git",
-        "state": {
-          "branch": "master",
-          "revision": "0333f51a768e69201918a6789dd602e9fbd6f80e",
-          "version": null
-        }
-      },
-      {
-        "package": "Filesystem",
-        "repositoryURL": "https://github.com/vmanot/Filesystem",
-        "state": {
-          "branch": "master",
-          "revision": "35d80bc2c2ac0bf522c5acb33a660cac41423cb6",
-          "version": null
-        }
-      },
-      {
-        "package": "FoundationX",
-        "repositoryURL": "https://github.com/vmanot/FoundationX.git",
-        "state": {
-          "branch": "master",
-          "revision": "075f79fd06a9b2cf6f7e8d677843f5547ba7a9d2",
-          "version": null
-        }
-      },
-      {
-        "package": "Merge",
-        "repositoryURL": "https://github.com/vmanot/Merge.git",
-        "state": {
-          "branch": "master",
-          "revision": "45acce187c694209d22a0a5aefa076ed8f9c2ba6",
-          "version": null
-        }
-      },
-      {
-        "package": "POSIX",
-        "repositoryURL": "https://github.com/vmanot/POSIX.git",
-        "state": {
-          "branch": "master",
-          "revision": "80faa5d7fab487ae0164c38782a4cdea541a9f35",
-          "version": null
-        }
-      },
-      {
-        "package": "Runtime",
-        "repositoryURL": "https://github.com/vmanot/Runtime.git",
-        "state": {
-          "branch": "master",
-          "revision": "bf4273ae57596fd9a8a6681408defc721203a7a7",
-          "version": null
-        }
-      },
-      {
-        "package": "Swallow",
-        "repositoryURL": "https://github.com/vmanot/Swallow.git",
-        "state": {
-          "branch": "master",
-          "revision": "af3fb5807b08fa18ecc3e123a8fa8364c18e81ba",
-          "version": null
-        }
-      },
-      {
-        "package": "swift-log",
-        "repositoryURL": "https://github.com/apple/swift-log.git",
-        "state": {
-          "branch": null,
-          "revision": "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-          "version": "1.4.2"
-        }
-      },
-      {
-        "package": "SwiftUIX",
-        "repositoryURL": "https://github.com/SwiftUIX/SwiftUIX",
-        "state": {
-          "branch": "master",
-          "revision": "02352c01763a4139e8df2c714c9b1e00eb9bd800",
-          "version": null
-        }
-      },
-      {
-        "package": "UXKit",
-        "repositoryURL": "https://github.com/vmanot/UXKit",
-        "state": {
-          "branch": "master",
-          "revision": "f9ab47640abef20c7234c29c1c8a82fc84c5b9ad",
-          "version": null
-        }
+  "pins" : [
+    {
+      "identity" : "compute",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Compute.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "92422a0120e27b92ecbf1590cb6ab352e935f910"
       }
-    ]
-  },
-  "version": 1
+    },
+    {
+      "identity" : "data",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Data",
+      "state" : {
+        "branch" : "master",
+        "revision" : "38bdff251a92c51c5b4eab1b2e9e387919ad0e2d"
+      }
+    },
+    {
+      "identity" : "diagnostics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Diagnostics.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "f2e2a1a8ff9b32599793d9f4f7d481a76c32991b"
+      }
+    },
+    {
+      "identity" : "filesystem",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Filesystem",
+      "state" : {
+        "branch" : "master",
+        "revision" : "a7df83f0fbff2214f3f2c9bf57c1d9eb7c1e00cc"
+      }
+    },
+    {
+      "identity" : "foundationx",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/FoundationX.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "2305e83e7b78087b894c4e795af694b6e0a6fe54"
+      }
+    },
+    {
+      "identity" : "merge",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Merge.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "6cb8efc29af8e03358df7470ee0f8850ddcae208"
+      }
+    },
+    {
+      "identity" : "posix",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/POSIX.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "80faa5d7fab487ae0164c38782a4cdea541a9f35"
+      }
+    },
+    {
+      "identity" : "runtime",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Runtime.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "dda287e9ae10e43e4783c84eccdf4e75d04c729b"
+      }
+    },
+    {
+      "identity" : "swallow",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vmanot/Swallow.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "09b7eaed5e31aa72c85f09fe805c170c5d9389af"
+      }
+    },
+    {
+      "identity" : "swift-log",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-log.git",
+      "state" : {
+        "revision" : "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
+        "version" : "1.4.2"
+      }
+    },
+    {
+      "identity" : "swiftuix",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SwiftUIX/SwiftUIX.git",
+      "state" : {
+        "branch" : "master",
+        "revision" : "b8cd3f75a21d2d368727b10363b6674c1c4bfa21"
+      }
+    }
+  ],
+  "version" : 2
 }

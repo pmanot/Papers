@@ -4,7 +4,6 @@
 
 import SwiftUI
 import SwiftUIX
-import UXKit
 
 struct ContentView: View {
     enum Destination: String, CaseIterable, Codable, HashIdentifiable {
@@ -63,6 +62,7 @@ struct ContentView: View {
     
     @ViewBuilder
     var navigationView: some View {
+        /*
         if userInterfaceIdiom == .pad || userInterfaceIdiom == .mac {
             AdaptiveNavigationView("Papers", selection: $selection) {
                 HomeView()
@@ -104,10 +104,10 @@ struct ContentView: View {
                     .font(.title2)
                     .foregroundColor(.secondary)
             }
-        } else {
+        } else {*/
             CustomTabView(selection: $selection)
                 .edgesIgnoringSafeArea(.all)
-        }
+        //}
     }
 }
 

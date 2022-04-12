@@ -7,15 +7,14 @@ import PDFKit
 
 struct Question: Hashable, Identifiable {
     let id = UUID()
-    let metadata: OldCambridgePaperMetadata
-
+    let metadata: CambridgePaperMetadata
     let index: OldQuestionIndex
     var check: QuestionCheck = .unsolved
     var subQuestions: [OldQuestionIndex] = []
     var pages: [OldCambridgePaperPage]
     let rawText: String
     
-    init(index: OldQuestionIndex, pages: [OldCambridgePaperPage], metadata: OldCambridgePaperMetadata){
+    init(index: OldQuestionIndex, pages: [OldCambridgePaperPage], metadata: CambridgePaperMetadata){
         self.index = index
         self.pages = pages
         self.rawText = pages.map { $0.rawText }.reduce("", +)

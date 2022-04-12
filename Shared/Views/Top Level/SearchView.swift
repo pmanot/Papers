@@ -15,7 +15,7 @@ struct SearchView: View {
     }
     
     var paperBundles: [CambridgePaperBundle] {
-        return applicationStore.papersDatabase.oldPaperBundles.filter({ paperBundle in
+        return applicationStore.papersDatabase.paperBundles.filter({ paperBundle in
             paperBundle.metadata.rawText.match(searchText)
         })
     }
@@ -44,7 +44,7 @@ extension SearchView {
         @Binding var searchText: String
         
         var body: some View {
-            List(paperBundles, id: \.metadata.paperCode){ bundle in
+            List(paperBundles, id: \.metadata.code){ bundle in
                 Row(searchText: $searchText, paperBundle: bundle)
                     .buttonStyle(PlainButtonStyle())
             }

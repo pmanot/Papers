@@ -10,11 +10,8 @@
 		84056C59278078FC00D3385E /* URL+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84056C58278078FC00D3385E /* URL+Extensions.swift */; };
 		84056C5B27808ADF00D3385E /* Sort.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84056C5A27808ADF00D3385E /* Sort.swift */; };
 		84056C5D2780A3A000D3385E /* PaperSortOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84056C5C2780A39F00D3385E /* PaperSortOptionView.swift */; };
-		842B03EC277E5497009228C3 /* metadata in Resources */ = {isa = PBXBuildFile; fileRef = 842B03EB277E5497009228C3 /* metadata */; };
 		843AD1D8270B4E6E00B6131A /* PapersApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD1B0270B4E6C00B6131A /* PapersApp.swift */; };
 		843AD1DC270B4E6E00B6131A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 843AD1B2270B4E6E00B6131A /* Assets.xcassets */; };
-		843AD1EE270B4F8600B6131A /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = 843AD1ED270B4F8600B6131A /* SwiftUIX */; };
-		843AD1F1270B4FBA00B6131A /* Filesystem in Frameworks */ = {isa = PBXBuildFile; productRef = 843AD1F0270B4FBA00B6131A /* Filesystem */; };
 		843AD228270B506D00B6131A /* PDFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD21D270B506D00B6131A /* PDFView.swift */; };
 		843AD22B270B506D00B6131A /* PaperContentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD220270B506D00B6131A /* PaperContentsView.swift */; };
 		843AD22F270B506D00B6131A /* PapersView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843AD224270B506D00B6131A /* PapersView.swift */; };
@@ -49,12 +46,16 @@
 		843E445F2779D0A30012FFCC /* Animation+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 843E445E2779D0A30012FFCC /* Animation+Extensions.swift */; };
 		84501F382780DCE6007E79F8 /* BlockChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84501F372780DCE6007E79F8 /* BlockChartView.swift */; };
 		84501F3A278104FB007E79F8 /* MCQAnswerOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84501F39278104FA007E79F8 /* MCQAnswerOverlay.swift */; };
+		84515B4F28045F5000BB33A0 /* SwiftUIX in Frameworks */ = {isa = PBXBuildFile; productRef = 84515B4E28045F5000BB33A0 /* SwiftUIX */; };
+		84515B5228045F7600BB33A0 /* Data in Frameworks */ = {isa = PBXBuildFile; productRef = 84515B5128045F7600BB33A0 /* Data */; };
+		84515B552804646E00BB33A0 /* Filesystem in Frameworks */ = {isa = PBXBuildFile; productRef = 84515B542804646E00BB33A0 /* Filesystem */; };
 		847CA0CD27822FB400D0CBFB /* CorrectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847CA0CC27822FB400D0CBFB /* CorrectionView.swift */; };
 		847CA0CF278321DD00D0CBFB /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847CA0CE278321DD00D0CBFB /* LoadingView.swift */; };
 		84879215272CC8D200E8ED91 /* Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84879214272CC8D200E8ED91 /* Toolbar.swift */; };
 		84879217272D8FD300E8ED91 /* CambridgePaperBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84879216272D8FD300E8ED91 /* CambridgePaperBundle.swift */; };
 		84898AEE277DF04C00F93756 /* CreditsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84898AED277DF04C00F93756 /* CreditsView.swift */; };
 		849E1052277B9EB4001E4006 /* FlashCardCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849E1051277B9EB4001E4006 /* FlashCardCollectionView.swift */; };
+		84A341552803424B005B6878 /* CambridgePaperDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A341542803424B005B6878 /* CambridgePaperDetails.swift */; };
 		84A35C41275B715500D5F9E5 /* SolvedPaperCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A35C40275B715400D5F9E5 /* SolvedPaperCollectionView.swift */; };
 		84AAB91C277FC811008F1E1B /* GeometryProxy+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AAB91B277FC811008F1E1B /* GeometryProxy+Extensions.swift */; };
 		84AC37CF27FEED7F00D226B7 /* CambridgePaperType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AC37CE27FEED7F00D226B7 /* CambridgePaperType.swift */; };
@@ -889,7 +890,6 @@
 		84E541E5275039CE0087A242 /* PaperSolvedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E541E4275039CE0087A242 /* PaperSolvedData.swift */; };
 		84ECFB302776108700827AD5 /* FlashCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ECFB2F2776108700827AD5 /* FlashCardView.swift */; };
 		84ECFB342776111600827AD5 /* SolvedPaperCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ECFB332776111600827AD5 /* SolvedPaperCard.swift */; };
-		D40CFC9D278DD7E200D733F2 /* UXKit in Frameworks */ = {isa = PBXBuildFile; productRef = D40CFC9C278DD7E200D733F2 /* UXKit */; };
 		D43E520C275148D200B16961 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43E520B275148D200B16961 /* DebugView.swift */; };
 /* End PBXBuildFile section */
 
@@ -897,7 +897,6 @@
 		84056C58278078FC00D3385E /* URL+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URL+Extensions.swift"; sourceTree = "<group>"; };
 		84056C5A27808ADF00D3385E /* Sort.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sort.swift; sourceTree = "<group>"; };
 		84056C5C2780A39F00D3385E /* PaperSortOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaperSortOptionView.swift; sourceTree = "<group>"; };
-		842B03EB277E5497009228C3 /* metadata */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = metadata; sourceTree = "<group>"; };
 		843AD1B0270B4E6C00B6131A /* PapersApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PapersApp.swift; sourceTree = "<group>"; };
 		843AD1B2270B4E6E00B6131A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		843AD1B7270B4E6E00B6131A /* Papers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Papers.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -942,6 +941,7 @@
 		84879216272D8FD300E8ED91 /* CambridgePaperBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CambridgePaperBundle.swift; sourceTree = "<group>"; };
 		84898AED277DF04C00F93756 /* CreditsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditsView.swift; sourceTree = "<group>"; };
 		849E1051277B9EB4001E4006 /* FlashCardCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlashCardCollectionView.swift; sourceTree = "<group>"; };
+		84A341542803424B005B6878 /* CambridgePaperDetails.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CambridgePaperDetails.swift; sourceTree = "<group>"; };
 		84A35C40275B715400D5F9E5 /* SolvedPaperCollectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolvedPaperCollectionView.swift; sourceTree = "<group>"; };
 		84AAB91B277FC811008F1E1B /* GeometryProxy+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "GeometryProxy+Extensions.swift"; sourceTree = "<group>"; };
 		84AC37CE27FEED7F00D226B7 /* CambridgePaperType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CambridgePaperType.swift; sourceTree = "<group>"; };
@@ -1785,9 +1785,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D40CFC9D278DD7E200D733F2 /* UXKit in Frameworks */,
-				843AD1EE270B4F8600B6131A /* SwiftUIX in Frameworks */,
-				843AD1F1270B4FBA00B6131A /* Filesystem in Frameworks */,
+				84515B5228045F7600BB33A0 /* Data in Frameworks */,
+				84515B552804646E00BB33A0 /* Filesystem in Frameworks */,
+				84515B4F28045F5000BB33A0 /* SwiftUIX in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1849,7 +1849,6 @@
 		843AD1F2270B501000B6131A /* Bundle Resources */ = {
 			isa = PBXGroup;
 			children = (
-				842B03EB277E5497009228C3 /* metadata */,
 				842BFD8A277E20A0009228C3 /* Chemistry */,
 				84898AF1277DF13500F93756 /* Physics */,
 				843AD1B2270B4E6E00B6131A /* Assets.xcassets */,
@@ -2009,6 +2008,7 @@
 				84AC37E02800410400D226B7 /* CambridgePaperPage.swift */,
 				843AD255270B508B00B6131A /* OldCambridgePaperPage.swift */,
 				84AC37CE27FEED7F00D226B7 /* CambridgePaperType.swift */,
+				84A341542803424B005B6878 /* CambridgePaperDetails.swift */,
 				84AC37E42800AD3700D226B7 /* CambridgeLevel.swift */,
 				84AC37D427FEEDFD00D226B7 /* CambridgePaperKind.swift */,
 				843AD24D270B508B00B6131A /* OldCambridgePaperType.swift */,
@@ -3181,9 +3181,9 @@
 			);
 			name = Papers;
 			packageProductDependencies = (
-				843AD1ED270B4F8600B6131A /* SwiftUIX */,
-				843AD1F0270B4FBA00B6131A /* Filesystem */,
-				D40CFC9C278DD7E200D733F2 /* UXKit */,
+				84515B4E28045F5000BB33A0 /* SwiftUIX */,
+				84515B5128045F7600BB33A0 /* Data */,
+				84515B542804646E00BB33A0 /* Filesystem */,
 			);
 			productName = "Papers (iOS)";
 			productReference = 843AD1B7270B4E6E00B6131A /* Papers.app */;
@@ -3214,9 +3214,9 @@
 			);
 			mainGroup = 843AD1AA270B4E6C00B6131A;
 			packageReferences = (
-				843AD1EC270B4F8600B6131A /* XCRemoteSwiftPackageReference "SwiftUIX" */,
-				843AD1EF270B4FBA00B6131A /* XCRemoteSwiftPackageReference "Filesystem" */,
-				D40CFC9B278DD7E200D733F2 /* XCRemoteSwiftPackageReference "UXKit" */,
+				84515B4D28045F5000BB33A0 /* XCRemoteSwiftPackageReference "SwiftUIX" */,
+				84515B5028045F7600BB33A0 /* XCRemoteSwiftPackageReference "Data" */,
+				84515B532804646E00BB33A0 /* XCRemoteSwiftPackageReference "Filesystem" */,
 			);
 			productRefGroup = 843AD1B8270B4E6E00B6131A /* Products */;
 			projectDirPath = "";
@@ -3574,7 +3574,6 @@
 				843AD1DC270B4E6E00B6131A /* Assets.xcassets in Resources */,
 				84D4EE29277FA6FE0046071E /* 9701_s19_qp_32.pdf in Resources */,
 				84D4EF14277FA6FF0046071E /* 9701_w17_ms_34.pdf in Resources */,
-				842B03EC277E5497009228C3 /* metadata in Resources */,
 				84D4EA99277FA6880046071E /* 9702_w19_qp_23.pdf in Resources */,
 				84D4EC15277FA6880046071E /* 9702_m16_qp_52.pdf in Resources */,
 				84D4EEB0277FA6FF0046071E /* 9701_w16_qp_33.pdf in Resources */,
@@ -4070,6 +4069,7 @@
 				843AD22B270B506D00B6131A /* PaperContentsView.swift in Sources */,
 				84AAB91C277FC811008F1E1B /* GeometryProxy+Extensions.swift in Sources */,
 				843AD265270B508B00B6131A /* OldCambridgePaperPage.swift in Sources */,
+				84A341552803424B005B6878 /* CambridgePaperDetails.swift in Sources */,
 				84AC37DD27FEEECE00D226B7 /* CambridgePaperMetadata.swift in Sources */,
 				843AD25F270B508B00B6131A /* CambridgePaperMonth.swift in Sources */,
 				84ACB672277A0E5F003B2156 /* FlashCardDeck.swift in Sources */,
@@ -4332,25 +4332,25 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		843AD1EC270B4F8600B6131A /* XCRemoteSwiftPackageReference "SwiftUIX" */ = {
+		84515B4D28045F5000BB33A0 /* XCRemoteSwiftPackageReference "SwiftUIX" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SwiftUIX/SwiftUIX";
 			requirement = {
-				branch = master;
-				kind = branch;
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.1.2;
 			};
 		};
-		843AD1EF270B4FBA00B6131A /* XCRemoteSwiftPackageReference "Filesystem" */ = {
+		84515B5028045F7600BB33A0 /* XCRemoteSwiftPackageReference "Data" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/vmanot/Filesystem";
+			repositoryURL = "https://github.com/vmanot/Data";
 			requirement = {
 				branch = master;
 				kind = branch;
 			};
 		};
-		D40CFC9B278DD7E200D733F2 /* XCRemoteSwiftPackageReference "UXKit" */ = {
+		84515B532804646E00BB33A0 /* XCRemoteSwiftPackageReference "Filesystem" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/vmanot/UXKit";
+			repositoryURL = "https://github.com/vmanot/Filesystem";
 			requirement = {
 				branch = master;
 				kind = branch;
@@ -4359,20 +4359,20 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		843AD1ED270B4F8600B6131A /* SwiftUIX */ = {
+		84515B4E28045F5000BB33A0 /* SwiftUIX */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 843AD1EC270B4F8600B6131A /* XCRemoteSwiftPackageReference "SwiftUIX" */;
+			package = 84515B4D28045F5000BB33A0 /* XCRemoteSwiftPackageReference "SwiftUIX" */;
 			productName = SwiftUIX;
 		};
-		843AD1F0270B4FBA00B6131A /* Filesystem */ = {
+		84515B5128045F7600BB33A0 /* Data */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 843AD1EF270B4FBA00B6131A /* XCRemoteSwiftPackageReference "Filesystem" */;
-			productName = Filesystem;
+			package = 84515B5028045F7600BB33A0 /* XCRemoteSwiftPackageReference "Data" */;
+			productName = Data;
 		};
-		D40CFC9C278DD7E200D733F2 /* UXKit */ = {
+		84515B542804646E00BB33A0 /* Filesystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D40CFC9B278DD7E200D733F2 /* XCRemoteSwiftPackageReference "UXKit" */;
-			productName = UXKit;
+			package = 84515B532804646E00BB33A0 /* XCRemoteSwiftPackageReference "Filesystem" */;
+			productName = Filesystem;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

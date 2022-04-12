@@ -13,3 +13,5 @@ struct CambridgePaper {
     var metadata: CambridgePaperMetadata
 }
 
+typealias NewCambridgePaperBundle = (questionPaper: CambridgePaper?, markScheme: CambridgePaper?, datasheet: CambridgePaper?)
+

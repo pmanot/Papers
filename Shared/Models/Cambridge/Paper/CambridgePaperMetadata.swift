@@ -18,13 +18,57 @@ enum PaperCodeError: Error {
 struct CambridgePaperMetadata: Codable, Hashable {
     let code: String
     let type: CambridgePaperType
-    let kind: CambridgePaperKind
     var pages: [CambridgePaperPage] = []
+    var kind: CambridgePaperKind {
+        CambridgePaperKind(details: type.details)
+    }
     
-    init(url: URL) throws {
+    /// COMPATIBILITY
+    var questionPaperCode: String {
+        getQuestionPaperCode(code)
+    }
+    var paperType: OldCambridgePaperType {
+        OldCambridgePaperType(paperCode: code)
+    }
+    var paperNumber: CambridgePaperNumber {
+        self.type.details?.number ?? .paper1
+    }
+    var paperVariant: CambridgePaperVariant {
+        self.type.details?.variant ?? .variant1
+    }
+    var subject: CambridgeSubject {
+        self.type.details?.subject ?? .other
+    }
+    var month: CambridgePaperMonth {
+        self.type.details?.month ?? .mayJune
+    }
+    var year: Int {
+        self.type.details?.year ?? 2020
+    }
+    var pageData: [OldCambridgePaperPage] = []
+    var answers: [Answer] = []
+    var numberOfQuestions: Int = 0
+    var rawText: String = ""
+    
+    ///-------------------------------
+    
+    init(url: URL) {
         self.code = url.deletingPathExtension().lastPathComponent
         self.type = CambridgePaperType(paperCode: code)
-        self.kind = CambridgePaperKind(paperCode: code)
+    }
+    
+    init(code: String){
+        if regexMatches(string: code, pattern: RegularExpressions.paperCodePattern) { // check if papercode is valid
+            self.code = code
+            self.type = CambridgePaperType(paperCode: code)
+        } else { // papercode is not valid
+            self.code = code
+            self.type = .other
+        }
+    }
+    
+    init(bundleResourceName: String){
+        self.init(url: URL(fileURLWithPath: Bundle.main.path(forResource: bundleResourceName, ofType: "pdf")!))
     }
     
     mutating func getPages(url: URL) -> () {

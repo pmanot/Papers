@@ -5,6 +5,7 @@
 import Foundation
 import PDFKit
 
+/*
 struct OldCambridgePaperMetadata: Codable, Hashable {
     static let paperCodePattern = "[0-9]{4}_[a-z]{1}[0-9]{2}_[a-z]{2}_[0-9]{2}"
     
@@ -23,7 +24,7 @@ struct OldCambridgePaperMetadata: Codable, Hashable {
     var error: Bool = false
     
     init(paperCode: String){
-        if regexMatches(string: paperCode, pattern: OldCambridgePaperMetadata.paperCodePattern) { // check if papercode is valid
+        if regexMatches(string: paperCode, pattern: CambridgePaperMetadata.paperCodePattern) { // check if papercode is valid
             self.paperCode = paperCode
             self.questionPaperCode = getQuestionPaperCode(paperCode)
             let paperCodeChunks = paperCode.split(separator: "_")
@@ -248,10 +249,11 @@ struct OldCambridgePaperMetadata: Codable, Hashable {
         }
     }
 }
+*/
 
-extension Array where Element == OldCambridgePaperMetadata {
-    func matching(_ url: URL) -> OldCambridgePaperMetadata? {
-        self.first { $0.paperCode == url.getPaperCode() }
+extension Array where Element == CambridgePaperMetadata {
+    func matching(_ url: URL) -> CambridgePaperMetadata? {
+        self.first { $0.code == url.getPaperCode() }
     }
 }
 

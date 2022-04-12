@@ -11,18 +11,18 @@ struct CambridgeQuestionPaper: Hashable {
         PDFDocument(url: url)!
     }
     
-    let metadata: OldCambridgePaperMetadata
+    let metadata: CambridgePaperMetadata
     let pages: [OldCambridgePaperPage]
     var questions: [Question] = []
     let rawText: String
     let solved: [SolvedPaper] = []
     
-    init(url: URL, metadata: OldCambridgePaperMetadata){
+    init(url: URL, metadata: CambridgePaperMetadata){
         self.url = url
-        if metadata.paperCode == url.getPaperCode() {
+        if metadata.code == url.getPaperCode() {
             self.metadata = metadata
         } else {
-            self.metadata = OldCambridgePaperMetadata(paperCode: url.deletingPathExtension().lastPathComponent)
+            self.metadata = CambridgePaperMetadata(code: url.deletingPathExtension().lastPathComponent)
         }
         pages = metadata.pageData
         rawText = metadata.rawText

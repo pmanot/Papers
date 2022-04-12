@@ -51,7 +51,7 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
     }
     
     init(bundle: CambridgePaperBundle, answers: [Answer]){
-        paperCode = bundle.metadata.paperCode
+        paperCode = bundle.metadata.code
         self.answers = answers
         if bundle.markScheme != nil {
             self.check(markschemeAnswers: bundle.markScheme!.metadata.answers)
@@ -60,7 +60,7 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
     
     
     init(paper: CambridgeQuestionPaper, answers: [Answer]){
-        self.paperCode = paper.metadata.paperCode
+        self.paperCode = paper.metadata.code
         self.answers = answers
     }
     

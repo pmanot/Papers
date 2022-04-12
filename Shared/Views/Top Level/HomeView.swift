@@ -56,7 +56,7 @@ extension HomeView {
         @State private var selectedPaperNumber: CambridgePaperNumber = .paper2
         @State private var selectedPageCount: Int = 1
         private var filteredBundles: [CambridgePaperBundle] {
-            papersDatabase.oldPaperBundles.filter { $0.metadata.paperNumber == selectedPaperNumber }
+            papersDatabase.paperBundles.filter { $0.metadata.paperNumber == selectedPaperNumber }
         }
         private func pageCountFilter(_ question: Question) -> Bool {
             switch selectedPageCount {
@@ -97,7 +97,7 @@ extension HomeView {
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack {
-                        ForEach(filteredBundles, id: \.metadata.paperCode) { bundle in
+                        ForEach(filteredBundles, id: \.metadata.code) { bundle in
                             if bundle.questionPaper != nil {
                                 ForEach(enumerating: bundle.questionPaper!.questions.filter(pageCountFilter) , id: \.id){ (index, question) in
                                     QuestionListCell(question: question, bundle: bundle)

@@ -9,14 +9,14 @@ import PDFKit
 final public class PapersDatabase: ObservableObject {
     let directory = PaperRelatedDataDirectory()
     
-    @Published var calculatedMetadata: [String: OldCambridgePaperMetadata] = [:]
-    @Published var metadata: [String: OldCambridgePaperMetadata] = [:]
+    @Published var calculatedMetadata: [String: CambridgePaperMetadata] = [:]
     @Published var paperBundles: [CambridgePaperBundle] = []
+    @Published var newPaperBundles: [NewCambridgePaperBundle] = []
     @Published var solvedPapers: [String: [SolvedPaper]] = [:]
     @Published var questions: [Question] = []
     @Published var deck: [Stack] = []
     
-    var calculatingMetadata: Bool = false
+    let calculatingMetadata: Bool = true
 
     init() {
     }
@@ -27,8 +27,9 @@ final public class PapersDatabase: ObservableObject {
         if calculatingMetadata {
             // While calculating metadata
             let urls = self.directory.findAllPaperURLs()
-            let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
-            let paperBundles = self.computePaperBundles(from: urls, metadata: metadata)
+            //let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
+            let metadata = try! self.readOrCreateNewMetadata(paperURLs: urls)
+            let paperBundles = self.computeNewPaperBundles(from: urls, metadata: metadata)
             let solvedPapers = try! self.readSolvedPaperData()
 
             DispatchQueue.main.async {
@@ -63,25 +64,138 @@ final public class PapersDatabase: ObservableObject {
         
         try directory.deleteAllFiles()
     }
-
+    
     /// Reads existing metadata from disk, or create and write new metadata for the given paper URLs.
-    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [String: OldCambridgePaperMetadata] {
+    private func readOrCreateNewMetadata(paperURLs: [URL]) throws -> [String: CambridgePaperMetadata] {
+        var result: [String: CambridgePaperMetadata]
+        if calculatingMetadata {
+            print("calculating metadata")
+            if let data = directory.read(from: "metadata") {
+                // Read the metadata from device
+                result = try JSONDecoder().decode([String: CambridgePaperMetadata].self, from: data)
+                if result.isEmpty {
+                    result = Dictionary(uniqueKeysWithValues: paperURLs.map { ($0.getPaperCode(), CambridgePaperMetadata(url: $0)) })
+                }
+            } else if let url = Bundle.main.url(forResource: "metadata", withExtension: nil) {
+                // Read the metadata from bundle
+                let data = try Data(contentsOf: url)
+                result = try JSONDecoder().decode([String: CambridgePaperMetadata].self, from: data)
+                
+                try! self.directory.write(result, toDocumentNamed: "metadata")
+            } else {
+                result = Dictionary(uniqueKeysWithValues: paperURLs.map { ($0.getPaperCode(), CambridgePaperMetadata(url: $0)) })
+            }
+        } else {
+            let data = try Data(contentsOf: Bundle.main.url(forResource: "metadata", withExtension: nil)!)
+            result = try JSONDecoder().decode([String: CambridgePaperMetadata].self, from: data)
+            try! self.directory.write(result, toDocumentNamed: "metadata")
+        }
+        
+        if result.isEmpty {
+            print("final failsafe")
+            result = Dictionary(uniqueKeysWithValues: paperURLs.map { ($0.getPaperCode(), CambridgePaperMetadata(url: $0)) })
+        } else {
+            print("This is the result \(result)")
+        }
+        
+        return result
+    }
+    
+    private func computeNewPaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
+        var result: [CambridgePaperBundle] = []
+
+        let standardPaperCodes = urls
+            .map { getQuestionPaperCode($0.getPaperCode()) }
+            .removingDuplicates()
+
+        let questionPaperURLs = Dictionary(uniqueKeysWithValues: urls.getQuestionPaperURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
+        let markschemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
+        
+        for code in standardPaperCodes {
+            let questionPaperURL = questionPaperURLs[code]
+            let markSchemeURL = markschemeURLs[code]
+            
+            print("This please: ", NSHomeDirectory())
+            print("\(questionPaperURL!)", "\(markSchemeURL!)")
+            result.append(
+                CambridgePaperBundle(
+                    questionPaper: questionPaperURL.map {
+                        CambridgeQuestionPaper(
+                            url: $0,
+                            metadata: metadata[$0.getPaperCode()]!
+                        )
+                    },
+                    markScheme: markSchemeURL.map {
+                        CambridgeMarkscheme(
+                            url: $0,
+                            metadata: metadata[$0.getPaperCode()]!
+                        )
+                    }
+                )
+            )
+        }
+        
+        return result
+    }
+    
+    /*
+    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
+        var result: [CambridgePaperBundle] = []
+
+        let standardPaperCodes = urls
+            .map { getQuestionPaperCode($0.getPaperCode()) }
+            .removingDuplicates()
+
+        let questionPaperURLs = Dictionary(uniqueKeysWithValues: urls.getQuestionPaperURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
+        let markschemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
+
+        for code in standardPaperCodes {
+            let questionPaperURL = questionPaperURLs[code]
+            let markSchemeURL = markschemeURLs[code]
+            
+            print("This please: ", NSHomeDirectory())
+            print("\(questionPaperURL!)", "\(markSchemeURL!)")
+            result.append(
+                CambridgePaperBundle(
+                    questionPaper: questionPaperURL.map {
+                        CambridgeQuestionPaper(
+                            url: $0,
+                            metadata: metadata[$0.getPaperCode()]!
+                        )
+                    },
+                    markScheme: markSchemeURL.map {
+                        CambridgeMarkscheme(
+                            url: $0,
+                            metadata: metadata[$0.getPaperCode()]!
+                        )
+                    }
+                )
+            )
+        }
+
+        return result
+    }
+    */
+    
+    /// OLD
+    /// Reads existing metadata from disk, or create and write new metadata for the given paper URLs.
+    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [String: CambridgePaperMetadata] {
         // TODO: Account for the fact that `paperURLs` might change.
-        var result: [String: OldCambridgePaperMetadata]
+        var result: [String: CambridgePaperMetadata]
         
         if calculatingMetadata {
             if let data = directory.read(from: "metadata") {
                 // Read the metadata
-                result = try JSONDecoder().decode([String : OldCambridgePaperMetadata].self, from: data)
+                result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: data)
             } else {
                 if let metadataURL = Bundle.main.url(forResource: "metadata", withExtension: nil) {
                     let bundleMetadata = try Data(contentsOf: metadataURL)
-                    result = try JSONDecoder().decode([String : OldCambridgePaperMetadata].self, from: bundleMetadata)
+                    result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: bundleMetadata)
                     for url in paperURLs {
                         print("checking metadata...")
                         if result[url.getPaperCode()] == nil {
                             print("adding new paper: \(url.getPaperCode())!")
-                            result[url.getPaperCode()] = OldCambridgePaperMetadata(url: url)
+                            result[url.getPaperCode()] = CambridgePaperMetadata(url: url)
                         } else {
                             print("\(url.getPaperCode()) this one's here!")
                         }
@@ -92,8 +206,10 @@ final public class PapersDatabase: ObservableObject {
 
                     // Create the metadata.
                     for url in paperURLs {
-                        let paperMetadata = OldCambridgePaperMetadata(url: url)
-                        result[paperMetadata.paperCode] = paperMetadata
+                        /// OLD
+                        let paperMetadata = CambridgePaperMetadata(url: url)
+                        result[paperMetadata.code] = paperMetadata
+                        /// ----------------------------------------
                     }
                 }
                 
@@ -101,12 +217,15 @@ final public class PapersDatabase: ObservableObject {
                 var problemCount: Int = 0
                 var successful: Int = 0
                 for url in paperURLs {
+                    
+                    
+                    /// OLD
                     if result[url.getPaperCode()]!.paperType == .markScheme {
                         if result[url.getPaperCode()]!.paperNumber == .paper1 {
                             if result[url.getPaperCode()]!.answers == [] {
                                 print("MCQ PROBLEM", url.getPaperCode())
                                 print("trying to compute again: ")
-                                result[url.getPaperCode()] = OldCambridgePaperMetadata(url: url)
+                                result[url.getPaperCode()] = CambridgePaperMetadata(url: url)
                                 if result[url.getPaperCode()]!.answers == [] {
                                     print("ACTUAL PROBLEM", url.getPaperCode())
                                     problemCount += 1
@@ -116,6 +235,7 @@ final public class PapersDatabase: ObservableObject {
                             }
                         }
                     }
+                    /// ------------------------------------------
                 }
                 print("problematic: \(problemCount), successful: \(successful)")
                 
@@ -126,22 +246,31 @@ final public class PapersDatabase: ObservableObject {
                 //}
             }
         } else {
-            let bundleMetadata = try Data(contentsOf: directory.metadataURL)
-            result = try JSONDecoder().decode([String: OldCambridgePaperMetadata].self, from: bundleMetadata)
+            if let url = Bundle.main.url(forResource: "metadata", withExtension: nil){
+                let bundleMetadata = try Data(contentsOf: url)
+                result = try JSONDecoder().decode([String: CambridgePaperMetadata].self, from: bundleMetadata)
+            } else {
+                result = [:]
+            }
         }
         
         // MARK: Testing
 
         return result
     }
+    /// -----------------------------------------------------------------------------
     
-    private func readMetadataFromBundle() -> [String: OldCambridgePaperMetadata] {
-        let bundleMetadata = try! Data(contentsOf: directory.metadataURL)
-        return try! JSONDecoder().decode([String: OldCambridgePaperMetadata].self, from: bundleMetadata)
+    private func readMetadataFromBundle() -> [String: CambridgePaperMetadata] {
+        var result: [String: CambridgePaperMetadata] = [:]
+        if let url = Bundle.main.url(forResource: "metadata", withExtension: nil){
+            let bundleMetadata = try! Data(contentsOf: url)
+            result = try! JSONDecoder().decode([String: CambridgePaperMetadata].self, from: bundleMetadata)
+        }
+        return result
     }
 
     /// Creates paper bundles from the given paper URLs.
-    private func computePaperBundles(from urls: [URL], metadata: [String : OldCambridgePaperMetadata]) -> [CambridgePaperBundle] {
+    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
         var result: [CambridgePaperBundle] = []
 
         let standardPaperCodes = urls
@@ -230,8 +359,8 @@ final public class PapersDatabase: ObservableObject {
 extension PapersDatabase {
     
     // MARK: - Examples
-    var examples: [OldCambridgePaperMetadata] {
-        PaperRelatedDataDirectory().fetchAllAvailablePDFResourceURLs().map { OldCambridgePaperMetadata(bundleResourceName: $0.getPaperCode()) }
+    var examples: [CambridgePaperMetadata] {
+        PaperRelatedDataDirectory().fetchAllAvailablePDFResourceURLs().map { CambridgePaperMetadata(bundleResourceName: $0.getPaperCode()) }
     }
     
     // MARK: - Datasheets
@@ -244,7 +373,7 @@ extension PapersDatabase {
     
     static var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
     static var numerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"]
-    static var years: [Int] = [20, 19, 18, 17, 16]
+    static var years: [Int] = [2021, 2020, 2019, 2018, 2017, 2016, 2015]
     static var months: [CambridgePaperMonth] = [.febMarch, .mayJune, .octNov]
     static var subjects: [CambridgeSubject] = [.physics, .chemistry, .biology, .english, .maths]
     static var paperNumbers: [CambridgePaperNumber] = [.paper1, .paper2, .paper3, .paper4, .paper5, .paper6]

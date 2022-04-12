@@ -53,7 +53,7 @@ extension PapersView {
         @Binding var sortInsideBy: SortType
 
         var sortedBundles: [SortArgument : [CambridgePaperBundle]] {
-            sortBundles(papersDatabase.oldPaperBundles, sortBy: sortBy)
+            sortBundles(papersDatabase.paperBundles, sortBy: sortBy)
         }
         
         var body: some View {
@@ -128,7 +128,7 @@ extension PapersView.ListView {
                 case .sortByYear:
                     ForEach(PapersDatabase.years, id: \.self) { year in
                         DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.year(year)] ?? [], id: \.metadata.paperCode){ bundle in
+                            ForEach(sortedBundles[SortArgument.year(year)] ?? [], id: \.metadata.code){ bundle in
                                 Row(paperBundle: bundle)
                                     .buttonStyle(PlainButtonStyle())
                             }
@@ -147,7 +147,7 @@ extension PapersView.ListView {
                 case .sortByMonth:
                     ForEach(PapersDatabase.months, id: \.self) { month in
                         DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.month(month)] ?? [], id: \.metadata.paperCode){ bundle in
+                            ForEach(sortedBundles[SortArgument.month(month)] ?? [], id: \.metadata.code){ bundle in
                                 Row(paperBundle: bundle)
                                     .buttonStyle(PlainButtonStyle())
                             }
@@ -166,7 +166,7 @@ extension PapersView.ListView {
                 case .sortBySubject:
                     ForEach(PapersDatabase.subjects, id: \.self) { subject in
                         DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.subject(subject)] ?? [], id: \.metadata.paperCode){ bundle in
+                            ForEach(sortedBundles[SortArgument.subject(subject)] ?? [], id: \.metadata.code){ bundle in
                                 Row(paperBundle: bundle)
                                     .buttonStyle(PlainButtonStyle())
                             }
@@ -185,7 +185,7 @@ extension PapersView.ListView {
                 case .sortByPaperNumber:
                     ForEach(PapersDatabase.paperNumbers, id: \.self) { number in
                         DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.paperNumber(number)] ?? [], id: \.metadata.paperCode){ bundle in
+                            ForEach(sortedBundles[SortArgument.paperNumber(number)] ?? [], id: \.metadata.code){ bundle in
                                 Row(paperBundle: bundle)
                                     .buttonStyle(PlainButtonStyle())
                             }
