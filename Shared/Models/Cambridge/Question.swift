@@ -8,16 +8,15 @@ import PDFKit
 struct Question: Hashable, Identifiable {
     let id = UUID()
     let metadata: CambridgePaperMetadata
-    let index: OldQuestionIndex
+    let index: QuestionIndex
     var check: QuestionCheck = .unsolved
-    var subQuestions: [OldQuestionIndex] = []
-    var pages: [OldCambridgePaperPage]
-    let rawText: String
+    var pages: [CambridgePaperPage]
+    let contents: AttributedString
     
-    init(index: OldQuestionIndex, pages: [OldCambridgePaperPage], metadata: CambridgePaperMetadata){
+    init(index: QuestionIndex, pages: [CambridgePaperPage], metadata: CambridgePaperMetadata){
         self.index = index
         self.pages = pages
-        self.rawText = pages.map { $0.rawText }.reduce("", +)
+        self.contents = pages.map { $0.contents }.reduce("", +)
         self.metadata = metadata
     }
 }
@@ -29,20 +28,3 @@ enum QuestionCheck: Int, Codable {
     case incorrect = 2
 }
 
-struct OldQuestionIndex: Hashable, Codable {
-    var number: Int = 1
-    var letter: String? = nil
-    var numeral: String? = nil
-    var subNumber: Int? = nil
-    
-    init(_ number: Int, _ letter: String? = nil, _ numeral: String? = nil, subNumber: Int? = nil){
-        self.number = number
-        self.letter = letter
-        self.numeral = numeral
-        self.subNumber = subNumber
-    }
-    
-    mutating func increment(){
-        self.number += 1
-    }
-}

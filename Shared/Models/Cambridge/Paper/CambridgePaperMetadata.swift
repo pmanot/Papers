@@ -113,7 +113,19 @@ extension CambridgePaperMetadata {
 struct QuestionIndex: Hashable, Codable {
     let index: Int
     let type: QuestionIndexType
-    var parts: [QuestionIndex] = []
+    var parts: [QuestionIndex]
+    
+    init(_ index: Int, type: QuestionIndexType = .number) {
+        self.index = index
+        self.type = type
+        self.parts = []
+    }
+    
+    init(index: Int, type: QuestionIndexType, parts: [QuestionIndex]){
+        self.index = index
+        self.type = type
+        self.parts = parts
+    }
 }
 
 enum QuestionIndexType: Hashable, Codable {
