@@ -8,7 +8,7 @@ struct PaperContentsView: View {
     let paperBundle: CambridgePaperBundle
     @Binding var searchText: String
     
-    init(paper: CambridgeQuestionPaper, search: Binding<String> = Binding.constant("")){
+    init(paper: CambridgePaper, search: Binding<String> = Binding.constant("")){
         self.paperBundle = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
         self._searchText = search
     }
@@ -61,8 +61,16 @@ extension PaperContentsView {
         
         var body: some View {
             HStack {
-                Text("\(self.question.index.number).")
+                Text("\(self.question.index.index).")
                     .font(.title, weight: .heavy)
+                
+                Text(
+                    question.index.parts
+                        .map { $0.displayedIndex() }
+                        .joined(separator: ", ")
+                )
+                    .font(.title2, weight: .heavy)
+                    .padding()
                 
                 Text("\(question.pages.count) pages")
                     .modifier(TagTextStyle())
@@ -76,12 +84,8 @@ extension PaperContentsView {
     struct PaperRow: View {
         let bundle: CambridgePaperBundle
         
-        init(_ paper: CambridgeQuestionPaper){
+        init(_ paper: CambridgePaper){
             self.bundle = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
-        }
-        
-        init(_ paper: CambridgeMarkscheme){
-            self.bundle = CambridgePaperBundle(questionPaper: nil, markScheme: paper)
         }
         
         init(_ paperBundle: CambridgePaperBundle){
@@ -100,7 +104,7 @@ extension PaperContentsView {
                             .modifier(PaperTagStyle(outlineWidth: 1))
                         
                         if bundle.metadata.paperNumber == .paper1 && bundle.markScheme != nil {
-                            if !bundle.markScheme!.metadata.answers.isEmpty {
+                            if !bundle.markScheme!.metadata.multipleChoiceAnswers.isEmpty {
                                 Image(systemName: .checkmarkCircle)
                                     .font(.headline)
                             }
@@ -111,7 +115,7 @@ extension PaperContentsView {
                         Text("\(bundle.metadata.month.compact())")
                             .modifier(PaperTagStyle())
                         
-                        Text("20\(bundle.metadata.year)")
+                        Text("\(bundle.metadata.year)")
                             .modifier(PaperTagStyle())
                         
                         Text("Paper \(bundle.metadata.paperNumber.rawValue)")

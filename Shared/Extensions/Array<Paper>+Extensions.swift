@@ -4,7 +4,7 @@
 
 import Foundation
 
-extension Array where Element == CambridgeQuestionPaper {
+extension Array where Element == CambridgePaper {
     func questions() -> [Question] {
         self.map { $0.questions }.reduce([], +)
     }

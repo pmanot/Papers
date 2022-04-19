@@ -21,7 +21,7 @@ struct WrappedPDFView: UIViewRepresentable {
         self.pdf = compiledPDF
     }
     
-    init(pdf: PDFDocument, pages: [OldCambridgePaperPage]){
+    init(pdf: PDFDocument, pages: [CambridgePaperPage]){
         self.init(pages: pages.map { $0.getPage(pdf: pdf) })
     }
     
@@ -121,7 +121,7 @@ extension PDFView {
     }
     
     func canShowMCQAnswerOverlay() -> Bool {
-        (bundle.metadata.paperNumber == .paper1) && !(bundle.markScheme.map { $0.metadata.answers }).isNilOrEmpty && (answerOverlayShowing == true)
+        (bundle.metadata.paperNumber == .paper1) && !(bundle.markScheme.map { $0.metadata.multipleChoiceAnswers }).isNilOrEmpty && (answerOverlayShowing == true)
     }
     
     func showMCQAnswerOverlay() {

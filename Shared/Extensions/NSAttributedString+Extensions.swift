@@ -15,6 +15,7 @@ extension NSAttributedString {
                 }
             }
         }
+        print("bold strings: ", boldStrings)
         return boldStrings
     }
 }
