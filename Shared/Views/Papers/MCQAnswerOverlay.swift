@@ -9,20 +9,20 @@ struct MCQAnswerOverlay: View {
     let timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
     
     let bundle: CambridgePaperBundle
-    let correctAnswersByIndex: [OldQuestionIndex : AnswerValue]
+    let markschemeAnswers: [QuestionIndex : MultipleChoiceAnswer]
     
     @State private var solvedPaper: SolvedPaper! = nil
-    @State private var answers: [Answer] = initialisedAnswers
-    @State private var selectedIndex: OldQuestionIndex = OldQuestionIndex(1)
+    @State private var answers: [QuestionIndex : MultipleChoiceAnswer] = Dictionary(uniqueKeysWithValues: [Int](1...40).map { (QuestionIndex($0), MultipleChoiceAnswer(index: QuestionIndex($0), value: MultipleChoiceValue.none)) } )
+    @State private var selectedIndex: QuestionIndex = QuestionIndex(1)
     @State private var timeTaken: TimeInterval = .zero
-    @State private var correctAnswerTint: Bool = false
+    @State private var correctAnswerTint: Bool = true
     @State private var showingResults: Bool = false
     @Binding var isShowing: Bool
     @Environment(\.presentationMode) var presentationMode
     
     init(bundle: CambridgePaperBundle, showing: Binding<Bool>){
         self.bundle = bundle
-        self.correctAnswersByIndex = bundle.markScheme?.metadata.answers.getAnswersByIndex() ?? [:]
+        self.markschemeAnswers = bundle.markScheme?.metadata.multipleChoiceAnswers ?? [:]
         self._isShowing = showing
     }
     
@@ -36,7 +36,7 @@ struct MCQAnswerOverlay: View {
                 .font(.title2, weight: .heavy)
                 .background(Color.white.frame(width: 20, height: 20).cornerRadius(.infinity))
                 */
-                Text("\(selectedIndex.number)")
+                Text("\(selectedIndex.index)")
                     .font(.title)
                     .fontWeight(.heavy)
                     .foregroundColor(.primary)
@@ -67,37 +67,21 @@ struct MCQAnswerOverlay: View {
             
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
-                    .frame(width: answers[selectedIndex.number - 1].selected(.none) ? 0 : Screen.size.width, height: 5)
+                    .frame(width: answers[selectedIndex]!.value == .none ? 0 : Screen.size.width, height: 5)
                     .foregroundColor(Color.systemIndigo)
                 Divider()
                 TabView(selection: $selectedIndex) {
-                    ForEach(answers, id: \.index){ answer in
+                    ForEach([Int](1...40).map { QuestionIndex($0) }){ index in
                         HStack(spacing: 30) {
-                            Button(action: {buttonPressed(selection: .A)}){
-                                Text("A")
+                            ForEach([MultipleChoiceValue.A, MultipleChoiceValue.B, MultipleChoiceValue.C, MultipleChoiceValue.D]){ value in
+                                Button(action: {buttonPressed(value: value)}){
+                                    Text(value.rawValue)
+                                }
+                                .modifier(MCQButtonStyle())
+                                .foregroundColor(getAnswerColor(selected: answers[index]!.value, correct: markschemeAnswers[index]!.value, for: value))
                             }
-                            .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .A)))
-                            
-                            Button(action: {buttonPressed(selection: .B)}){
-                                Text("B")
-                            }
-                            .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .B)))
-                            
-                            Button(action: {buttonPressed(selection: .C)}){
-                                Text("C")
-                            }
-                            .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .C)))
-                            
-                            Button(action: {buttonPressed(selection: .D)}){
-                                Text("D")
-                            }
-                            .modifier(MCQButtonStyle())
-                            .foregroundColor(answerColor(selected: answer.value, correct: correctAnswersByIndex[answer.index]!, for: .multipleChoice(choice: .D)))
                         }
-                        .tag(answer.index)
+                        .tag(index)
                     }
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -115,25 +99,25 @@ struct MCQAnswerOverlay: View {
 }
 
 extension MCQAnswerOverlay {
-    private func completionAnimation(selection: MCQSelection){
-        if selectedIndex.number != 40 {
+    private func completionAnimation(value: MultipleChoiceValue){
+        if selectedIndex.index != 40 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6){
                 withAnimation(.easeOut(duration: 0.5)) {
-                    if answers[selectedIndex.number - 1].selected(selection) {
-                        selectedIndex = answers[selectedIndex.number].index
+                    if answers[selectedIndex]!.value != .none {
+                        selectedIndex = QuestionIndex(selectedIndex.index + 1)
                     }
                 }
             }
         }
     }
     
-    private func buttonPressed(selection: MCQSelection){
+    private func buttonPressed(value: MultipleChoiceValue){
         withAnimation {
-            answers[selectedIndex.number - 1].toggleChoice(selection, timed: timeTaken)
+            answers[selectedIndex]!.toggleChoice(value, timed: timeTaken)
             timeTaken = .zero
         }
         
-        completionAnimation(selection: selection)
+        completionAnimation(value: value)
     }
     
     private func toggleMCQValue(answer: inout Answer, value: MCQSelection){
@@ -145,9 +129,8 @@ extension MCQAnswerOverlay {
         }
     }
 
-
-    private func answerColor(selected: AnswerValue, correct: AnswerValue, for button: AnswerValue) -> Color {
-        if !(selected == .multipleChoice(choice: .none)) {
+    private func getAnswerColor(selected: MultipleChoiceValue, correct: MultipleChoiceValue, for button: MultipleChoiceValue) -> Color {
+        if !(selected == .none) {
             if correctAnswerTint {
                     if button == correct {
                         return Color.green
@@ -168,17 +151,17 @@ extension MCQAnswerOverlay {
     }
     
     private func goToNextIndex() {
-        if selectedIndex.number != 40 {
+        if selectedIndex.index != 40 {
             withAnimation(.easeIn) {
-                selectedIndex = OldQuestionIndex(selectedIndex.number + 1)
+                selectedIndex = QuestionIndex(selectedIndex.index + 1)
             }
         }
     }
     
     private func goToPreviousIndex() {
-        if selectedIndex.number != 1 {
+        if selectedIndex.index != 1 {
             withAnimation(.easeIn) {
-                selectedIndex = OldQuestionIndex(selectedIndex.number - 1)
+                selectedIndex = QuestionIndex(selectedIndex.index - 1)
             }
         }
     }
@@ -193,20 +176,19 @@ extension MCQAnswerOverlay {
 
 extension MCQAnswerOverlay {
     struct DebugOverlay: View {
-        let correctAnswersByIndex: [OldQuestionIndex : AnswerValue]
+        let markschemeAnswers: [QuestionIndex : AnswerValue]
         var body: some View {
             VStack {
                 ForEach(0..<40){ index in
-                    Text("\(index) : \(correctAnswersByIndex[OldQuestionIndex(index + 1)]!.getValue())")
+                    Text("\(index) : \(markschemeAnswers[QuestionIndex(index + 1)]!.getValue())")
                 }
             }
-            
         }
     }
     
     
     static var initialisedAnswers: [Answer] {
-        return (1...40).map { Answer(index: OldQuestionIndex($0), value: .multipleChoice(choice: .none)) }
+        return (1...40).map { Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .none)) }
     }
 }
 
@@ -225,7 +207,7 @@ struct MCQButtonStyle: ViewModifier {
 /*
 struct MCQAnswerOverlay_Previews: PreviewProvider {
     static var previews: some View {
-        MCQAnswerOverlay(answers: Answer, correctAnswersByIndex: <#[QuestionIndex : AnswerValue]#>, onSave: <#() -> ()#>)
+        MCQAnswerOverlay(answers: Answer, markschemeAnswers: <#[QuestionIndex : AnswerValue]#>, onSave: <#() -> ()#>)
     }f
 }
 */

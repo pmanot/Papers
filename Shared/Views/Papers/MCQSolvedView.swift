@@ -19,7 +19,10 @@ struct MCQSolvedView: View {
     }
     
     var timeTaken: Double {
-        solvedPaper.answers.map { $0.time ?? 0 }.reduce(0, +)
+        /*
+        solvedPaper.answers.mapValues({ $0.time ?? 0 }).reduce(0, +)
+         */
+        return 0
     }
     
     private var calculatedGrade: String {
