@@ -2,12 +2,13 @@
 // Copyright (c) Purav Manot
 //
 
+import Diagnostics
 import Foundation
 import PDFKit
 
 extension PDFDocument {
     func pages() -> [PDFPage] {
-        (0..<self.pageCount - 1).compactMap { self.page(at: $0) }
+        (0..<self.pageCount).compactMap { self.page(at: $0) }
     }
 }
 
@@ -16,45 +17,54 @@ enum PaperCodeError: Error {
 }
 
 struct CambridgePaperMetadata: Codable, Hashable {
+    static let logger = os.Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CambridgePaperMetadata")
+    
     let code: String
     let type: CambridgePaperType
     var pages: [CambridgePaperPage] = []
+    var details: CambridgePaperDetails {
+        CambridgePaperDetails.init(paperCode: code)
+    }
     var kind: CambridgePaperKind {
-        CambridgePaperKind(details: type.details)
+        CambridgePaperKind(details: details)
     }
     
+    var multipleChoiceAnswers: [QuestionIndex : MultipleChoiceAnswer] = [:]
+    
     /// COMPATIBILITY
+    var answers: [Answer] = []
+    var numberOfQuestions: Int = 40
+    var rawText: String {
+        self.pages.map { $0.rawText }.reduce("", +)
+    }
+    var indices: [QuestionIndex] = []
+    
     var questionPaperCode: String {
         getQuestionPaperCode(code)
     }
-    var paperType: OldCambridgePaperType {
-        OldCambridgePaperType(paperCode: code)
-    }
+    
     var paperNumber: CambridgePaperNumber {
-        self.type.details?.number ?? .paper1
+        self.details.number ?? .paper1
     }
     var paperVariant: CambridgePaperVariant {
-        self.type.details?.variant ?? .variant1
+        self.details.variant ?? .variant1
     }
     var subject: CambridgeSubject {
-        self.type.details?.subject ?? .other
+        self.details.subject ?? .other
     }
     var month: CambridgePaperMonth {
-        self.type.details?.month ?? .mayJune
+        self.details.month ?? .mayJune
     }
     var year: Int {
-        self.type.details?.year ?? 2020
+        self.details.year ?? 2020
     }
-    var pageData: [OldCambridgePaperPage] = []
-    var answers: [Answer] = []
-    var numberOfQuestions: Int = 0
-    var rawText: String = ""
     
     ///-------------------------------
     
     init(url: URL) {
         self.code = url.deletingPathExtension().lastPathComponent
         self.type = CambridgePaperType(paperCode: code)
+        getPages(url: url)
     }
     
     init(code: String){
@@ -78,24 +88,106 @@ struct CambridgePaperMetadata: Codable, Hashable {
         
         let pages = pdf.pages()
         
+        Self.logger.debug("Parsing pages from PDF at \(url)")
+        
         switch kind {
             case .longAnswer:
-                var questionIndexValue = 0
+                var startingPage: Int {
+                    switch self.subject {
+                        case .physics:
+                            switch self.details.number {
+                                case .paper1:
+                                    return 3
+                                case .paper2:
+                                    return 3
+                                case .paper4:
+                                    return 3
+                                default:
+                                    return 1
+                            }
+                        default:
+                            return 1
+                    }
+                }
+                Self.logger.debug("Parsing long answers.")
+
+                var questionIndexValue = 1
                 var partIndexValue = 0
                 var numeralIndexValue = 0
                 
                 for page in pages {
-                    let contents = AttributedString(page.attributedString!)
-
-                    let questionIndices = getQuestionIndicesFromPage(
-                        page,
-                        currentIndex: &questionIndexValue,
-                        currentLetterIndex: &partIndexValue,
-                        currentNumeralIndex: &numeralIndexValue
-                    )
+                    let index = page.pageRef?.pageNumber ?? 0
+                    let rawText = page.string ?? ""
                     
-                    self.pages.append(CambridgePaperPage(questionIndices: questionIndices, contents: contents))
+                    if index <= startingPage  { // First Page
+                        self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
+                    } else {
+                        let questionIndices = page.getQuestionIndices(
+                            currentIndex: &questionIndexValue,
+                            currentLetterIndex: &partIndexValue,
+                            currentNumeralIndex: &numeralIndexValue
+                        )
+
+                        Self.logger.debug("Current question index \(questionIndices[0].index).")
+                        Self.logger.debug("Current page number \(index).")
+                        
+                        self.pages.append(CambridgePaperPage(index: index, questionIndices: questionIndices, rawText: rawText))
+                    }
                 }
+                self.indices = combine(self.pages.map { $0.questionIndices }.reduce([], +))
+                self.numberOfQuestions = questionIndexValue
+                
+                Self.logger.debug("Parsed \(questionIndexValue) question(s).")
+            case .multipleChoice:
+                switch type {
+                    case .questionPaper:
+                        self.pages = pages.map { CambridgePaperPage(index: $0.pageRef?.pageNumber ?? 0, questionIndices: [], rawText: $0.string ?? "") }
+                        return
+                    case .markScheme:
+                        print("made it here - \(pages.count)")
+                        for page in pages {
+                            let index = page.pageRef?.pageNumber ?? 0
+                            let rawText = page.string!
+                            print("This is the index: \(index)")
+                            switch index {
+                                case 1: // First Page
+                                    self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
+                                case 2:
+                                    self.pages.append(CambridgePaperPage(index: index, questionIndices: [Int](1...28).map { QuestionIndex($0) }, rawText: rawText))
+                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(for: 1...28))
+                                case 3:
+                                    self.pages.append(CambridgePaperPage(index: index, questionIndices: [Int](29...40).map { QuestionIndex($0) }, rawText: rawText))
+                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(for: 29...40))
+                                    print("Multiple Choice Answers calculated for \(self.code): \(multipleChoiceAnswers.count)")
+                                default:
+                                    return
+                            }
+                        }
+                    default:
+                        return
+                }
+                /*
+                var questionIndexValue = 0
+                
+                for page in pages {
+                    let index = page.pageRef?.pageNumber ?? 0
+                    let rawText = page.string!
+                    if index == 1  { // First Page
+                        self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
+                    } else {
+                        let questionIndices = page.getMCQQuestionIndices(
+                            currentIndex: &questionIndexValue,
+                            currentLetterIndex: &partIndexValue,
+                            currentNumeralIndex: &numeralIndexValue
+                        )
+
+                        Self.logger.debug("Current question index \(questionIndices[0].index).")
+                        Self.logger.debug("Current page number \(index).")
+                        
+                        self.pages.append(CambridgePaperPage(index: index, questionIndices: questionIndices, rawText: rawText))
+                    }
+                }
+                 */
             default:
                 return
         }
@@ -109,414 +201,106 @@ extension CambridgePaperMetadata {
     }
 }
 
-// Question Index that holds data about nested indices inside a question
-struct QuestionIndex: Hashable, Codable {
-    let index: Int
-    let type: QuestionIndexType
-    var parts: [QuestionIndex]
-    
-    init(_ index: Int, type: QuestionIndexType = .number) {
-        self.index = index
-        self.type = type
-        self.parts = []
-    }
-    
-    init(index: Int, type: QuestionIndexType, parts: [QuestionIndex]){
-        self.index = index
-        self.type = type
-        self.parts = parts
-    }
-}
 
-enum QuestionIndexType: Hashable, Codable {
-    case number, letter, numeral, subNumber
-}
-
-
-
-func getQuestionIndicesFromPage(
-    _ page: PDFPage,
-    currentIndex: inout Int,
-    currentLetterIndex: inout Int,
-    currentNumeralIndex: inout Int
-) -> [QuestionIndex] {
-    guard let contents = page.attributedString else {
-        return []
-    }
-    //print("-------NEW PAGE-------")
-    var partsDictionary = [Int: [Int]]()
-    let boldStrings = contents
-        .fetchBoldStrings()
-        .reduce("", +)
-    
-    let regexNum = try! NSRegularExpression(pattern: "[0-9]+")
-    let regexParts = try! NSRegularExpression(pattern: "\\([a-z]+\\)")
-    let numbers = regexNum
-        .returnMatches(boldStrings)
-        .compactMap(Int.init)
-    
-    let partsArray = regexParts
-        .returnMatches(boldStrings)
-        .map { $0.removingCharacters(in: CharacterSet(charactersIn: "()")) }
-    
-    
-    
-    if numbers.contains(currentIndex + 1) {
-        currentIndex += 1
-        //print("Question \(index)")
-        currentLetterIndex = 0
-        currentNumeralIndex = 0
-    }
-    
-    if currentIndex >= 1 {
-        //print("index >= 1")
-        for part in partsArray {
-            print(part)
-            if part == PapersDatabase.letters[currentLetterIndex] {
-                partsDictionary[currentLetterIndex + 1] = []
-                currentLetterIndex += 1
+extension PDFPage {
+    func getQuestionIndices(
+        currentIndex: inout Int,
+        currentLetterIndex: inout Int,
+        currentNumeralIndex: inout Int
+    ) -> [QuestionIndex] {
+        guard let contents = attributedString else {
+            return []
+        }
+        //print("-------NEW PAGE-------")
+        var partsDictionary = [Int: [Int]]()
+        let boldStrings = contents
+            .fetchBoldStrings()
+            .reduce(" ", +)
+        
+        let regexNum = try! NSRegularExpression(pattern: "[0-9]+")
+        let regexParts = try! NSRegularExpression(pattern: "\\([a-z]+\\)")
+        var numbers = regexNum
+            .returnMatches(boldStrings)
+            .compactMap(Int.init)
+        
+        if let index = numbers.firstIndex(of: pageRef?.pageNumber ?? 0) {
+            // Removes the page number from array of numbers
+            numbers.remove(at: index)
+        }
+        
+        let partsArray = regexParts
+            .returnMatches(boldStrings)
+            .map { $0.removingCharacters(in: CharacterSet(charactersIn: "()")) }
+        
+        if currentIndex >= 1 {
+            //print("index >= 1")
+            // (i) (b) (a)
+            for part in partsArray { // [a, b, i, ii, c, i, ii]
+                print(part)
+                switch part {
+                    case PapersDatabase.letters[currentLetterIndex]:
+                        partsDictionary[currentLetterIndex + 1] = []
+                        currentLetterIndex += 1
+                        currentNumeralIndex = 0
+                    case PapersDatabase.numerals[currentNumeralIndex]:
+                        if partsDictionary[currentLetterIndex].isNilOrEmpty {
+                            partsDictionary[currentLetterIndex] = []
+                        }
+                        partsDictionary[currentLetterIndex]!.append(currentNumeralIndex + 1)
+                        //print(partsDictionary)
+                        currentNumeralIndex += 1
+                    case PapersDatabase.letters[0]:
+                        if numbers.contains(currentIndex + 1) {
+                            currentIndex += 1
+                            currentLetterIndex = 0
+                            currentNumeralIndex = 0
+                        }
+                        partsDictionary[currentLetterIndex + 1] = []
+                        currentLetterIndex += 1
+                        currentNumeralIndex = 0
+                    default:
+                        continue
+                }
+            }
+        }
+        
+        let parts = partsDictionary
+            .map { (key, value) in
+                QuestionIndex(index: key, type: .letter, parts: value.map({ QuestionIndex($0, type: .numeral) }) )
+            }
+        if parts.isEmpty {
+            if numbers.contains(currentIndex + 1) {
+                currentIndex += 1
+                currentLetterIndex = 0
                 currentNumeralIndex = 0
-                //print(partsDictionary)
-            } else if part == PapersDatabase.numerals[currentNumeralIndex] {
-                //print("matched \(part)")
-                if partsDictionary[currentLetterIndex].isNilOrEmpty {
-                    partsDictionary[currentLetterIndex] = []
+            }
+            partsDictionary[currentLetterIndex + 1] = []
+            currentLetterIndex += 1
+            currentNumeralIndex = 0
+        }
+        
+        return [QuestionIndex(index: currentIndex, type: .number, parts: parts)]
+    }
+    
+    func getAnswers(for range: ClosedRange<Int>) -> [QuestionIndex : MultipleChoiceAnswer] {
+        guard let rawText = self.string else {
+            return [:]
+        }
+        let regex = try! NSRegularExpression(pattern: "[0-4]*[0-9]\\s?[A-D]")
+        let matches = regex.returnMatches(rawText).map({ $0.removing(allOf: " ")})
+        var final: [QuestionIndex : MultipleChoiceAnswer] = [:]
+        var i: Int = range.lowerBound
+        
+        
+        for m in matches {
+            if m.last != nil {
+                if m.removing(at: m.lastIndex) == "\(i)"  {
+                    final[QuestionIndex(i)] = MultipleChoiceAnswer(index: QuestionIndex(i), value: MultipleChoiceValue(rawValue: String(m.last!))!)
+                    i += 1
                 }
-                partsDictionary[currentLetterIndex]!.append(currentNumeralIndex + 1)
-                //print(partsDictionary)
-                currentNumeralIndex += 1
             }
         }
-    }
-    //print("----------------------")
-    
-    let parts = partsDictionary
-        .map { (key, value) in
-            QuestionIndex(index: key, type: .letter, parts: value.map({ QuestionIndex(index: $0, type: .numeral) }) )
-        }
-    
-    return [QuestionIndex(index: currentIndex, type: .number, parts: parts)]
-}
-
-/*
-struct CambridgePaperMetadata: Codable, Hashable {
-    static let paperCodePattern = "[0-9]{4}_[a-z]{1}[0-9]{2}_[a-z]{2}_[0-9]{2}"
-    
-    let paperCode: String
-    let questionPaperCode: String
-    let paperType: CambridgePaperType
-    let month: CambridgePaperMonth
-    let year: Int
-    let subject: CambridgeSubject
-    let paperNumber: CambridgePaperNumber
-    let paperVariant: CambridgePaperVariant
-    var pageData: [CambridgePaperPage] = []
-    var answers: [Answer] = []
-    var numberOfQuestions: Int = 0
-    var rawText: String = ""
-    var error: Bool = false
-    
-    
-    
-    init(url: URL){
-        self.init(paperCode: url.deletingPathExtension().lastPathComponent)
-        fetchPageData(pdf: PDFDocument(url: url)!)
-        self.rawText = pageData.map { $0.rawText }.reduce("", +)
-    }
-    
-    init(bundleResourceName: String){
-        self.init(url: URL(fileURLWithPath: Bundle.main.path(forResource: bundleResourceName, ofType: "pdf")!))
-    }
-    
-    mutating func fetchPageData(pdf: PDFDocument) {
-        switch paperType {
-        case .markScheme:
-                switch subject {
-                    case .chemistry, .physics, .biology:
-                        switch paperNumber {
-                            case .paper1: // paper 1 (mcq)
-                                if self.year >= 17 {
-                                    var multipleChoiceAnswerArray: [AnswerValue] = [] // initialize empty array that will store extracted answers from mcq
-                                    for i in 1..<pdf.pageCount {
-                                        let pageNumber = i + 1
-                                        let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                                        let rawPageText = page.string ?? "" // extract text from the page
-                                        pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
-                                        
-                                        var numberOfAnswers: Int {
-                                            i == 1 ? 28 : 12
-                                        }
-                                        
-                                        let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
-                                        
-                                        if snapshot == nil {
-                                            print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
-                                            error = true
-                                            print("error toggled due to nil snapshot error")
-                                            break
-                                        }
-                                        
-                                        for n in 0..<numberOfAnswers {
-                                            if let croppedImage = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 230, y: 177 + 49*n), size: CGSize(width: 74, height: 45))){
-                                                let choice = recogniseAllText(from: croppedImage, .accurate, lookFor: ["A", "B", "C", "D"]).removing(allOf: " ")
-                                                print(choice)
-                                                if ["A", "B", "C", "D"].contains(choice) {
-                                                    multipleChoiceAnswerArray.append(.multipleChoice(choice: MCQSelection(rawValue: choice)!))
-                                                }
-                                            }
-                                            print(n)
-                                        }
-                                    }
-                                    
-                                    if multipleChoiceAnswerArray.length == 40 {
-                                        answers = [Int](1...40).map { Answer(index: QuestionIndex($0), value: multipleChoiceAnswerArray[$0 - 1]) }
-                                    } else {
-                                        print(multipleChoiceAnswerArray)
-                                        error = true
-                                        print("error toggled due to MCQ answer detection problem")
-                                    }
-                                } else {
-                                    for i in 1..<pdf.pageCount {
-                                        let pageNumber = i + 1
-                                        let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                                        let rawPageText = page.string ?? "" // extract text from the page
-                                        pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
-                                    }
-                                }
-                                
-                            default: // paper 4
-                                for i in 1..<(pdf.pageCount - 1) {
-                                    let pageNumber = i + 1
-                                    let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                                    let rawPageText = page.string ?? "" // extract text from the page
-                                    pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
-                                }
-                        }
-                    default:
-                        for i in 1..<(pdf.pageCount - 1) {
-                            let pageNumber = i + 1
-                            let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                            let rawPageText = page.string ?? "" // extract text from the page
-                            pageData.append(CambridgePaperPage(type: .markSchemePage, rawText: rawPageText, pageNumber: pageNumber))
-                        }
-                        
-                }
-        case .questionPaper:
-                switch subject {
-                    case .chemistry, .physics, .biology:
-                        switch paperNumber {
-                            case .paper1: // paper 1 (mcq)
-                                for i in 0..<pdf.pageCount {
-                                    let pageNumber = i + 1
-                                    let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                                    let rawPageText = page.string ?? "" // extract text from the page
-                                    pageData.append(CambridgePaperPage(type: .multipleChoicePage(indexes: []), rawText: rawPageText, pageNumber: pageNumber))
-                                }
-                                self.numberOfQuestions = 40 // Cambridge A level MCQ Papers always contain 40 questions
-                                
-                            default: // paper 4
-                                var nextQuestionNumber: Int = 1 // question number to look for
-                                var runningQuestionNumber: Int = 0 // current question number (last question number detected)
-                                var startingPage: Int {
-                                    switch self.subject {
-                                        case .physics:
-                                            switch self.paperNumber {
-                                                case .paper1, .paper2, .paper4:
-                                                    return 3
-                                                default:
-                                                    return 1
-                                            }
-                                        default:
-                                            return 1
-                                    }
-                                }
-                                
-                                for i in startingPage..<pdf.pageCount {
-                                    let pageNumber = i + 1
-                                    let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                                    let rawPageText = page.string ?? "" // extract text from the page
-                                    
-                                    if rawPageText.contains("BLANK PAGE") { // check for blank page
-                                        pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
-                                    } else {
-                                        // alt
-                                        //var snapshot = page.thumbnail(of: CGSize(width: page.bounds(for: .cropBox).size.width, height: page.bounds(for: .cropBox).size.height), for: .cropBox)
-                                        // regular
-                                        switch self.paperNumber {
-                                            case .paper3, .paper5:
-                                                if runningQuestionNumber == 2 {
-                                                    let index = QuestionIndex(runningQuestionNumber)
-                                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                                } else {
-                                                    let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
-                                                    
-                                                    if snapshot == nil {
-                                                        print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
-                                                        error = true
-                                                        print("error toggled due to nil snapshot error")
-                                                    }
-                                                    // let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 60, height: 200)))! // crop page snapshot to only include question number
-                                                    let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 400)))! // crop page snapshot to only include page number
-                                                    
-                                                    let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
-                                                    print("This should be the question number: ", recognisedText, "in paper \(self.paperCode) page \(pageNumber)")
-                                                    
-                                                    if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
-                                                        runningQuestionNumber = nextQuestionNumber
-                                                        nextQuestionNumber += 1
-                                                        
-                                                        let index = QuestionIndex(runningQuestionNumber)
-                                                        pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                                         // debugging
-
-                                                        
-                                                    } else { //continuation of previous question
-                                                        let index = QuestionIndex(runningQuestionNumber)
-                                                        pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                                         // debugging
-                                                    }
-                                                }
-                                            default:
-                                                // alt
-                                                //var snapshot = page.thumbnail(of: CGSize(width: page.bounds(for: .cropBox).size.width, height: page.bounds(for: .cropBox).size.height), for: .cropBox)
-                                                // regular
-                                                let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
-                                                
-                                                if snapshot == nil {
-                                                    print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
-                                                    error = true
-                                                    print("error toggled due to nil snapshot error")
-                                                }
-                                                
-                                                
-                                                // let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 60, height: 200)))! // crop page snapshot to only include question number
-                                                let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 400)))! // crop page snapshot to only include page number
-                                                
-                                                let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
-                                                print("This should be the question number: ", recognisedText, "in paper \(self.paperCode) page \(pageNumber)")
-                                                
-                                                if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
-                                                    runningQuestionNumber = nextQuestionNumber
-                                                    nextQuestionNumber += 1
-                                                    
-                                                    let index = QuestionIndex(runningQuestionNumber)
-                                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                                     // debugging
-
-                                                    
-                                                } else { //continuation of previous question
-                                                    let index = QuestionIndex(runningQuestionNumber)
-                                                    pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                                     // debugging
-                                                }
-                                        }
-                                        
-                                    }
-                                }
-                                numberOfQuestions = runningQuestionNumber
-                        }
-                    default:
-                        switch paperNumber {
-                            default: // paper 4
-                                var nextQuestionNumber: Int = 1 // question number to look for
-                                var runningQuestionNumber: Int = 0 // current question number (last question number detected)
-                                var startingPage: Int {
-                                    switch self.subject {
-                                        case .physics:
-                                            switch self.paperNumber {
-                                                case .paper1:
-                                                    return 3
-                                                case .paper2:
-                                                    return 3
-                                                case .paper4:
-                                                    return 3
-                                                default:
-                                                    return 1
-                                            }
-                                        default:
-                                            return 1
-                                    }
-                                }
-                                
-                                for i in startingPage..<pdf.pageCount {
-                                    let pageNumber = i + 1
-                                    let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                                    let rawPageText = page.string ?? "" // extract text from the page
-                                    
-                                    if rawPageText.contains("BLANK PAGE") { // check for blank page
-                                        pageData.append(CambridgePaperPage(type: .blank, rawText: "", pageNumber: pageNumber))
-                                    } else {
-                                        let snapshot = getImagefromURL(url: pdf.documentURL!, pageNumber: pageNumber)!.cgImage
-                                        
-                                        if snapshot == nil {
-                                            print("This is a problematic snapshot: \(self.paperCode), page: \(pageNumber)")
-                                            error = true
-                                            print("error toggled due to nil snapshot error")
-                                        }
-                                        
-                                        
-                                        // let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 60, height: 200)))! // crop page snapshot to only include question number
-                                        let croppedSnapshot = snapshot!.cropping(to: CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: 140, height: 400)))! // crop page snapshot to only include page number
-                                        
-                                        let recognisedText = recogniseAllText(from: croppedSnapshot, .accurate, lookFor: [0...15].map {"\($0)"})
-                                        print("This should be the question number: ", recognisedText, "in paper \(self.paperCode) page \(pageNumber)")
-                                        
-                                        if recognisedText.contains("\(nextQuestionNumber)"){ // check if the page containes a new question (the next question)
-                                            runningQuestionNumber = nextQuestionNumber
-                                            nextQuestionNumber += 1
-                                            
-                                            let index = QuestionIndex(runningQuestionNumber)
-                                            pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                             // debugging
-
-                                            
-                                        } else { //continuation of previous question
-                                            let index = QuestionIndex(runningQuestionNumber)
-                                            pageData.append(CambridgePaperPage(type: .questionPaperPage(index: index), rawText: rawPageText, pageNumber: pageNumber))
-                                             // debugging
-                                        }
-                                    }
-                                }
-                                numberOfQuestions = runningQuestionNumber
-                        }
-                        
-                }
-        case .datasheet:
-            for i in 0..<pdf.pageCount {
-                let pageNumber = i + 1
-                let page = pdf.page(at: i)! // get the corresponding PDFPage from the page number
-                let rawPageText = page.string ?? "" // extract text from the page
-                pageData.append(CambridgePaperPage(type: .datasheet, rawText: rawPageText, pageNumber: pageNumber))
-            }
-        case .other:
-            pageData += [] // do nothing
-        }
+        
+        return final
     }
 }
-
-extension Array where Element == CambridgePaperMetadata {
-    func matching(_ url: URL) -> CambridgePaperMetadata? {
-        self.first { $0.paperCode == url.getPaperCode() }
-    }
-}
-
-func getQuestionPaperCode(_ paperCode: String) -> String {
-    var extendedPaperCode: String = ""
-    let paperCodeChunks = paperCode.split(separator: "_")
-    extendedPaperCode += "\(paperCodeChunks[0])/"
-    extendedPaperCode += "\(paperCodeChunks[3])/"
-    switch paperCodeChunks[1].dropLast(2) {
-    case "s":
-        extendedPaperCode += "M/J/"
-    case "w":
-        extendedPaperCode += "O/N/"
-    case "m":
-        extendedPaperCode += "F/M/"
-    default:
-        extendedPaperCode += "F/M/"
-    }
-    extendedPaperCode += "\(paperCodeChunks[1].dropFirst())"
-    
-    return extendedPaperCode
-}
-*/
