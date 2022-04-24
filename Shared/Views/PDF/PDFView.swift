@@ -49,9 +49,9 @@ struct PDFView: View {
     
     let bundle: CambridgePaperBundle
     
-    var initialPaperShowing: OldCambridgePaperType
+    var initialPaperShowing: CambridgePaperType
     
-    init(bundle: CambridgePaperBundle, initialPaperShowing: OldCambridgePaperType = .questionPaper){
+    init(bundle: CambridgePaperBundle, initialPaperShowing: CambridgePaperType = .questionPaper){
         self.bundle = bundle
         self.initialPaperShowing = initialPaperShowing
     }
@@ -100,7 +100,7 @@ struct PDFView: View {
                     markschemeShowing = false
                 case .datasheet:
                     datasheetShowing = false
-                case .other:
+                default:
                     return
             }
         }
