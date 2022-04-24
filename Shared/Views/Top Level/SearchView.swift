@@ -14,17 +14,19 @@ struct SearchView: View {
         })
     }
     
-    var paperBundles: [CambridgePaperBundle] {
-        return applicationStore.papersDatabase.paperBundles.filter({ paperBundle in
-            paperBundle.metadata.rawText.match(searchText)
-        })
-    }
+    @State var paperBundles: [CambridgePaperBundle] = []
+    
     var body: some View {
-        ListView(paperBundles: paperBundles, searchText: $searchText)
+        ListView(paperBundles: $paperBundles, searchText: $searchText)
+            .searchable(text: $searchText, placement: .sidebar, prompt: "Search")
             .navigationTitle("Search")
             .listStyle(GroupedListStyle())
-            .navigationSearchBar {
-                SearchBar(text: $searchText)
+            .onChange(of: searchText){ _ in
+                DispatchQueue.global(qos: .userInitiated).async {
+                    paperBundles = applicationStore.papersDatabase.paperBundles.filter({ paperBundle in
+                        paperBundle.metadata.rawText.match(searchText)
+                    })
+                }
             }
     }
 }
@@ -40,15 +42,15 @@ struct SearchView_Previews: PreviewProvider {
 
 extension SearchView {
     struct ListView: View {
-        let paperBundles: [CambridgePaperBundle]
+        @Binding var paperBundles: [CambridgePaperBundle]
         @Binding var searchText: String
+        @State var selection: Int = 0
         
         var body: some View {
             List(paperBundles, id: \.metadata.code){ bundle in
                 Row(searchText: $searchText, paperBundle: bundle)
                     .buttonStyle(PlainButtonStyle())
             }
-            .listStyle(GroupedListStyle())
         }
     }
 }
@@ -63,77 +65,29 @@ extension SearchView.ListView {
             NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: $searchText)) {
                 VStack(alignment: .leading) {
                     HStack {
-                        Text("\(paperBundle.metadata.subject.rawValue)")
-                            .font(.title3, weight: .black)
-                        
-                        Text(paperBundle.metadata.questionPaperCode)
-                            .foregroundColor(.primary)
+                        Text("\"\(searchText)\"")
+                            .font(.title3, weight: .bold)
+                        Text(paperBundle.metadata.subject.rawValue)
                             .modifier(TagTextStyle())
                     }
-                    
                     HStack {
                         Text("\(paperBundle.metadata.month.compact())")
-                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
-                        Text("20\(paperBundle.metadata.year)")
-                            .foregroundColor(.primary)
+                        Text(String(paperBundle.metadata.year))
                             .modifier(TagTextStyle())
                         
                         Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
-                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
                         Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
-                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                     }
-                    
-                    if paperBundle.metadata.paperType == .questionPaper {
-                        HStack {
-                            Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
-                                .font(.subheadline)
-                                .fontWeight(.light)
-                                .foregroundColor(.secondary)
-                                .padding(6)
-                            
-                            if paperBundle.metadata.paperNumber == .paper1 && paperBundle.markScheme != nil {
-                                if !paperBundle.markScheme!.metadata.answers.isEmpty {
-                                    Group {
-                                        Image(systemName: .aCircleFill)
-                                        Image(systemName: .bCircleFill)
-                                        Image(systemName: .cCircleFill)
-                                        Image(systemName: .dCircleFill)
-                                    }
-                                    .font(.headline)
-                                    .frame(width: 15)
-                                }
-                            }
-                        }
-                        
-                    } else {
-                        Text("Markscheme")
-                            .font(.subheadline)
-                            .fontWeight(.light)
-                            .foregroundColor(.secondary)
-                            .padding(6)
-                    }
-                    
                 }
                 .padding(5)
                 
             }
             .buttonStyle(PlainButtonStyle())
-            .buttonStyle(PlainButtonStyle())
-            .contextMenu {
-                Label("Markscheme", systemImage: "doc.on.clipboard")
-                
-                Button {
-                    
-                } label: {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
-            }
         }
     }
 }
