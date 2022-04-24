@@ -4,9 +4,51 @@
 
 import Foundation
 
+enum MultipleChoiceValue: String, Codable, Hashable, Identifiable {
+    case A = "A"
+    case B = "B"
+    case C = "C"
+    case D = "D"
+    case none = "N"
+    
+    var id: String {
+        self.rawValue
+    }
+}
+
+struct MultipleChoiceAnswer: Codable, Hashable {
+    let index: QuestionIndex
+    var time: TimeInterval? = nil
+    var value: MultipleChoiceValue
+    
+    init(index: QuestionIndex, value: MultipleChoiceValue){
+        self.index = index
+        self.value = value
+    }
+    
+    mutating func toggleChoice(_ choice: MultipleChoiceValue, timed: TimeInterval? = nil){
+        switch self.value {
+            case choice:
+                self.updateValue(value: .none)
+            default:
+                self.updateValue(value: choice)
+        }
+        if self.time == nil {
+            self.time = timed
+        } else {
+            self.time! += timed!
+        }
+        
+    }
+    
+    mutating private func updateValue(value: MultipleChoiceValue){
+        self.value = value
+    }
+}
+
 struct Answer: Codable, Hashable {
     var time: TimeInterval? = nil
-    let index: OldQuestionIndex
+    let index: QuestionIndex
     var value: AnswerValue
     
     
@@ -34,7 +76,7 @@ struct Answer: Codable, Hashable {
     }
 }
 
-typealias Answers = [OldQuestionIndex : AnswerValue]
+typealias Answers = [QuestionIndex : AnswerValue]
 
 enum AnswerValue: Codable, Hashable {
     case multipleChoice(choice: MCQSelection)
@@ -117,6 +159,6 @@ enum MCQSelection: String, Codable, Hashable {
 }
 
 extension Array where Element == Answer {
-    static var exampleAnswers: [Answer] = (1...40).map {Answer(index: OldQuestionIndex($0), value: .multipleChoice(choice: .A))}
-    static var exampleCorrectAnswers: [Answer] = (1...10).map {Answer(index: OldQuestionIndex($0), value: .multipleChoice(choice: .A))} + (11...35).map {Answer(index: OldQuestionIndex($0), value: .multipleChoice(choice: .C))} + (36...40).map {Answer(index: OldQuestionIndex($0), value: .multipleChoice(choice: .B))}
+    static var exampleAnswers: [Answer] = (1...40).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A))}
+    static var exampleCorrectAnswers: [Answer] = (1...10).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .A))} + (11...35).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .C))} + (36...40).map {Answer(index: QuestionIndex($0), value: .multipleChoice(choice: .B))}
 }

@@ -41,50 +41,47 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
     var id = UUID()
     var paperCode: String
     var solvedOn: Date = Date()
-    var answers: [Answer] = []
-    var correctAnswers: [Answer] = []
-    var incorrectAnswers: [Answer] = []
-    var unsolvedAnswers: [Answer] = []
+    var answers: [QuestionIndex : MultipleChoiceAnswer] = [:]
+    var correctAnswers: [QuestionIndex] = []
+    var incorrectAnswers: [QuestionIndex] = []
+    var unsolvedAnswers: [QuestionIndex] = []
 
-    var allAnswers: [Answer] {
+    var allAnswers: [QuestionIndex] {
         correctAnswers + incorrectAnswers + unsolvedAnswers
     }
     
-    init(bundle: CambridgePaperBundle, answers: [Answer]){
+    init(bundle: CambridgePaperBundle, answers: [QuestionIndex : MultipleChoiceAnswer]){
         paperCode = bundle.metadata.code
         self.answers = answers
         if bundle.markScheme != nil {
-            self.check(markschemeAnswers: bundle.markScheme!.metadata.answers)
+            self.check(markschemeAnswers: bundle.markScheme!.metadata.multipleChoiceAnswers)
         }
     }
     
     
-    init(paper: CambridgeQuestionPaper, answers: [Answer]){
+    init(paper: CambridgePaper, answers: [QuestionIndex : MultipleChoiceAnswer]){
         self.paperCode = paper.metadata.code
         self.answers = answers
     }
     
     
     // testing and debugging
-    init(answers: [Answer], correctAnswers: [Answer]){
+    init(answers: [QuestionIndex : MultipleChoiceAnswer], correctAnswers: [QuestionIndex : MultipleChoiceAnswer]){
         self.paperCode = "9702_s18_qp_11"
         self.answers = answers
         self.check(markschemeAnswers: correctAnswers)
     }
     
-    mutating func check(markschemeAnswers: [Answer]){
-        let correctAnswersByIndex = markschemeAnswers.getAnswersByIndex()
-        let answersByIndex = answers.getAnswersByIndex()
+    mutating func check(markschemeAnswers: [QuestionIndex : MultipleChoiceAnswer]){
         
-        for i in [Int](1...40).map({ OldQuestionIndex($0) }){
-            if answersByIndex[i] == .multipleChoice(choice: .none){
-                unsolvedAnswers.append(Answer(index: i, value: answersByIndex[i]!))
-            } else {
-                if answersByIndex[i] == correctAnswersByIndex[i] {
-                    correctAnswers.append(Answer(index: i, value: answersByIndex[i]!))
-                } else {
-                    incorrectAnswers.append(Answer(index: i, value: answersByIndex[i]!))
-                }
+        for i in [Int](1...40).map({ QuestionIndex($0) }){
+            switch answers[i]!.value {
+                case .none:
+                    unsolvedAnswers.append(i)
+                case markschemeAnswers[i]!.value:
+                    correctAnswers.append(i)
+                default:
+                    incorrectAnswers.append(i)
             }
         }
     }
@@ -93,11 +90,9 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
 
 extension SolvedPaper {
     static func makeNewExample() -> SolvedPaper {
-        SolvedPaper(answers: [Answer].exampleAnswers, correctAnswers: [Answer].exampleCorrectAnswers)
+        SolvedPaper(answers: [:], correctAnswers: [:])
     }
 }
-
-
 
 extension Array where Element == Answer {
     func getAnswersByIndex() -> Answers {
