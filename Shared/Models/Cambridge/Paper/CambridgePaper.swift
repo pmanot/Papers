@@ -11,6 +11,29 @@ struct CambridgePaper: Hashable {
         PDFDocument(url: url)!
     }
     var metadata: CambridgePaperMetadata
+    var questions: [Question] {
+        if metadata.kind == .longAnswer {
+            let indicesArray: [Int] = metadata.indices.map { $0.index }
+            var pagesByIndex: [Int : [CambridgePaperPage]] = Dictionary(uniqueKeysWithValues: indicesArray.map { ($0, []) })
+                for page in metadata.pages {
+                    if !page.questionIndices.isEmpty {
+                        pagesByIndex[page.questionIndices.first!.index]!.append(page)
+                    }
+                }
+            if metadata.indices.count != metadata.numberOfQuestions {
+                print("Error here:")
+                print(metadata.questionPaperCode + " number of indices:" + "\(metadata.indices.count)" + "number of questions: \(metadata.numberOfQuestions)")
+                return []
+            }
+            return indicesArray.map { Question(index: metadata.indices[$0 - 1], pages: pagesByIndex[$0]!, metadata: self.metadata) }
+        }
+        return []
+    }
+    
+    init(url: URL, metadata: CambridgePaperMetadata) {
+        self.url = url
+        self.metadata = metadata
+    }
 }
 
 typealias NewCambridgePaperBundle = (questionPaper: CambridgePaper?, markScheme: CambridgePaper?, datasheet: CambridgePaper?)
@@ -19,35 +42,5 @@ typealias NewCambridgePaperBundle = (questionPaper: CambridgePaper?, markScheme:
 extension CambridgePaper {
     var pages: [CambridgePaperPage] {
         metadata.pages
-    }
-    
-    var questions: [Question] {
-        var final: [Question] = []
-        if metadata.kind == .longAnswer {
-            var question: Question
-            for i in 1...metadata.numberOfQuestions {
-                print("i = \(i)")
-                let pages = pages.filter { $0.questionIndices.map { $0.index }.contains(i) }
-                for page in pages {
-                    print("Page \(page.index)")
-                    print(page.questionIndices.map { $0.displayedIndex() })
-                    print(page.questionIndices.map { $0.parts }.reduce([], +).map { $0.displayedIndex() })
-                    print(page.questionIndices.map { $0.parts }.reduce([], +).map { $0.parts }.reduce([], +).map { $0.displayedIndex() })
-                    print("------")
-                }
-                let index = QuestionIndex(pages.map { $0.questionIndices }.reduce([], +))
-                question = Question(index: index, pages: pages, metadata: metadata)
-                if question.pages != [] {
-                    final.append(question)
-                } else {
-                    break
-                }
-            }
-            if final.count != metadata.numberOfQuestions {
-                print("Error! Now we got a problem bitch.")
-                print(pages)
-            }
-        }
-        return final
     }
 }
