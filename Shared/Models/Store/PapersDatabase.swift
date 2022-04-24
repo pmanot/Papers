@@ -16,7 +16,7 @@ final public class PapersDatabase: ObservableObject {
     @Published var questions: [Question] = []
     @Published var deck: [Stack] = []
     
-    let calculatingMetadata: Bool = true
+    let calculatingMetadata: Bool = false
 
     init() {
         
@@ -289,7 +289,7 @@ extension PapersDatabase {
     
     // MARK: - PaperBundle sort data
     
-    static var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+    static var letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n"]
     static var numerals = ["i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x"]
     static var years: [Int] = [2021, 2020, 2019, 2018, 2017, 2016, 2015]
     static var months: [CambridgePaperMonth] = [.febMarch, .mayJune, .octNov]
