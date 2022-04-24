@@ -7,6 +7,7 @@ import PDFKit
 
 struct HomeView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+    @Environment(\.colorScheme) var colorScheme
     @State private var isExpanded: Bool = false
 
     // TODO: Move this to PapersDatabase, and shuffle it there.
@@ -46,6 +47,7 @@ struct HomeView: View {
             }
             .navigationTitle("Home")
         }
+        .background(Color.systemGroupedBackground)
     }
 
 }
@@ -99,7 +101,7 @@ extension HomeView {
                     LazyHStack {
                         ForEach(filteredBundles, id: \.metadata.code) { bundle in
                             if bundle.questionPaper != nil {
-                                ForEach(enumerating: bundle.questionPaper!.questions.filter(pageCountFilter) , id: \.id){ (index, question) in
+                                ForEach(bundle.questionPaper!.questions.filter(pageCountFilter) , id: \.id){ question in
                                     QuestionListCell(question: question, bundle: bundle)
                                 }
                             }
@@ -137,38 +139,47 @@ extension HomeView {
 
 extension HomeView.QuestionCollectionView {
     private struct QuestionListCell: View {
+        @Environment(\.colorScheme) var colorScheme
         let question: Question
         let bundle: CambridgePaperBundle
 
         var body: some View {
             NavigationLink(destination: QuestionView(question, bundle: bundle)) {
                 VStack {
-                    Text(question.rawText)
-                        .padding()
-                        .background(Color.background.cornerRadius(20))
-                        .border(Color.primary, width: 0.5, cornerRadius: 20)
+                    switch colorScheme {
+                        case .dark:
+                            Text(question.getContents(pdf: bundle.questionPaper!.pdf))
+                                .colorInvert()
+                                .padding()
+                        default:
+                            Text(question.getContents(pdf: bundle.questionPaper!.pdf))
+                                .padding()
+                                
+                    }
+                    
+                    Divider()
 
                     HStack {
-                        Text(question.metadata.subject.rawValue)
-                            .fontWeight(.regular)
+                        Text(question.details.subject?.rawValue ?? "")
+                            .modifier(TagTextStyle())
                             .padding(8)
-                            .background(Color.background)
-                            .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
-                        Text("Q\(question.index.number)")
-                            .fontWeight(.regular)
-                            .padding(8)
-                            .background(Color.background)
-                            .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
-                        Text("\(question.pages.count) page\(question.pages.count > 1 ? "s" : "")")
-                            .fontWeight(.regular)
-                            .padding(8)
-                            .background(Color.background)
-                            .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+                        Spacer()
+                        HStack {
+                            Text("\(question.pages.count) page\(question.pages.count > 1 ? "s" : "")")
+                                .modifier(TagTextStyle())
+                            Text("\(question.index.parts.count) part\(question.index.parts.count > 1 ? "s" : "")")
+                                .modifier(TagTextStyle())
+                        }
+                        .padding(8)
+                        
                     }
                     .padding(5)
                 }
+                .background(Color.systemBackground.cornerRadius(20))
+                .border(.secondary, cornerRadius: 20)
                 .padding(5)
                 .frame(width: 280, height: 300)
+                
             }
             .buttonStyle(PlainButtonStyle())
         }
