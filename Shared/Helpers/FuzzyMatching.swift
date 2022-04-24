@@ -42,4 +42,10 @@ extension String {
         
         return false
     }
+    
+    func getTextAround(string: String) -> String {
+        let range = self.lowercased().range(of: string.lowercased())!
+        let expandedRange = Range(bounds: (lower: range.lowerBound, upper: index(range.lowerBound, offsetBy: 40) ))
+        return String(self[expandedRange] + "...")
+    }
 }

@@ -19,22 +19,23 @@ struct TestCrop: View {
         }
         return t
     }
-    let pdf = PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s18_qp_42", ofType: "pdf")!))!
+    let pdf = PDFDocument(url: URL(fileURLWithPath: Bundle.main.path(forResource: "9702_s19_ms_12", ofType: "pdf")!))!
     var body: some View {
         VStack {
             ScrollView {
                 LazyVStack {
-                    ForEach(1..<(pdf.pageCount)){ i in
-                        Image(uiImage: pdf.page(at: i)!.thumbnail(of: CGSize(width: pdf.page(at: i)!.bounds(for: .mediaBox).size.width, height: pdf.page(at: i)!.bounds(for: .mediaBox).size.height), for: .mediaBox))
+                    ForEach(1..<Int(pdf.pageCount)){ i in
+                        Image(uiImage: pdf.page(at: i)!.snapshot())
                             .resizable()
+                            .scaledToFit()
                             .overlay {
-                                VStack {
-                                    Image(cgImage: pdf.page(at: i)!.thumbnail(of: CGSize(width: pdf.page(at: i)!.bounds(for: .mediaBox).size.width, height: pdf.page(at: i)!.bounds(for: .mediaBox).size.height), for: .mediaBox).cgImage!.cropping(to: CGRect(origin: CGPoint(x: 20, y: 30), size: CGSize(width: 50, height: 70)))!)
-                                        .border(Color.black)
-                                }
+                                /*
+                                Text(pdf.page(at: i)!.string!.fetchAnswers().joined(separator: ","))
+                                    .font(.caption2)
+                                    .opacity(0.5)
+                                */
                             }
                             .border(Color.black)
-                            .scaledToFill()
                         
                     }
                 }
@@ -60,5 +61,8 @@ struct TestCrop_Previews: PreviewProvider {
         TestCrop()
     }
 }
+
+
+
 
 

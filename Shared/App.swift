@@ -5,14 +5,15 @@
 import SwiftUIX
 
 @main
-struct PapersApp: App {
+struct App: SwiftUI.App {
     @StateObject var applicationStore = ApplicationStore()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(applicationStore)
                 .onAppear {
-                    print("This please: ", NSHomeDirectory())
+                    print("HOME DIRECTORY", NSHomeDirectory())
                 }
         }
     }

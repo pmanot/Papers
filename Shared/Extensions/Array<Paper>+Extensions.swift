@@ -10,6 +10,12 @@ extension Array where Element == CambridgePaper {
     }
 }
 
+extension Array where Element == CambridgePaperBundle {
+    func bundledQuestions() -> [(CambridgePaperBundle, Question)] {
+        self.compactMap { bundle in bundle.questionPaper!.questions.map { question in (bundle, question)} }.reduce([], +)
+    }
+}
+
 extension Array where Element: Hashable {
     func removingDuplicates() -> [Element] {
         var addedDict = [Element: Bool]()
