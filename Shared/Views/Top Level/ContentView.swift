@@ -55,9 +55,6 @@ struct ContentView: View {
     var body: some View {
         navigationView
             .titleBarHidden(true)
-            .fullScreenCover(isPresented: $isLoading){
-                LoadingView(loading: $isLoading)
-            }
     }
     
     @ViewBuilder
@@ -106,7 +103,6 @@ struct ContentView: View {
             }
         } else {*/
             CustomTabView(selection: $selection)
-                .edgesIgnoringSafeArea(.all)
         //}
     }
 }
@@ -162,19 +158,23 @@ extension ContentView {
                 HStack {
                     ForEach(Destination.allCases) { item in
                         Button(action: { selection = item }) {
-                            Spacer()
-                            
-                            TabItem(item: item)
-                            
-                            Spacer()
+                            HStack {
+                                Spacer()
+                                
+                                TabItem(item: item)
+                                
+                                Spacer()
+                            }
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .foregroundColor(item == selection ? .systemPink : .secondaryLabel)
+                        .foregroundColor(item == selection ? .accentColor : .secondaryLabel)
                     }
                 }
                 .padding(5)
-                .background(Color.background)
+                .background(Color.primaryInverted)
             }
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
     }
     
@@ -189,7 +189,7 @@ extension ContentView {
             } else {
                 VStack(spacing: 5) {
                     Image(systemName: item.icon)
-                        .font(.title3)
+                        .font(.title2)
                     
                     Text(item.title)
                         .font(.caption)
