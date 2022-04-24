@@ -61,32 +61,32 @@ extension PapersView {
                 switch sortBy {
                     case .sortByYear:
                         ForEach(PapersDatabase.years, id: \.self) { year in
-                            Section("20\(year)") {
+                            Section("\(String(year))") {
                                 InnerSortView(bundles: sortedBundles[SortArgument.year(year)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
-                        .listRowBackground(Color.background)
+                        .listRowBackground(Color.primaryInverted)
                     case .sortByMonth:
                         ForEach(PapersDatabase.months, id: \.self) { month in
                             Section("\(month.rawValue)") {
                                 InnerSortView(bundles: sortedBundles[SortArgument.month(month)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
-                        .listRowBackground(Color.background)
+                        .listRowBackground(Color.primaryInverted)
                     case .sortBySubject:
                         ForEach(PapersDatabase.subjects, id: \.self) { subject in
                             Section("\(subject.rawValue)") {
                                 InnerSortView(bundles: sortedBundles[SortArgument.subject(subject)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
-                        .listRowBackground(Color.background)
+                        .listRowBackground(Color.primaryInverted)
                     case .sortByPaperNumber:
                         ForEach(PapersDatabase.paperNumbers, id: \.self) { number in
                             Section("Paper \(number.rawValue)") {
                                 InnerSortView(bundles: sortedBundles[SortArgument.paperNumber(number)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
-                        .listRowBackground(Color.background)
+                        .listRowBackground(Color.primaryInverted)
                 }
             }
             .listStyle(PlainListStyle())
@@ -214,60 +214,31 @@ extension PapersView.ListView.InnerSortView {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(paperBundle.metadata.subject.rawValue)")
-                            .font(.title3, weight: .black)
+                            .font(.title3, weight: .bold)
                         
-                        Text(paperBundle.metadata.questionPaperCode)
-                            .foregroundColor(.primary)
+                        Text(paperBundle.metadata.kind.rawValue)
                             .modifier(TagTextStyle())
                     }
                     
                     HStack {
                         Text("\(paperBundle.metadata.month.compact())")
-                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
-                        Text("20\(paperBundle.metadata.year)")
-                            .foregroundColor(.primary)
+                        Text(String(paperBundle.metadata.year))
                             .modifier(TagTextStyle())
                         
                         Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
-                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                         
                         Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
-                            .foregroundColor(.primary)
                             .modifier(TagTextStyle())
                     }
                     
-                    if paperBundle.metadata.paperType == .questionPaper {
-                        HStack {
+                    
                             Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
                                 .font(.subheadline)
                                 .fontWeight(.light)
                                 .foregroundColor(.secondary)
-                            
-                            if paperBundle.metadata.paperNumber == .paper1 && paperBundle.markScheme != nil {
-                                if !paperBundle.markScheme!.metadata.answers.isEmpty {
-                                    Group {
-                                        Image(systemName: .aCircleFill)
-                                        Image(systemName: .bCircleFill)
-                                        Image(systemName: .cCircleFill)
-                                        Image(systemName: .dCircleFill)
-                                    }
-                                    .font(.headline)
-                                    .frame(width: 15)
-                                }
-                            }
-                        }
-                        
-                    } else {
-                        Text("Markscheme")
-                            .font(.subheadline)
-                            .fontWeight(.light)
-                            .foregroundColor(.secondary)
-                            .padding(6)
-                    }
-                    
                 }
                 .padding(5)
                 
@@ -277,12 +248,25 @@ extension PapersView.ListView.InnerSortView {
 }
 
 struct TagTextStyle: ViewModifier {
+    @Environment(\.colorScheme) var colorScheme
     func body(content: Content) -> some View {
-        content
-            .foregroundColor(.secondary)
-            .font(.caption)
-            .padding(6)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.secondary, lineWidth: 0.5))
+        switch colorScheme {
+            case .dark:
+                content
+                    .foregroundColor(.primary)
+                    .font(.caption)
+                    .padding(7)
+                    .background(Color.accentColor.opacity(0.8).cornerRadius(8))
+                    .shadow(radius: 0.5)
+            default:
+                content
+                    .foregroundColor(.white)
+                    .font(.caption)
+                    .padding(7)
+                    .background(Color.accentColor.opacity(0.8).cornerRadius(8))
+                    .shadow(radius: 0.5)
+        }
+        
     }
 }
 
