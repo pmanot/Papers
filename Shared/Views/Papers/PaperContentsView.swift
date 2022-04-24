@@ -31,14 +31,14 @@ struct PaperContentsView: View {
                 Section(header: "Questions"){
                     ForEach(paperBundle.questionPaper!.questions){ question in
                         NavigationLink(destination: QuestionView(question, bundle: paperBundle)) {
-                            QuestionRow(question)
+                            QuestionRow(question, search: searchText)
                         }
-                        .listRowBackground(!searchText.isEmpty ? Color.primary.opacity(question.rawText.match(searchText) ? 0.4 : 0) : Color.clear)
+                        .buttonStyle(PlainButtonStyle())
+                        .listRowBackground(!searchText.isEmpty ? Color.accentColor.opacity(question.rawText.match(searchText) ? 0.4 : 0) : Color.clear)
                     }
                 }
             }
         }
-        .labelsHidden()
     }
 }
 
@@ -55,26 +55,33 @@ struct PaperContentsView_Previews: PreviewProvider {
 extension PaperContentsView {
     struct QuestionRow: View {
         let question: Question
-        init(_ question: Question) {
+        let searchText: String
+        
+        init(_ question: Question, search: String) {
             self.question = question
+            self.searchText = search
         }
         
         var body: some View {
-            HStack {
-                Text("\(self.question.index.index).")
-                    .font(.title, weight: .heavy)
-                
-                Text(
-                    question.index.parts
-                        .map { $0.displayedIndex() }
-                        .joined(separator: ", ")
-                )
-                    .font(.title2, weight: .heavy)
-                    .padding()
-                
-                Text("\(question.pages.count) pages")
-                    .modifier(TagTextStyle())
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("\(self.question.index.index).")
+                        .font(.title, weight: .heavy)
+                    
+                    Spacer()
+                    
+                    Text("\(question.index.parts.count) parts")
+                        .modifier(TagTextStyle())
+                    
+                    Text("\(question.pages.count) pages")
+                        .modifier(TagTextStyle())
+                }
+                if question.rawText.match(searchText) {
+                    Text("\"\(question.rawText.getTextAround(string: searchText))\"")
+                        .font(.caption)
+                }
             }
+            
             .padding()
         }
     }
@@ -97,51 +104,38 @@ extension PaperContentsView {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(bundle.metadata.subject.rawValue)")
-                            .font(.title, weight: .black)
+                            .font(.title, weight: .bold)
                             .padding(6)
                         
-                        Text(bundle.metadata.questionPaperCode)
-                            .modifier(PaperTagStyle(outlineWidth: 1))
+                        
                         
                         if bundle.metadata.paperNumber == .paper1 && bundle.markScheme != nil {
                             if !bundle.markScheme!.metadata.multipleChoiceAnswers.isEmpty {
-                                Image(systemName: .checkmarkCircle)
+                                Image(systemName: .checkmarkCircleFill)
                                     .font(.headline)
+                                    .foregroundColor(.green)
                             }
                         }
                     }
                     
                     HStack {
-                        Text("\(bundle.metadata.month.compact())")
-                            .modifier(PaperTagStyle())
+                        Text(bundle.metadata.questionPaperCode)
+                            .modifier(TagTextStyle())
                         
-                        Text("\(bundle.metadata.year)")
-                            .modifier(PaperTagStyle())
+                        Text("\(bundle.metadata.pages.count) pages")
+                            .modifier(TagTextStyle())
                         
-                        Text("Paper \(bundle.metadata.paperNumber.rawValue)")
-                            .modifier(PaperTagStyle())
-                        
-                        Text("Variant \(bundle.metadata.paperVariant.rawValue)")
-                            .modifier(PaperTagStyle())
+                        Text("\(bundle.metadata.numberOfQuestions) questions")
+                            .modifier(TagTextStyle())
                     }
                     .padding(.leading, 5)
+                    
+                    
                     
                 }
                 .padding(5)
             }
         }
-    }
-}
-
-struct PaperTagStyle: ViewModifier {
-    var outlineWidth: CGFloat = 0.5
-    func body(content: Content) -> some View {
-        content
-            .font(.caption, weight: .regular)
-            .foregroundColor(.primary)
-            .opacity(0.8)
-            .padding(6)
-            .border(Color.primary, width: outlineWidth, cornerRadius: 10, style: .circular)
     }
 }
 
