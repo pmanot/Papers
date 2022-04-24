@@ -6,7 +6,12 @@ import SwiftUI
 import SwiftUIX
 
 struct SolvedPaperCard: View {
+    @EnvironmentObject var applicationStore: ApplicationStore
     let solvedPaper: SolvedPaper
+    var bundle: CambridgePaperBundle! {
+        applicationStore.papersDatabase.paperBundles.first { $0.metadata.code == solvedPaper.paperCode }
+    }
+    @State var goToContents: Bool = false
     init(_ solvedPaper: SolvedPaper) {
         self.solvedPaper = solvedPaper
     }
@@ -30,11 +35,37 @@ struct SolvedPaperCard: View {
                 
                 Text(solvedPaper.solvedOn.relativeDescription)
                     .padding()
+                NavigationLink(destination: PaperContentsView(bundle: bundle), isActive: $goToContents) {
+                    Image(systemName: .arrowRightCircleFill)
+                        .font(.title)
+                        .foregroundColor(Color.blue)
+                        .opacity(0.5)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
         }
         .padding()
         .border(Color.secondary, width: 1, cornerRadius: 10, antialiased: true)
         .background(VisualEffectBlurView(blurStyle: .systemThinMaterial).cornerRadius(10))
+        .contextMenu {
+            Button(action: {
+                if bundle != nil {
+                    withAnimation {
+                        goToContents.toggle()
+                    }
+                }
+            }){
+                Label("Go to paper", systemImage: .arrowRightCircle)
+            }
+            Button(role: .destructive, action: {
+                withAnimation {
+                    delete(database: applicationStore.papersDatabase)
+                }
+            }){
+                Label("Delete solved paper", systemImage: .binXmark)
+            }
+        }
+        
     }
 }
 
@@ -47,6 +78,9 @@ struct SolvedPaperCard_Previews: PreviewProvider {
 */
 
 extension SolvedPaperCard {
+    func delete(database: PapersDatabase) {
+        database.solvedPapers.removeValue(forKey: solvedPaper.paperCode)
+    }
     private var barChartWidget: some View {
         VStack(spacing: 1) {
             VStack(alignment: .leading, spacing: 0) {

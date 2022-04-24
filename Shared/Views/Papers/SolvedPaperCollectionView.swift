@@ -48,20 +48,13 @@ struct SolvedPaperCollectionView: View {
         VStack {
             HStack {
                 Text(CambridgeSubject(paperCode: solvedPapers.first!.paperCode).rawValue)
-                    .fontWeight(.regular)
-                    .padding(8)
-                    .background(Color.background)
-                    .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+                    .modifier(TagTextStyle())
+                
                 Text(getQuestionPaperCode(solvedPapers.first!.paperCode))
-                    .fontWeight(.regular)
-                    .padding(8)
-                    .background(Color.background)
-                    .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+                    .modifier(TagTextStyle())
+                
                 Text("\(solvedPapers.count)")
-                    .fontWeight(.regular)
-                    .padding(8)
-                    .background(Color.background)
-                    .border(Color.secondary, width: 0.5, cornerRadius: 10, style: .circular)
+                    .modifier(TagTextStyle())
             }
             .padding()
             .zIndex(10)
