@@ -5,8 +5,8 @@
 import Foundation
 
 public enum CambridgePaperType: Codable, Hashable {
-    case markScheme(details: CambridgePaperDetails)
-    case questionPaper(details: CambridgePaperDetails)
+    case markScheme
+    case questionPaper
     case datasheet
     case examinerReport
     case other
@@ -21,20 +21,11 @@ extension CambridgePaperType {
         let paperCodeChunks = paperCode.split(separator: "_")
         switch paperCodeChunks[2] {
         case "qp":
-                self = .questionPaper(details: .init(paperCode: paperCode))
+                self = .questionPaper
         case "ms":
-                self = .markScheme(details: .init(paperCode: paperCode))
+                self = .markScheme
         default:
             self = .datasheet
-        }
-    }
-    
-    var details: CambridgePaperDetails? {
-        switch self {
-            case .markScheme(let details), .questionPaper(let details):
-                return details
-            default:
-                return nil
         }
     }
 }
