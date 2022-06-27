@@ -2,10 +2,13 @@
 // Copyright (c) Purav Manot
 //
 
+import Diagnostics
 import Foundation
 import PDFKit
 
+
 struct CambridgePaper: Hashable {
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CambridgePaper")
     var url: URL
     var pdf: PDFDocument {
         PDFDocument(url: url)!
@@ -21,8 +24,7 @@ struct CambridgePaper: Hashable {
                     }
                 }
             if metadata.indices.count != metadata.numberOfQuestions {
-                print("Error here:")
-                print(metadata.questionPaperCode + " number of indices:" + "\(metadata.indices.count)" + "number of questions: \(metadata.numberOfQuestions)")
+                Self.logger.debug("The number of question indices in the metadata (\(metadata.indices.count) does not match the number of questions (\(metadata.numberOfQuestions)) in Paper \(metadata.code)")
                 return []
             }
             return indicesArray.map { Question(index: metadata.indices[$0 - 1], pages: pagesByIndex[$0]!, metadata: self.metadata) }

@@ -2,11 +2,14 @@
 // Copyright (c) Purav Manot
 //
 
+import Diagnostics
 import Filesystem
 import Foundation
 import PDFKit
 
 final public class PapersDatabase: ObservableObject {
+    let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PapersDatabase")
+
     let directory = PaperRelatedDataDirectory()
     
     @Published var calculatedMetadata: [String: CambridgePaperMetadata] = [:]
@@ -124,8 +127,8 @@ final public class PapersDatabase: ObservableObject {
             let questionPaperURL = questionPaperURLs[code]
             let markSchemeURL = markschemeURLs[code]
             
-            print("This please: ", NSHomeDirectory())
-            print("\(questionPaperURL!)", "\(markSchemeURL!)")
+            logger.debug("Processing question paper URL: \(questionPaperURL!), mark scheme URL: \(markSchemeURL!)")
+            
             result.append(
                 CambridgePaperBundle(
                     questionPaper: questionPaperURL.map {
@@ -147,46 +150,6 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
-    /*
-    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
-        var result: [CambridgePaperBundle] = []
-
-        let standardPaperCodes = urls
-            .map { getQuestionPaperCode($0.getPaperCode()) }
-            .removingDuplicates()
-
-        let questionPaperURLs = Dictionary(uniqueKeysWithValues: urls.getQuestionPaperURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
-        let markschemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
-
-        for code in standardPaperCodes {
-            let questionPaperURL = questionPaperURLs[code]
-            let markSchemeURL = markschemeURLs[code]
-            
-            print("This please: ", NSHomeDirectory())
-            print("\(questionPaperURL!)", "\(markSchemeURL!)")
-            result.append(
-                CambridgePaperBundle(
-                    questionPaper: questionPaperURL.map {
-                        CambridgeQuestionPaper(
-                            url: $0,
-                            metadata: metadata[$0.getPaperCode()]!
-                        )
-                    },
-                    markScheme: markSchemeURL.map {
-                        CambridgeMarkscheme(
-                            url: $0,
-                            metadata: metadata[$0.getPaperCode()]!
-                        )
-                    }
-                )
-            )
-        }
-
-        return result
-    }
-    */
-    
-
     /// Creates paper bundles from the given paper URLs.
     private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
         var result: [CambridgePaperBundle] = []
@@ -202,8 +165,8 @@ final public class PapersDatabase: ObservableObject {
             let questionPaperURL = questionPaperURLs[code]
             let markSchemeURL = markschemeURLs[code]
             
-            print("This please: ", NSHomeDirectory())
-            print("\(questionPaperURL!)", "\(markSchemeURL!)")
+            logger.debug("Processing question paper URL: \(questionPaperURL!), mark scheme URL: \(markSchemeURL!)")
+            
             result.append(
                 CambridgePaperBundle(
                     questionPaper: questionPaperURL.map {

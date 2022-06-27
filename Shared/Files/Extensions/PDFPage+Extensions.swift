@@ -9,9 +9,6 @@ extension PDFPage {
     public func snapshot() -> UIImage {
         let pageRect = bounds(for: .mediaBox)
         let renderer = UIGraphicsImageRenderer(size: pageRect.size)
-
-        print("WHAT THE FUCK", pageRect)
-
         let img = renderer.image { ctx in
             UIColor.white.set()
             ctx.fill(pageRect)

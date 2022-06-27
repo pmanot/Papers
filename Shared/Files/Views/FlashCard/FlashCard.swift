@@ -20,29 +20,32 @@ struct FlashCard: View {
     @State private var blink: Bool = false
     
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(card.prompt)
-                .font(.title3, weight: .regular)
-                .foregroundColor(flipped ? .secondary : .primary)
-                .onAppear(perform: startBlink)
-                .padding(5)
-            
-            if flipped {
+        GeometryReader { screen in
+            VStack(alignment: .leading) {
+                Text(card.prompt)
+                    .font(flipped ? .title2 : .title, weight: .heavy)
+                    .foregroundColor(flipped ? .secondary : .white)
+                    .padding(5)
+                
                 Text(card.answer)
-                    .font(.headline, weight: .semibold)
+                    .font(flipped ? .title2 : .title3, weight: .bold)
+                    .foregroundColor(flipped ? .white : .secondary)
                     .onAppear(perform: stopBlink)
                     .padding(5)
-                    .transition(.move(edge: .bottom).combined(with: .opacity).combined(with: .opacity))
+                    .blur(radius: flipped ? 0 : 5)
+                    .opacity(flipped ? 1 : 0.5)
+                
+            }
+            .frame(width: screen.size.width, height: screen.size.height)
+            .position(x: screen.size.width/2, y: screen.size.height/2)
+            .background(Color.accentColor.edgesIgnoringSafeArea(.all))
+            .onTapGesture {
+                withAnimation(.spring()){
+                    self.flipped.toggle()
+                }
             }
         }
-        .frame(width: 350, height: 180, alignment: .center)
-        .border(LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing), width: 1, cornerRadius: 10, antialiased: true)
-        .background {
-            cardView
-        }
-        .onTapGesture {
-            self.isTapped()
-        }
+        
         .onReceive(timer){ _ in
             timerRecieved()
         }

@@ -45,6 +45,7 @@ struct PDFView: View {
     @State var answerOverlayShowing: Bool = false
     @State var markschemeShowing: Bool = false
     @State var datasheetShowing: Bool = false
+    @State var paperSelection: CambridgePaperType = .questionPaper
     @State var testMode = false
     
     let bundle: CambridgePaperBundle
@@ -64,14 +65,14 @@ struct PDFView: View {
                     WrappedPDFView(pdf: bundle.questionPaper!.pdf)
                         .zIndex(calculatedQuestionPaperIndex())
                     
-                    // Marking scheme
                     if !bundle.markScheme.isNil {
+                        // Marking scheme
                         WrappedPDFView(pdf: bundle.markScheme!.pdf)
                             .zIndex(calculatedMarkschemeIndex())
                     }
                     
-                    // Data sheet
                     if !bundle.datasheetBySubject.isNil {
+                        // Data sheet
                         WrappedPDFView(pdf: bundle.datasheetBySubject!)
                             .zIndex(calculatedDatasheetIndex())
                     }
@@ -80,7 +81,7 @@ struct PDFView: View {
                 .background(Color.white)
                 .edgesIgnoringSafeArea(.all)
                 
-                Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, testMode: $testMode, datasheetShowing: $datasheetShowing)
+                Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, paperSelection: $paperSelection, testMode: $testMode, datasheetShowing: $datasheetShowing)
                     .zIndex(3)
             }
             
@@ -109,15 +110,15 @@ struct PDFView: View {
 
 extension PDFView {
     func calculatedMarkschemeIndex() -> Double {
-        (bundle.markScheme != nil && markschemeShowing) ? 1 : 0
+        (paperSelection == .markScheme) ? 1 : 0
     }
     
     func calculatedQuestionPaperIndex() -> Double {
-        (bundle.questionPaper != nil && !markschemeShowing) ? 1 : 0
+        (paperSelection == .questionPaper) ? 1 : 0
     }
     
     func calculatedDatasheetIndex() -> Double {
-        (bundle.questionPaper != nil && datasheetShowing) ? 2 : 0
+        (paperSelection == .datasheet) ? 2 : 0
     }
     
     func canShowMCQAnswerOverlay() -> Bool {

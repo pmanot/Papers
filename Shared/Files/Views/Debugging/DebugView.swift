@@ -3,9 +3,11 @@
 //
 
 import SwiftUI
+import Diagnostics
 
 struct DebugView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "Debugging")
     
     var body: some View {
         Form {
@@ -14,7 +16,7 @@ struct DebugView: View {
                     do {
                         try applicationStore.papersDatabase.eraseAllData()
                     } catch {
-                        print("Error: \(error)")
+                        Self.logger.error(error)
                     }
                 }
 

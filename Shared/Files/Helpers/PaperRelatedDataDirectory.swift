@@ -2,11 +2,14 @@
 // Copyright (c) Purav Manot
 //
 
+import Diagnostics
 import Foundation
 import PDFKit
 
 /// Represents the paper-related data directory within the app's documents directory.
 struct PaperRelatedDataDirectory {
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PaperRelatedDataDirectory")
+    
     var url: URL { try!
         manager
             .url(
@@ -22,6 +25,8 @@ struct PaperRelatedDataDirectory {
     // MARK: - Reading
 
     func read(from filename: String) -> Data? {
+        Self.logger.debug("Reading from \(filename)")
+        
         do {
             let nestedFolderURL = url
 
@@ -37,7 +42,6 @@ struct PaperRelatedDataDirectory {
             let data = try Data(contentsOf: fileURL)
             return data
         } catch {
-            print("Read Error: ", error.localizedDescription)
             return nil
         }
     }
@@ -111,7 +115,7 @@ struct PaperRelatedDataDirectory {
             let papers = directoryContents.filter { $0.pathExtension == "pdf"}
             paperURLs = papers
         } catch {
-            print(error.localizedDescription)
+            Self.logger.error(error)
         }
         return paperURLs
     }

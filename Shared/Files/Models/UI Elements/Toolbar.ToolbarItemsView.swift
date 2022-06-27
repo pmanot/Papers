@@ -14,6 +14,7 @@ extension Toolbar {
         @Binding var minimized: Bool
         @Binding var testMode: Bool
         @Binding var timerShowing: Bool
+        @Binding var paperSelection: CambridgePaperType
         
         @Binding var markschemeShowing: Bool
         @Binding var answerOverlayShowing: Bool
@@ -54,28 +55,16 @@ extension Toolbar {
                     
                     if !minimized {
                         Group {
-                            Picker("", selection: $markschemeShowing){
+                            Picker("", selection: $paperSelection){
                                 Text("QP")
-                                    .tag(false)
+                                    .tag(CambridgePaperType.questionPaper)
                                 Text("MS")
-                                    .tag(true)
+                                    .tag(CambridgePaperType.markScheme)
+                                Text("DATA")
+                                    .tag(CambridgePaperType.datasheet)
                             }
-                            .frame(width: 80)
+                            .frame(width: 140)
                             .pickerStyle(SegmentedPickerStyle())
-                            
-                            Button(action: {
-                                datasheetShowing.toggle()
-                            }){
-                                Image(systemName: datasheetShowing ? .docTextFill : .docText)
-                                    .font(.title2)
-                                    .overlay {
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .foregroundColor(.primary)
-                                            .frame(width: 30, height: 30)
-                                            .opacity(datasheetShowing ? 0.1 : 0)
-                                    }
-                            }
-                            .frame(width: 30, height: 30)
                             
                             Spacer()
                             
@@ -107,8 +96,6 @@ extension Toolbar {
                                     .font(.title)
                             }
                         }
-                        .transition(.leadCrossDissolve)
-                        
                     } else {
                         Group {
                             Button(action: {

@@ -55,34 +55,37 @@ extension FlashCardCollectionView {
                     VStack(alignment: .leading) {
                         HStack {
                             Text("Add a new card")
-                                .font(.title3, weight: .regular)
+                                .font(.title3, weight: .bold)
                             
                             Spacer()
                             
-                            SymbolButton("plus.circle.fill"){
-                                withAnimation {
-                                    stack.cards.append(newCard.generate())
-                                    newCard = Card.empty
+                            if !newCard.isEmpty() {
+                                SymbolButton("plus.circle.fill"){
+                                    withAnimation {
+                                        stack.cards.append(newCard.generate())
+                                        newCard = Card.empty
+                                    }
+                                    papersDatabase.saveDeck()
                                 }
-                                papersDatabase.saveDeck()
+                                .font(.title, weight: .regular)
+                                .foregroundColor(.blue)
+                            } else {
+                                Image(systemName: .plusCircleFill)
+                                    .font(.title, weight: .regular)
+                                    .foregroundColor(.blue)
                             }
-                            .font(.title2, weight: .regular)
-                            .foregroundColor(.blue)
+                            
                         }
-                        .padding(10)
-                        .padding(.top, 5)
+                        .padding(.vertical)
                         .opacity(newCard.isEmpty() ? 0.5 : 1)
-                        
-                        Line()
-                            .stroke()
-                            .opacity(newCard.isEmpty() ? 0.5 : 1)
                         
                         Group {
                             TextField("The prompt / question", text: $newCard.prompt)
                             TextField("The answer", text: $newCard.answer)
+                            
                         }
                         .font(.headline, weight: .light)
-                        .padding(10)
+                        .padding(.vertical, 10)
                         
                     }
                 }
@@ -92,6 +95,7 @@ extension FlashCardCollectionView {
                 }
                 .onDelete(perform: delete)
             }
+            .listStyle(.insetGrouped)
         }
     }
 }
@@ -103,13 +107,13 @@ extension FlashCardCollectionView.ListView {
         var body: some View {
             VStack(alignment: .leading) {
                 Text(card.prompt)
-                    .fontWeight(.bold)
                     .padding(.bottom, 2)
                 Text("\(card.answer)")
-                    .font(.subheadline, weight: .light)
+                    .font(.headline)
+                    .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
             }
-            .frame(height: 100)
+            .padding(.vertical, 10)
         }
     }
     

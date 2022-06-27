@@ -26,7 +26,6 @@ struct FlashCardDeck: View {
                                 save()
                                 newStack = Stack.empty
                             }
-                            
                         }
                     }
                     .font(.title2, weight: .bold)

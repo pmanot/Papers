@@ -4,6 +4,7 @@
 
 import Foundation
 import SwiftUI
+import Logging
 
 extension NSAttributedString {
     func fetchBoldStrings() -> [String] {
@@ -15,7 +16,6 @@ extension NSAttributedString {
                 }
             }
         }
-        print("bold strings: ", boldStrings)
         return boldStrings
     }
 }

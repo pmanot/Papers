@@ -13,6 +13,7 @@ struct QuestionView: View {
     
     @State var markschemeShowing: Bool = false
     @State var datasheetShowing: Bool = false
+    @State var paperSelection: CambridgePaperType = .questionPaper
     @State var testMode = false
     
     init(_ question: Question, bundle: CambridgePaperBundle){
@@ -43,7 +44,7 @@ struct QuestionView: View {
             .background(Color.white)
             .edgesIgnoringSafeArea(.all)
             
-            Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: .constant(false), testMode: $testMode, datasheetShowing: $datasheetShowing)
+            Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: .constant(false), paperSelection: $paperSelection, testMode: $testMode, datasheetShowing: $datasheetShowing)
                 .zIndex(3)
         }
         .navigationBarHidden(true)
@@ -53,15 +54,15 @@ struct QuestionView: View {
 
 extension QuestionView {
     func calculatedMarkschemeIndex() -> Double {
-        (bundle.markScheme != nil && markschemeShowing) ? 1 : 0
+        (paperSelection == .markScheme) ? 1 : 0
     }
     
     func calculatedQuestionPaperIndex() -> Double {
-        (bundle.questionPaper != nil && !markschemeShowing) ? 1 : 0
+        (paperSelection == .questionPaper) ? 1 : 0
     }
     
     func calculatedDatasheetIndex() -> Double {
-        (bundle.questionPaper != nil && datasheetShowing) ? 2 : 0
+        (paperSelection == .datasheet) ? 2 : 0
     }
 }
 

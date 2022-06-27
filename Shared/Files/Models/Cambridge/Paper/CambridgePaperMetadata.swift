@@ -17,7 +17,7 @@ enum PaperCodeError: Error {
 }
 
 struct CambridgePaperMetadata: Codable, Hashable {
-    static let logger = os.Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CambridgePaperMetadata")
+    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CambridgePaperMetadata")
     
     let code: String
     let type: CambridgePaperType
@@ -144,11 +144,10 @@ struct CambridgePaperMetadata: Codable, Hashable {
                         self.pages = pages.map { CambridgePaperPage(index: $0.pageRef?.pageNumber ?? 0, questionIndices: [], rawText: $0.string ?? "") }
                         return
                     case .markScheme:
-                        print("made it here - \(pages.count)")
                         for page in pages {
                             let index = page.pageRef?.pageNumber ?? 0
                             let rawText = page.string!
-                            print("This is the index: \(index)")
+
                             switch index {
                                 case 1: // First Page
                                     self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
@@ -158,7 +157,9 @@ struct CambridgePaperMetadata: Codable, Hashable {
                                 case 3:
                                     self.pages.append(CambridgePaperPage(index: index, questionIndices: [Int](29...40).map { QuestionIndex($0) }, rawText: rawText))
                                     multipleChoiceAnswers.append(contentsOf: page.getAnswers(for: 29...40))
-                                    print("Multiple Choice Answers calculated for \(self.code): \(multipleChoiceAnswers.count)")
+                                    
+                                    let log = "MCQ answers calculated (\(multipleChoiceAnswers.count) answers) for Paper \(self.code)"
+                                    Self.logger.info("\(log)")
                                 default:
                                     return
                             }
@@ -211,7 +212,6 @@ extension PDFPage {
         guard let contents = attributedString else {
             return []
         }
-        //print("-------NEW PAGE-------")
         var partsDictionary = [Int: [Int]]()
         let boldStrings = contents
             .fetchBoldStrings()
@@ -233,10 +233,8 @@ extension PDFPage {
             .map { $0.removingCharacters(in: CharacterSet(charactersIn: "()")) }
         
         if currentIndex >= 1 {
-            //print("index >= 1")
             // (i) (b) (a)
             for part in partsArray { // [a, b, i, ii, c, i, ii]
-                print(part)
                 switch part {
                     case PapersDatabase.letters[currentLetterIndex]:
                         partsDictionary[currentLetterIndex + 1] = []
@@ -247,7 +245,6 @@ extension PDFPage {
                             partsDictionary[currentLetterIndex] = []
                         }
                         partsDictionary[currentLetterIndex]!.append(currentNumeralIndex + 1)
-                        //print(partsDictionary)
                         currentNumeralIndex += 1
                     case PapersDatabase.letters[0]:
                         if numbers.contains(currentIndex + 1) {

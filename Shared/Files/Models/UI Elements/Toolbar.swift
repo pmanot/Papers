@@ -20,7 +20,7 @@ struct Toolbar: View {
     @State private var timeTaken: TimeInterval = .zero
     
     @State private var dragOffset: CGSize = .zero
-    @State private var minimized: Bool = false
+    @State private var minimized: Bool = true
     @State private var testModeEnded: Bool = true
     @State var flashcardCreationSheetShowing: Bool = false
     @State var timerShowing: Bool = false
@@ -28,63 +28,68 @@ struct Toolbar: View {
     
     @Binding var markschemeShowing: Bool
     @Binding var answerOverlayShowing: Bool
+    @Binding var paperSelection: CambridgePaperType
     @Binding var testMode: Bool
     @Binding var datasheetShowing: Bool
     
     var body: some View {
         GeometryReader { screen in
-            ItemsView(minimized: $minimized, testMode: $testMode, timerShowing: $timerShowing, markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, datasheetShowing: $datasheetShowing, flashcardCreationSheetShowing: $flashcardCreationSheetShowing)
-                .background(Color.background.cornerRadius(.infinity).border(Color.secondary, cornerRadius: .infinity))
-                .matchedGeometryEffect(id: "1", in: toolbar)
-                .frame(width: !minimized ? 320 : 80, height: !minimized ? 50 : 45)
-                .position(
-                    !minimized ? screen.bottom : CGPoint(x: 60, y: testMode ? screen.top.y : screen.bottom.y)
-                )
-                .offset(dragOffset)
-                .gesture(
-                    DragGesture()
-                        .onChanged { movement in
-                            withAnimation(.spring()) {
-                                dragOffset.width = {
-                                    if movement.translation.width > 50 {
-                                        minimized = false
-                                        return 30
-                                    } else if movement.translation.width < -50 {
-                                        minimized = true
-                                        return -30
-                                    } else {
-                                        return movement.translation.width
-                                    }
-                                }()
-                                
-                                dragOffset.height = {
-                                    if movement.translation.height > 40 {
-                                        return 40
-                                    } else if movement.translation.height < -40 {
-                                        return -40
-                                    } else {
-                                        return movement.translation.height
-                                    }
-                                }()
+            let toolbarGesture = DragGesture()
+                .onChanged { movement in
+                    withAnimation(.spring()) {
+                        dragOffset.width = {
+                            if movement.translation.width > 50 {
+                                minimized = false
+                                return 30
+                            } else if movement.translation.width < -50 {
+                                minimized = true
+                                return -30
+                            } else {
+                                return movement.translation.width
                             }
-                            
-                            if movement.approximateDirection == .right {
-                                withAnimation(.spring()) {
-                                    minimized = false
-                                }
+                        }()
+                        
+                        dragOffset.height = {
+                            if movement.translation.height > 40 {
+                                return 40
+                            } else if movement.translation.height < -40 {
+                                return -40
+                            } else {
+                                return movement.translation.height
                             }
-                            if movement.approximateDirection == .left {
-                                withAnimation(.spring()) {
-                                    minimized = true
-                                }
-                            }
+                        }()
+                    }
+                    
+                    if movement.approximateDirection == .right {
+                        withAnimation(.spring()) {
+                            minimized = false
                         }
-                        .onEnded { _ in
-                            withAnimation(.spring()){
-                                dragOffset = .zero
-                            }
+                    }
+                    if movement.approximateDirection == .left {
+                        withAnimation(.spring()) {
+                            minimized = true
                         }
-                )
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring()){
+                        dragOffset = .zero
+                    }
+                }
+            
+            ZStack {
+                Color.primaryInverted.cornerRadius(.infinity)
+                
+                ItemsView(minimized: $minimized, testMode: $testMode, timerShowing: $timerShowing, paperSelection: $paperSelection, markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, datasheetShowing: $datasheetShowing, flashcardCreationSheetShowing: $flashcardCreationSheetShowing)
+            }
+            .matchedGeometryEffect(id: "t", in: toolbar)
+            .frame(width: !minimized ? 320 : 80, height: !minimized ? 50 : 45)
+            .position(
+                !minimized ? screen.bottom : CGPoint(x: 60, y: testMode ? screen.top.y : screen.bottom.y)
+            )
+            .offset(dragOffset)
+            .gesture(toolbarGesture)
+            
             if timerShowing {
                 Text("\(timeTaken.timeComponents().1) : \(timeTaken.timeComponents().2)")
                     .font(.subheadline, weight: .bold)
@@ -107,6 +112,7 @@ struct Toolbar: View {
 }
 
 extension Toolbar {
+    
     var timerView: some View {
         HStack {
             HStack( spacing: 2) {
@@ -141,7 +147,7 @@ extension Toolbar {
 
 struct Toolbar_Previews: PreviewProvider {
     static var previews: some View {
-        Toolbar(markschemeShowing: .constant(false), answerOverlayShowing: .constant(false), testMode: .constant(true), datasheetShowing: .constant(true))
+        Toolbar(markschemeShowing: .constant(false), answerOverlayShowing: .constant(false), paperSelection: .constant(.questionPaper), testMode: .constant(false), datasheetShowing: .constant(false))
             .preferredColorScheme(.dark)
             .environmentObject(ApplicationStore())
     }

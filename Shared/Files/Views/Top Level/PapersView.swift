@@ -61,28 +61,28 @@ extension PapersView {
                 switch sortBy {
                     case .sortByYear:
                         ForEach(PapersDatabase.years, id: \.self) { year in
-                            Section("\(String(year))") {
+                            Section(header: Text("\(String(year))").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
                                 InnerSortView(bundles: sortedBundles[SortArgument.year(year)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
                         .listRowBackground(Color.primaryInverted)
                     case .sortByMonth:
                         ForEach(PapersDatabase.months, id: \.self) { month in
-                            Section("\(month.rawValue)") {
+                            Section(header: Text("\(month.rawValue)").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
                                 InnerSortView(bundles: sortedBundles[SortArgument.month(month)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
                         .listRowBackground(Color.primaryInverted)
                     case .sortBySubject:
                         ForEach(PapersDatabase.subjects, id: \.self) { subject in
-                            Section("\(subject.rawValue)") {
+                            Section(header: Text("\(subject.rawValue)").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
                                 InnerSortView(bundles: sortedBundles[SortArgument.subject(subject)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
                         .listRowBackground(Color.primaryInverted)
                     case .sortByPaperNumber:
                         ForEach(PapersDatabase.paperNumbers, id: \.self) { number in
-                            Section("Paper \(number.rawValue)") {
+                            Section(header: Text("Paper \(number.rawValue)").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
                                 InnerSortView(bundles: sortedBundles[SortArgument.paperNumber(number)] ?? [], sortBy: $sortInsideBy)
                             }
                         }
@@ -135,13 +135,13 @@ extension PapersView.ListView {
                         }, label: {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("20\(year)")
-                                    .font(.title3, weight: .heavy)
+                                    .font(.title2, weight: .semibold)
                                 
                                 Text("\(sortedBundles[SortArgument.year(year)]!.count) papers")
                                     .font(.subheadline, weight: .regular)
                                     .foregroundColor(.secondaryLabel)
                             }
-                            .padding()
+                            .padding(.vertical, 10)
                         })
                     }
                 case .sortByMonth:
@@ -154,13 +154,13 @@ extension PapersView.ListView {
                         }, label: {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("\(month.rawValue)")
-                                    .font(.title3, weight: .heavy)
+                                    .font(.title3, weight: .semibold)
                                 
                                 Text("\(sortedBundles[SortArgument.month(month)]!.count) papers")
                                     .font(.subheadline, weight: .regular)
                                     .foregroundColor(.secondaryLabel)
                             }
-                            .padding()
+                            .padding(.vertical, 10)
                         })
                     }
                 case .sortBySubject:
@@ -173,13 +173,13 @@ extension PapersView.ListView {
                         }, label: {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text(subject.rawValue)
-                                    .font(.title3, weight: .heavy)
+                                    .font(.title2, weight: .semibold)
                                     
                                 Text("\(sortedBundles[SortArgument.subject(subject)]!.count) papers")
                                     .font(.subheadline, weight: .regular)
                                     .foregroundColor(.secondaryLabel)
                             }
-                            .padding()
+                            .padding(.vertical, 10)
                         })
                     }
                 case .sortByPaperNumber:
@@ -192,12 +192,12 @@ extension PapersView.ListView {
                         }, label: {
                             VStack(alignment: .leading, spacing: 10) {
                                 Text("Paper \(number.rawValue)")
-                                    .font(.title3, weight: .heavy)
+                                    .font(.title2, weight: .semibold)
                                 Text("\(sortedBundles[SortArgument.paperNumber(number)]!.count) papers")
                                     .font(.subheadline, weight: .regular)
                                     .foregroundColor(.secondaryLabel)
                             }
-                            .padding()
+                            .padding(.vertical, 10)
                         })
                     }
             }
@@ -214,18 +214,25 @@ extension PapersView.ListView.InnerSortView {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\(paperBundle.metadata.subject.rawValue)")
-                            .font(.title3, weight: .bold)
+                            .font(.title3, weight: .semibold)
+                        Text(paperBundle.metadata.kind.rawValue.uppercased())
+                            .foregroundColor(.white)
+                            .font(.caption)
+                            .padding(.vertical, 4)
+                            .padding(.horizontal, 6)
+                            .background(Color.systemGray2)
+                            .cornerRadius(6)
+                            .shadow(radius: 0.5)
                         
-                        Text(paperBundle.metadata.kind.rawValue)
-                            .modifier(TagTextStyle())
                     }
                     
                     HStack {
                         Text("\(paperBundle.metadata.month.compact())")
-                            .modifier(TagTextStyle())
+                            .modifier(TagTextStyle(color: Color.blue))
                         
                         Text(String(paperBundle.metadata.year))
-                            .modifier(TagTextStyle())
+                            .modifier(TagTextStyle(color: Color.blue))
+                            
                         
                         Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
                             .modifier(TagTextStyle())
@@ -235,12 +242,11 @@ extension PapersView.ListView.InnerSortView {
                     }
                     
                     
-                            Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
-                                .font(.subheadline)
-                                .fontWeight(.light)
-                                .foregroundColor(.secondary)
+                    Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
+                        .font(.subheadline)
+                        .fontWeight(.light)
+                        .foregroundColor(.secondary)
                 }
-                .padding(5)
                 
             }
         }
@@ -249,21 +255,22 @@ extension PapersView.ListView.InnerSortView {
 
 struct TagTextStyle: ViewModifier {
     @Environment(\.colorScheme) var colorScheme
+    var color: Color = .accentColor
     func body(content: Content) -> some View {
         switch colorScheme {
             case .dark:
                 content
                     .foregroundColor(.primary)
-                    .font(.caption)
+                    .font(.subheadline)
                     .padding(7)
-                    .background(Color.accentColor.opacity(0.8).cornerRadius(8))
+                    .background(color.opacity(0.7).cornerRadius(8))
                     .shadow(radius: 0.5)
             default:
                 content
                     .foregroundColor(.white)
-                    .font(.caption)
+                    .font(.subheadline)
                     .padding(7)
-                    .background(Color.accentColor.opacity(0.8).cornerRadius(8))
+                    .background(color.opacity(0.7).cornerRadius(8))
                     .shadow(radius: 0.5)
         }
         

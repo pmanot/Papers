@@ -67,8 +67,7 @@ extension PaperContentsView {
                 HStack {
                     Text("\(self.question.index.index).")
                         .font(.title, weight: .heavy)
-                    
-                    Spacer()
+                        .padding(.horizontal)
                     
                     Text("\(question.index.parts.count) parts")
                         .modifier(TagTextStyle())

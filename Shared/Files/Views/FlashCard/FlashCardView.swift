@@ -12,23 +12,23 @@ struct FlashCardView: View {
     @State private var progressionPercentage: CGFloat = 0
     var body: some View {
         GeometryReader { screen in
-            VStack(alignment: .leading) {
+            ZStack(alignment: .bottomLeading) {
                 TabView(selection: $currentIndex) {
                     ForEach(enumerating: cards){ (index, data) in
                         FlashCard(data)
-                            .frame(width: 400, height: 200, alignment: .center)
                             .tag(Int(index))
                     }
                 }
                 .tabViewStyle(.page)
                 
                 LoadingView(percentage: progressionPercentage, in: screen)
-                    .foregroundColor(.pink)
-                    .frame(height: 30)
+                    .foregroundColor(.white)
+                    .frame(height: 10)
                     .onChange(of: currentIndex){ _ in
                         calculateProgress()
                     }
             }
+            .background(Color.accentColor)
             .edgesIgnoringSafeArea(.all)
         }
         .background(Color.background.edgesIgnoringSafeArea(.all))
@@ -58,8 +58,9 @@ extension FlashCardView {
         
         var body: some View {
             VStack(alignment: .leading, spacing: 0) {
-                RoundedRectangle(cornerRadius: 8)
+                Rectangle()
                     .frame(width: screen.size.width*progress)
+                    .cornerRadius(15)
             }
         }
     }

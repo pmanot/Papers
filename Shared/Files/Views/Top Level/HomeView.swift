@@ -10,8 +10,6 @@ struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var isExpanded: Bool = false
 
-    // TODO: Move this to PapersDatabase, and shuffle it there.
-
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             ZStack {

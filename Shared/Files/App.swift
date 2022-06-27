@@ -12,9 +12,6 @@ struct App: SwiftUI.App {
         WindowGroup {
             ContentView()
                 .environmentObject(applicationStore)
-                .onAppear {
-                    print("HOME DIRECTORY", NSHomeDirectory())
-                }
         }
     }
 }
