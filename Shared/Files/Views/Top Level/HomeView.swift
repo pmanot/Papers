@@ -2,68 +2,80 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUI
 import PDFKit
+import SwiftUIX
 
 struct HomeView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+    
     @Environment(\.colorScheme) var colorScheme
-    @State private var isExpanded: Bool = false
-
+    
+    @State var isSolvedPapersExpanded: Bool = false
+    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            ZStack {
-                VStack {
-                    VStack(alignment: .leading) {
-                        Text("Questions for you:")
-                            .font(.title3, weight: .heavy)
-                            .padding()
-                        QuestionCollectionView(papersDatabase: applicationStore.papersDatabase)
-                            .padding(.vertical, 10)
-                    }
-                    
-                    Divider()
-                    
-                    // MARK: Development
-                    /*
-                    VStack(alignment: .leading) {
-                        Text("Your decks:")
-                            .font(.title3, weight: .heavy)
-                        
-                        SolvedPapersScrollView(papersDatabase: papersDatabase, isExpanded: $isExpanded)
-                    }
-                    .padding(10)
-                    */
-                    
-                    VStack(alignment: .leading) {
-                        Text("Papers you've solved:")
-                            .font(.title3, weight: .heavy)
-                            .padding()
-
-                        SolvedPapersScrollView(papersDatabase: applicationStore.papersDatabase, isExpanded: $isExpanded)
-                    }
-                    .padding(10)
-                    .padding(.bottom, 30)
-                    
-                    Divider()
-                }
+            VStack(alignment: .leading) {
+                dailyQuestions
+                    .padding(.bottom)
+                
+                solvedPapers
             }
-            .navigationTitle("Home")
+            .padding()
         }
-        .background(Color.systemGroupedBackground)
+        .background(Color.systemBackground)
+        .navigationTitle("Home")
     }
+    
+    var dailyQuestions: some View {
+        VStack(alignment: .leading) {
+            Text("Questions For You")
+                .font(.title2.weight(.bold))
+                .padding(.horizontal, .small)
 
+            QuestionCollectionView(papersDatabase: applicationStore.papersDatabase)
+        }
+    }
+    
+    var solvedPapers: some View {
+        VStack(alignment: .leading) {
+            Text("Solved Papers")
+                .font(.title2.weight(.bold))
+                .padding(.horizontal, .small)
+            
+            SolvedPapersScrollView(
+                papersDatabase: applicationStore.papersDatabase,
+                isExpanded: $isSolvedPapersExpanded
+            )
+        }
+    }
 }
 
 extension HomeView {
     struct QuestionCollectionView: View {
         @ObservedObject var papersDatabase: PapersDatabase
-        @State private var selectedPaperNumber: CambridgePaperNumber = .paper2
-        @State private var selectedPageCount: Int = 1
-        private var filteredBundles: [CambridgePaperBundle] {
+        
+        @State var selectedPaperNumber: CambridgePaperNumber = .paper2
+        @State var selectedPageCount: Int = 1
+        
+        var filteredBundles: [CambridgePaperBundle] {
             papersDatabase.paperBundles.filter { $0.metadata.paperNumber == selectedPaperNumber }
         }
-        private func pageCountFilter(_ question: Question) -> Bool {
+        
+        var body: some View {
+            VStack(alignment: .leading) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack {
+                        ForEach(filteredBundles.indexedQuestions(), id: \.1.self) { (index, question) in
+                            QuestionListCell(question: question, bundle: filteredBundles[index])
+                                .padding(.small)
+                        }
+                    }
+                    .padding(.leading, .small)
+                }
+            }
+        }
+        
+        func pageCountFilter(_ question: Question) -> Bool {
             switch selectedPageCount {
                 case 1:
                     return question.pages.count == selectedPageCount
@@ -75,64 +87,38 @@ extension HomeView {
                     return true
             }
         }
+    }
+    
+    private struct SolvedPapersScrollView: View {
+        @ObservedObject var papersDatabase: PapersDatabase
+        
+        @Binding var isExpanded: Bool
+        
+        var data: [String] {
+            papersDatabase.solvedPapers.keys.sorted()
+        }
         
         var body: some View {
-            VStack(alignment: .leading) {
-                /*
-                 VStack(spacing: 5) {
-                 Picker("", selection: $selectedPaperNumber){
-                 ForEach([CambridgePaperNumber.paper2, CambridgePaperNumber.paper3, CambridgePaperNumber.paper4, CambridgePaperNumber.paper5], id: \.self){ number in
-                 Text("Paper \(number.rawValue)")
-                 .tag(number)
-                 }
-                 }
-                 .pickerStyle(.segmented)
-                 .padding(5)
-                 
-                 Picker("", selection: $selectedPageCount){
-                 Text("1 page")
-                 .tag(Int(1))
-                 Text("2 - 3 pages")
-                 .tag(Int(2))
-                 Text("4+ pages")
-                 .tag(Int(3))
-                 }
-                 .pickerStyle(.segmented)
-                 .padding(5)
-                 }
-                 */
-                
+            if !data.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack {
-                        ForEach(filteredBundles.indexedQuestions(), id: \.1.self) { (index, question) in
-                            QuestionListCell(question: question, bundle: filteredBundles[index])
-                                .padding()
+                    HStack(alignment: .top) {
+                        ForEach(data, id: \.self) { paperCode in
+                            SolvedPaperCollectionView(
+                                solvedPapers: papersDatabase.solvedPapers[paperCode]!,
+                                expanded: $isExpanded
+                            )
+                            .frame(width: 310)
+                            .frame(minHeight: 300)
+                            
                         }
+                        .padding(10)
                     }
                 }
-            }
-        }
-    }
-
-    struct SolvedPapersScrollView: View {
-        @ObservedObject var papersDatabase: PapersDatabase
-
-        @Binding var isExpanded: Bool
-
-        var body: some View {
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(alignment: .top) {
-                    ForEach([String](papersDatabase.solvedPapers.keys.sorted()), id: \.self) { paperCode in
-                        SolvedPaperCollectionView(
-                            solvedPapers: papersDatabase.solvedPapers[paperCode]!,
-                            expanded: $isExpanded
-                        )
-                        .frame(width: 310)
-                        .frame(minHeight: 300)
-                        
-                    }
-                    .padding(10)
-                }
+            } else {
+                Text("Papers will appear here as you solve them.")
+                    .font(.title3, weight: .semibold)
+                    .foregroundColor(.secondary)
+                    .padding()
             }
         }
     }
@@ -141,9 +127,10 @@ extension HomeView {
 extension HomeView.QuestionCollectionView {
     private struct QuestionListCell: View {
         @Environment(\.colorScheme) var colorScheme
+        
         let question: Question
         let bundle: CambridgePaperBundle
-
+        
         var body: some View {
             NavigationLink(destination: QuestionView(question, bundle: bundle)) {
                 GroupBox {
@@ -155,7 +142,7 @@ extension HomeView.QuestionCollectionView {
                         default:
                             Text(question.getContents(pdf: bundle.questionPaper!.pdf))
                                 .frame(width: 200, height: 200)
-                                
+                            
                     }
                     
                     Divider()
@@ -163,7 +150,9 @@ extension HomeView.QuestionCollectionView {
                     HStack {
                         Text(question.details.subject?.rawValue ?? "")
                             .modifier(TagTextStyle())
+                        
                         Spacer()
+                        
                         HStack {
                             Text("\(question.pages.count) page\(question.pages.count > 1 ? "s" : "")")
                                 .modifier(TagTextStyle())
@@ -181,6 +170,8 @@ extension HomeView.QuestionCollectionView {
         }
     }
 }
+
+// MARK: - Development Preview -
 
 struct Home_Previews: PreviewProvider {
     static var previews: some View {

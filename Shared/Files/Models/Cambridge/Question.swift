@@ -22,7 +22,11 @@ struct Question: Hashable, Identifiable {
     }
     
     func getContents(pdf: PDFDocument) -> AttributedString {
-        pages.compactMap { AttributedString(pdf.page(at: $0.index - 1)!.attributedString!) }.reduce(AttributedString(), +)
+        pages
+            .compactMap {
+                AttributedString(pdf.page(at: $0.index - 1)!.attributedString!)
+            }
+            .reduce(AttributedString(), +)
     }
 }
 
