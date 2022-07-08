@@ -17,10 +17,12 @@ struct HomeView: View {
                     VStack(alignment: .leading) {
                         Text("Questions for you:")
                             .font(.title3, weight: .heavy)
+                            .padding()
                         QuestionCollectionView(papersDatabase: applicationStore.papersDatabase)
-                            .frame(height: 400)
+                            .padding(.vertical, 10)
                     }
-                    .padding(10)
+                    
+                    Divider()
                     
                     // MARK: Development
                     /*
@@ -36,11 +38,14 @@ struct HomeView: View {
                     VStack(alignment: .leading) {
                         Text("Papers you've solved:")
                             .font(.title3, weight: .heavy)
+                            .padding()
 
                         SolvedPapersScrollView(papersDatabase: applicationStore.papersDatabase, isExpanded: $isExpanded)
                     }
                     .padding(10)
                     .padding(.bottom, 30)
+                    
+                    Divider()
                 }
             }
             .navigationTitle("Home")
@@ -72,41 +77,39 @@ extension HomeView {
         }
         
         var body: some View {
-            VStack {
-                VStack(spacing: 5) {
-                    Picker("", selection: $selectedPaperNumber){
-                        ForEach([CambridgePaperNumber.paper2, CambridgePaperNumber.paper3, CambridgePaperNumber.paper4, CambridgePaperNumber.paper5], id: \.self){ number in
-                            Text("Paper \(number.rawValue)")
-                                .tag(number)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(5)
-                    
-                    Picker("", selection: $selectedPageCount){
-                            Text("1 page")
-                                .tag(Int(1))
-                            Text("2 - 3 pages")
-                                .tag(Int(2))
-                            Text("4+ pages")
-                                .tag(Int(3))
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(5)
-                }
+            VStack(alignment: .leading) {
+                /*
+                 VStack(spacing: 5) {
+                 Picker("", selection: $selectedPaperNumber){
+                 ForEach([CambridgePaperNumber.paper2, CambridgePaperNumber.paper3, CambridgePaperNumber.paper4, CambridgePaperNumber.paper5], id: \.self){ number in
+                 Text("Paper \(number.rawValue)")
+                 .tag(number)
+                 }
+                 }
+                 .pickerStyle(.segmented)
+                 .padding(5)
+                 
+                 Picker("", selection: $selectedPageCount){
+                 Text("1 page")
+                 .tag(Int(1))
+                 Text("2 - 3 pages")
+                 .tag(Int(2))
+                 Text("4+ pages")
+                 .tag(Int(3))
+                 }
+                 .pickerStyle(.segmented)
+                 .padding(5)
+                 }
+                 */
                 
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack {
-                        ForEach(filteredBundles, id: \.metadata.code) { bundle in
-                            if bundle.questionPaper != nil {
-                                ForEach(bundle.questionPaper!.questions.filter(pageCountFilter) , id: \.id){ question in
-                                    QuestionListCell(question: question, bundle: bundle)
-                                }
-                            }
+                        ForEach(filteredBundles.indexedQuestions(), id: \.1.self) { (index, question) in
+                            QuestionListCell(question: question, bundle: filteredBundles[index])
+                                .padding()
                         }
                     }
                 }
-                
             }
         }
     }
@@ -143,24 +146,23 @@ extension HomeView.QuestionCollectionView {
 
         var body: some View {
             NavigationLink(destination: QuestionView(question, bundle: bundle)) {
-                VStack {
+                GroupBox {
                     switch colorScheme {
                         case .dark:
                             Text(question.getContents(pdf: bundle.questionPaper!.pdf))
                                 .colorInvert()
-                                .padding()
+                                .frame(width: 250, height: 220)
                         default:
                             Text(question.getContents(pdf: bundle.questionPaper!.pdf))
-                                .padding()
+                                .frame(width: 200, height: 200)
                                 
                     }
                     
                     Divider()
-
+                    
                     HStack {
                         Text(question.details.subject?.rawValue ?? "")
                             .modifier(TagTextStyle())
-                            .padding(8)
                         Spacer()
                         HStack {
                             Text("\(question.pages.count) page\(question.pages.count > 1 ? "s" : "")")
@@ -168,13 +170,9 @@ extension HomeView.QuestionCollectionView {
                             Text("\(question.index.parts.count) part\(question.index.parts.count > 1 ? "s" : "")")
                                 .modifier(TagTextStyle())
                         }
-                        .padding(8)
-                        
                     }
-                    .padding(5)
+                    .padding(.vertical, 5)
                 }
-                .background(Color.systemBackground.cornerRadius(20))
-                .border(.secondary, cornerRadius: 20)
                 .padding(5)
                 .frame(width: 280, height: 300)
                 

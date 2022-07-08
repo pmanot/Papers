@@ -2,34 +2,35 @@
 // Copyright (c) Purav Manot
 //
 
-import SwiftUIX
+import Combine
 import PDFKit
 import SwiftUI
-
+import SwiftUIX
+ 
 struct PapersView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+    
     @State private var showingSortOptionSheet: Bool = false
-    @State var sortType: SortType = .sortByYear
-    @State var innerSortType: SortType = .sortByMonth
+    @State private var searchText = ""
+    @State private var sortType: PapersListSectionType = .byYear
+    @State private var innerSortType: PapersListSectionType = .byMonth
+    @State var expanded: Bool = false
     
     var body: some View {
-        ListView(papersDatabase: applicationStore.papersDatabase, sortBy: $sortType, sortInsideBy: $innerSortType)
+        ListView(database: applicationStore.papersDatabase, sortBy: $sortType, sortInsideBy: $innerSortType, searchText: $searchText, expanded: $expanded)
             .navigationTitle("Papers")
             .navigationViewStyle(StackNavigationViewStyle())
-            .sheet(isPresented: $showingSortOptionSheet){
-                PaperSortOptionView(sortBy: $sortType, sortInsideBy: $innerSortType)
-            }
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing){
-                    Button(action: {
-                        showingSortOptionSheet.toggle()
-                    }){
+                    Menu {
+                        PaperSortOptionView(sortBy: $sortType, sortInsideBy: $innerSortType)
+                    } label: {
                         HStack(spacing: 5) {
                             Image(systemName: .sliderHorizontal3)
                         }
                         .foregroundColor(.pink)
                     }
-                    .buttonStyle(PlainButtonStyle())
                 }
             }
     }
@@ -46,50 +47,105 @@ struct PapersView_Previews: PreviewProvider {
     }
 }
 
+
 extension PapersView {
     struct ListView: View {
-        @ObservedObject var papersDatabase: PapersDatabase
-        @Binding var sortBy: SortType
-        @Binding var sortInsideBy: SortType
+        @ObservedObject var database: PapersDatabase
+        @Binding var sortBy: PapersListSectionType
+        @Binding var sortInsideBy: PapersListSectionType
+        @Binding var searchText: String
+        @Binding var expanded: Bool
+        @State private var selectedSubject: CambridgeSubject = .physics
+        @State private var selectedPaperNumber: CambridgePaperNumber = .paper4
+        @State private var searchResults: [CambridgePaperBundle] = []
+        
+        init(database: PapersDatabase, sortBy: Binding<PapersListSectionType>, sortInsideBy: Binding<PapersListSectionType>, searchText: Binding<String>, expanded: Binding<Bool>) {
+            self.database = database
+            self._sortBy = sortBy
+            self._sortInsideBy = sortInsideBy
+            self._searchText = searchText
+            self._expanded = expanded
+        }
 
-        var sortedBundles: [SortArgument : [CambridgePaperBundle]] {
-            sortBundles(papersDatabase.paperBundles, sortBy: sortBy)
+        var sortedBundles: [PapersListSection: [CambridgePaperBundle]] {
+            database.paperBundles.group(by: sortBy)
         }
         
+        var sections: [PapersListSection] {
+            switch sortBy {
+                case .byYear:
+                    return PapersDatabase.years.map(PapersListSection.year)
+                case .byMonth:
+                    return PapersDatabase.months.map(PapersListSection.month)
+                case .bySubject:
+                    return PapersDatabase.subjects.map(PapersListSection.subject)
+                case .byPaperNumber:
+                    return PapersDatabase.paperNumbers.map(PapersListSection.paperNumber)
+            }
+        }
+    
         var body: some View {
             List {
-                switch sortBy {
-                    case .sortByYear:
-                        ForEach(PapersDatabase.years, id: \.self) { year in
-                            Section(header: Text("\(String(year))").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
-                                InnerSortView(bundles: sortedBundles[SortArgument.year(year)] ?? [], sortBy: $sortInsideBy)
+                if searchText.isEmpty {
+                    ForEach(sections, id: \.self) { section in
+                        if let bundles = sortedBundles[section] {
+                            Section {
+                                InnerSortView(bundles: bundles, sortBy: $sortInsideBy, searchText: searchText, expanded: $expanded)
+                            } header: {
+                                switch section {
+                                    case .year(let year):
+                                        Text(String(year))
+                                            .font(.title2, weight: .semibold)
+                                    case .month(let month):
+                                        Text("\(month.compact())")
+                                            .font(.title3, weight: .semibold)
+                                    case .subject(let subject):
+                                        Text(subject.rawValue)
+                                            .font(.title2, weight: .semibold)
+                                    case .paperNumber(let paperNumber):
+                                        Text("Paper \(paperNumber.rawValue)")
+                                            .font(.title2, weight: .semibold)
+                                }
                             }
                         }
-                        .listRowBackground(Color.primaryInverted)
-                    case .sortByMonth:
-                        ForEach(PapersDatabase.months, id: \.self) { month in
-                            Section(header: Text("\(month.rawValue)").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
-                                InnerSortView(bundles: sortedBundles[SortArgument.month(month)] ?? [], sortBy: $sortInsideBy)
-                            }
+                    }
+                } else {
+                    Section {
+                        TagPicker(PapersDatabase.subjects, id: \.self, selection: $selectedSubject) { subject in
+                            Text(subject.rawValue)
                         }
-                        .listRowBackground(Color.primaryInverted)
-                    case .sortBySubject:
-                        ForEach(PapersDatabase.subjects, id: \.self) { subject in
-                            Section(header: Text("\(subject.rawValue)").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
-                                InnerSortView(bundles: sortedBundles[SortArgument.subject(subject)] ?? [], sortBy: $sortInsideBy)
-                            }
+                        .frame(height: 40)
+                        TagPicker(PapersDatabase.paperNumbers, id: \.self, selection: $selectedPaperNumber) { paperNumber in
+                            Text("Paper \(paperNumber.rawValue)")
                         }
-                        .listRowBackground(Color.primaryInverted)
-                    case .sortByPaperNumber:
-                        ForEach(PapersDatabase.paperNumbers, id: \.self) { number in
-                            Section(header: Text("Paper \(number.rawValue)").font(.title3).fontWeight(.bold).padding(.vertical, 10)) {
-                                InnerSortView(bundles: sortedBundles[SortArgument.paperNumber(number)] ?? [], sortBy: $sortInsideBy)
-                            }
+                        .frame(height: 40)
+                    }
+                    
+                    Section("Showing \(searchResults.count) results for \"\(searchText)\"") {
+                        ForEach(searchResults.filter(filter), id: \.id) { bundle in
+                            Row(paperBundle: bundle, searchText: searchText)
                         }
-                        .listRowBackground(Color.primaryInverted)
+                    }
                 }
             }
             .listStyle(PlainListStyle())
+            .withChangePublisher(for: searchText) { searchTextPublisher in
+                searchTextPublisher.debounce(for: .milliseconds(500), scheduler: DispatchQueue.main).sink { text in
+                    Task(priority: .userInitiated) {
+                        let searchResults = database.paperBundles.filter { bundle in
+                            bundle.metadata.rawText.match(text)
+                        }
+                        
+                        await MainActor.run {
+                            self.searchResults = searchResults
+                        }
+                    }
+                }
+            }
+        }
+        
+        private func filter(_ bundle: CambridgePaperBundle) -> Bool {
+            return bundle.metadata.details.number == selectedPaperNumber && bundle.metadata.subject == selectedSubject
         }
     }
     
@@ -114,213 +170,144 @@ extension PapersView {
 }
 
 
+enum PapersListSectionType {
+    case byYear
+    case byMonth
+    case bySubject
+    case byPaperNumber
+}
+
+enum PapersListSection: Hashable {
+    case year(_ i: Int)
+    case month(_ i: CambridgePaperMonth)
+    case subject(_ i: CambridgeSubject)
+    case paperNumber(_ i: CambridgePaperNumber)
+}
+
 extension PapersView.ListView {
     struct InnerSortView: View {
         let bundles: [CambridgePaperBundle]
-        @Binding var sortBy: SortType
         
-        var sortedBundles: [SortArgument : [CambridgePaperBundle]] {
-            sortBundles(bundles, sortBy: sortBy)
+        @Binding var sortBy: PapersListSectionType
+        let searchText: String
+        @Binding var expanded: Bool
+                
+        var sections: [PapersListSection] {
+            switch sortBy {
+                case .byYear:
+                    return PapersDatabase.years.map(PapersListSection.year)
+                case .byMonth:
+                    return PapersDatabase.months.map(PapersListSection.month)
+                case .bySubject:
+                    return PapersDatabase.subjects.map(PapersListSection.subject)
+                case .byPaperNumber:
+                    return PapersDatabase.paperNumbers.map(PapersListSection.paperNumber)
+            }
         }
         
+        var itemsPerSection: [PapersListSection: [CambridgePaperBundle]] {
+            bundles.group(by: sortBy)
+        }
+
         var body: some View {
-            switch sortBy {
-                case .sortByYear:
-                    ForEach(PapersDatabase.years, id: \.self) { year in
-                        DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.year(year)] ?? [], id: \.metadata.code){ bundle in
-                                Row(paperBundle: bundle)
-                                    .buttonStyle(PlainButtonStyle())
+            let itemsPerSection = self.itemsPerSection
+
+            ForEach(sections, id: \.self) { (section: PapersListSection) in
+                if let items = itemsPerSection[section] {
+                    DisclosureGroup {
+                        ForEach(items, id: \.metadata.code){ bundle in
+                            Row(paperBundle: bundle, searchText: searchText)
+                                .buttonStyle(PlainButtonStyle())
+                        }
+                    } label: {
+                        VStack(alignment: .leading, spacing: 10) {
+                            switch section {
+                                case .year(let year):
+                                    Text(String(year))
+                                        .font(.title2, weight: .semibold)
+                                case .month(let month):
+                                    Text("\(month.compact())")
+                                        .font(.title3, weight: .semibold)
+                                case .subject(let subject):
+                                    Text(subject.rawValue)
+                                        .font(.title2, weight: .semibold)
+                                case .paperNumber(let paperNumber):
+                                    Text("Paper \(paperNumber.rawValue)")
+                                        .font(.title2, weight: .semibold)
                             }
-                        }, label: {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("20\(year)")
-                                    .font(.title2, weight: .semibold)
-                                
-                                Text("\(sortedBundles[SortArgument.year(year)]!.count) papers")
-                                    .font(.subheadline, weight: .regular)
-                                    .foregroundColor(.secondaryLabel)
-                            }
-                            .padding(.vertical, 10)
-                        })
+                            
+                            Text("\(items.count) papers")
+                                .font(.subheadline, weight: .regular)
+                                .foregroundColor(.secondaryLabel)
+                        }
+                        .padding(.vertical, 10)
                     }
-                case .sortByMonth:
-                    ForEach(PapersDatabase.months, id: \.self) { month in
-                        DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.month(month)] ?? [], id: \.metadata.code){ bundle in
-                                Row(paperBundle: bundle)
-                                    .buttonStyle(PlainButtonStyle())
-                            }
-                        }, label: {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("\(month.rawValue)")
-                                    .font(.title3, weight: .semibold)
-                                
-                                Text("\(sortedBundles[SortArgument.month(month)]!.count) papers")
-                                    .font(.subheadline, weight: .regular)
-                                    .foregroundColor(.secondaryLabel)
-                            }
-                            .padding(.vertical, 10)
-                        })
-                    }
-                case .sortBySubject:
-                    ForEach(PapersDatabase.subjects, id: \.self) { subject in
-                        DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.subject(subject)] ?? [], id: \.metadata.code){ bundle in
-                                Row(paperBundle: bundle)
-                                    .buttonStyle(PlainButtonStyle())
-                            }
-                        }, label: {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text(subject.rawValue)
-                                    .font(.title2, weight: .semibold)
-                                    
-                                Text("\(sortedBundles[SortArgument.subject(subject)]!.count) papers")
-                                    .font(.subheadline, weight: .regular)
-                                    .foregroundColor(.secondaryLabel)
-                            }
-                            .padding(.vertical, 10)
-                        })
-                    }
-                case .sortByPaperNumber:
-                    ForEach(PapersDatabase.paperNumbers, id: \.self) { number in
-                        DisclosureGroup(content: {
-                            ForEach(sortedBundles[SortArgument.paperNumber(number)] ?? [], id: \.metadata.code){ bundle in
-                                Row(paperBundle: bundle)
-                                    .buttonStyle(PlainButtonStyle())
-                            }
-                        }, label: {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Paper \(number.rawValue)")
-                                    .font(.title2, weight: .semibold)
-                                Text("\(sortedBundles[SortArgument.paperNumber(number)]!.count) papers")
-                                    .font(.subheadline, weight: .regular)
-                                    .foregroundColor(.secondaryLabel)
-                            }
-                            .padding(.vertical, 10)
-                        })
-                    }
+                }
             }
         }
     }
 }
 
-extension PapersView.ListView.InnerSortView {
-    struct Row: View {
-        let paperBundle: CambridgePaperBundle
-        
-        var body: some View {
-            NavigationLink(destination: PaperContentsView(bundle: paperBundle)) {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text("\(paperBundle.metadata.subject.rawValue)")
-                            .font(.title3, weight: .semibold)
-                        Text(paperBundle.metadata.kind.rawValue.uppercased())
-                            .foregroundColor(.white)
-                            .font(.caption)
-                            .padding(.vertical, 4)
-                            .padding(.horizontal, 6)
-                            .background(Color.systemGray2)
-                            .cornerRadius(6)
-                            .shadow(radius: 0.5)
-                        
-                    }
+struct Row: View {
+    let paperBundle: CambridgePaperBundle
+    let searchText: String?
+    
+    
+    
+    var body: some View {
+        NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: searchText)) {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("\(paperBundle.metadata.subject.rawValue)")
+                        .font(.title3, weight: .semibold)
+                    Text(paperBundle.metadata.kind.rawValue.uppercased())
+                        .foregroundColor(.white)
+                        .font(.caption)
+                        .padding(.vertical, 5)
+                        .padding(.horizontal, 10)
+                        .background(Color.systemGray2)
+                        .cornerRadius(15)
+                        .shadow(radius: 0.5)
                     
-                    HStack {
-                        Text("\(paperBundle.metadata.month.compact())")
-                            .modifier(TagTextStyle(color: Color.blue))
-                        
-                        Text(String(paperBundle.metadata.year))
-                            .modifier(TagTextStyle(color: Color.blue))
-                            
-                        
-                        Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
-                            .modifier(TagTextStyle())
-                        
-                        Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
-                            .modifier(TagTextStyle())
-                    }
-                    
-                    
-                    Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
-                        .font(.subheadline)
-                        .fontWeight(.light)
-                        .foregroundColor(.secondary)
                 }
                 
+                HStack {
+                    Text("\(paperBundle.metadata.month.compact())")
+                        .modifier(TagTextStyle(color: Color.blue))
+                    
+                    Text(String(paperBundle.metadata.year))
+                        .modifier(TagTextStyle(color: Color.blue))
+                        
+                    
+                    Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
+                        .modifier(TagTextStyle())
+                    
+                    Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
+                        .modifier(TagTextStyle())
+                }
+                
+                
+                Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
+                    .font(.subheadline)
+                    .fontWeight(.light)
+                    .foregroundColor(.secondary)
             }
+            
         }
     }
 }
 
-struct TagTextStyle: ViewModifier {
-    @Environment(\.colorScheme) var colorScheme
-    var color: Color = .accentColor
-    func body(content: Content) -> some View {
-        switch colorScheme {
-            case .dark:
-                content
-                    .foregroundColor(.primary)
-                    .font(.subheadline)
-                    .padding(7)
-                    .background(color.opacity(0.7).cornerRadius(8))
-                    .shadow(radius: 0.5)
-            default:
-                content
-                    .foregroundColor(.white)
-                    .font(.subheadline)
-                    .padding(7)
-                    .background(color.opacity(0.7).cornerRadius(8))
-                    .shadow(radius: 0.5)
+extension Array where Element == CambridgePaperBundle {
+    func group(by sectionType: PapersListSectionType) -> [PapersListSection: [CambridgePaperBundle]] {
+        switch sectionType {
+            case .byYear:
+                return group(by: { PapersListSection.year($0.metadata.year) }).mapValues({ $0.sorted(by: { $0.metadata.year > $1.metadata.year }) })
+            case .byMonth:
+                return group(by: { PapersListSection.month($0.metadata.month) })
+            case .bySubject:
+                return group(by: { PapersListSection.subject($0.metadata.subject) })
+            case .byPaperNumber:
+                return group(by: { PapersListSection.paperNumber($0.metadata.paperNumber) })
         }
-        
     }
-}
-
-
-func sortBundles(_ paperBundles: [CambridgePaperBundle], sortBy: SortType) -> [SortArgument : [CambridgePaperBundle]] {
-    switch sortBy {
-        case .sortByYear:
-            var seperatedBundles: [SortArgument : [CambridgePaperBundle]] = [:]
-            for year in PapersDatabase.years {
-                seperatedBundles[.year(year)] = []
-            }
-            for bundle in paperBundles.sorted(by: { $0.metadata.year >= $1.metadata.year }) {
-                seperatedBundles[.year(bundle.metadata.year)]!.append(bundle)
-            }
-            return seperatedBundles
-            
-        case .sortByMonth:
-            var seperatedBundles: [SortArgument : [CambridgePaperBundle]] = [:]
-            for month in PapersDatabase.months {
-                seperatedBundles[.month(month)] = []
-            }
-            for bundle in paperBundles {
-                seperatedBundles[.month(bundle.metadata.month)]!.append(bundle)
-            }
-            return seperatedBundles
-            
-        case .sortBySubject:
-            var seperatedBundles: [SortArgument : [CambridgePaperBundle]] = [:]
-            for subject in PapersDatabase.subjects {
-                seperatedBundles[.subject(subject)] = []
-            }
-            for bundle in paperBundles {
-                seperatedBundles[.subject(bundle.metadata.subject)]!.append(bundle)
-            }
-            return seperatedBundles
-            
-            
-        case .sortByPaperNumber:
-            var seperatedBundles: [SortArgument : [CambridgePaperBundle]] = [:]
-            for number in PapersDatabase.paperNumbers {
-                seperatedBundles[.paperNumber(number)] = []
-            }
-            for bundle in paperBundles {
-                seperatedBundles[.paperNumber(bundle.metadata.paperNumber)]!.append(bundle)
-            }
-            return seperatedBundles
-           
-    }
-    
 }

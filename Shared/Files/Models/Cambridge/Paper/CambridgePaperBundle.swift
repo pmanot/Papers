@@ -7,7 +7,8 @@ import Swift
 import PDFKit
 
 /// A bundle of the question paper and the mark scheme.
-struct CambridgePaperBundle: Hashable {
+struct CambridgePaperBundle: Identifiable, Hashable {
+    let id = UUID()
     let questionPaper: CambridgePaper?
     let markScheme: CambridgePaper?
     

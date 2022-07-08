@@ -6,16 +6,16 @@ import SwiftUI
 
 struct PaperContentsView: View {
     let paperBundle: CambridgePaperBundle
-    @Binding var searchText: String
+    let searchText: String?
     
-    init(paper: CambridgePaper, search: Binding<String> = Binding.constant("")){
+    init(paper: CambridgePaper, search: String? = nil){
         self.paperBundle = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
-        self._searchText = search
+        self.searchText = search
     }
     
-    init(bundle: CambridgePaperBundle, search: Binding<String> = Binding.constant("")){
+    init(bundle: CambridgePaperBundle, search: String? = nil){
         self.paperBundle = bundle
-        self._searchText = search
+        self.searchText = search
     }
     
     
@@ -34,7 +34,7 @@ struct PaperContentsView: View {
                             QuestionRow(question, search: searchText)
                         }
                         .buttonStyle(PlainButtonStyle())
-                        .listRowBackground(!searchText.isEmpty ? Color.accentColor.opacity(question.rawText.match(searchText) ? 0.4 : 0) : Color.clear)
+                        .listRowBackground(!searchText.isNilOrEmpty ? Color.accentColor.opacity(question.rawText.match(searchText!) ? 0.4 : 0) : Color.clear)
                     }
                 }
             }
@@ -55,9 +55,9 @@ struct PaperContentsView_Previews: PreviewProvider {
 extension PaperContentsView {
     struct QuestionRow: View {
         let question: Question
-        let searchText: String
+        let searchText: String?
         
-        init(_ question: Question, search: String) {
+        init(_ question: Question, search: String?) {
             self.question = question
             self.searchText = search
         }
@@ -75,10 +75,13 @@ extension PaperContentsView {
                     Text("\(question.pages.count) pages")
                         .modifier(TagTextStyle())
                 }
-                if question.rawText.match(searchText) {
-                    Text("\"\(question.rawText.getTextAround(string: searchText))\"")
-                        .font(.caption)
+                if searchText != nil {
+                    if question.rawText.match(searchText!) {
+                        Text("\"\(question.rawText.getTextAround(string: searchText!))\"")
+                            .font(.caption)
+                    }
                 }
+                
             }
             
             .padding()

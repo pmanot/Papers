@@ -11,9 +11,14 @@ extension Array where Element == CambridgePaper {
 }
 
 extension Array where Element == CambridgePaperBundle {
-    func bundledQuestions() -> [(CambridgePaperBundle, Question)] {
-        self.compactMap { bundle in bundle.questionPaper!.questions.map { question in (bundle, question)} }.reduce([], +)
+    func indexedQuestions() -> [(Int, Question)] {
+        (0..<(self.count)).map { i in
+            (self[i].questionPaper?.questions ?? []).map { question in
+                (i, question)
+            }
+        }.reduce([], +)
     }
+    
 }
 
 extension Array where Element: Hashable {

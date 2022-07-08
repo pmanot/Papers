@@ -44,10 +44,10 @@ final public class PapersDatabase: ObservableObject {
             }
             
         } else {
-            DispatchQueue.global(qos: .userInitiated).async {
+            Task(priority: .userInitiated) {
                 let urls = self.directory.findAllPaperURLs()
                 let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
-                let paperBundles = self.computeNewPaperBundles(from: urls, metadata: metadata)
+                let paperBundles = self.computeNewPaperBundles(from: urls, metadata: metadata).sorted(by: { $0.metadata.details.year >= $1.metadata.details.year })
                 let solvedPapers = try! self.readSolvedPaperData()
                 let deck = try! self.readFlashCardDeck()
 

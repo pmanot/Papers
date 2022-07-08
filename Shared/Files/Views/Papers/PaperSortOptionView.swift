@@ -6,62 +6,47 @@ import SwiftUI
 import SwiftUIX
 
 struct PaperSortOptionView: View {
-    @Binding var sortBy: SortType
-    @Binding var sortInsideBy: SortType
+    @Binding var sortBy: PapersListSectionType
+    @Binding var sortInsideBy: PapersListSectionType
+    
     var body: some View {
-        VStack(alignment: .leading) {
-            Text("Sort")
-                .font(.largeTitle, weight: .heavy)
-                .foregroundColor(.label)
-                .padding(.bottom)
-            
-            Divider()
-            
-            VStack(alignment: .leading) {
-                Text("Section by:")
-                    .font(.subheadline, weight: .light)
-                    .padding(.leading, 5)
+        Section {
+            Menu {
                 Picker("", selection: $sortBy) {
                     Text("Year")
-                        .tag(SortType.sortByYear)
+                        .tag(PapersListSectionType.byYear)
                     Text("Month")
-                        .tag(SortType.sortByMonth)
+                        .tag(PapersListSectionType.byMonth)
                     Text("Paper")
-                        .tag(SortType.sortByPaperNumber)
+                        .tag(PapersListSectionType.byPaperNumber)
                     Text("Subject")
-                        .tag(SortType.sortBySubject)
+                        .tag(PapersListSectionType.bySubject)
                 }
-                .pickerStyle(.segmented)
-                
-                Spacer()
+            } label: {
+                Text("Section by")
+            }
             
-                Text("Group by:")
-                    .font(.subheadline, weight: .light)
-                    .padding(.leading, 5)
+            Menu {
                 Picker("", selection: $sortInsideBy) {
                     Text("Year")
-                        .tag(SortType.sortByYear)
+                        .tag(PapersListSectionType.byYear)
                     Text("Month")
-                        .tag(SortType.sortByMonth)
+                        .tag(PapersListSectionType.byMonth)
                     Text("Paper")
-                        .tag(SortType.sortByPaperNumber)
+                        .tag(PapersListSectionType.byPaperNumber)
                     Text("Subject")
-                        .tag(SortType.sortBySubject)
+                        .tag(PapersListSectionType.bySubject)
                         
                 }
-                .pickerStyle(.segmented)
+            } label: {
+                Text("Group by")
             }
-            .frame(height: 150)
-            
-            
-            
         }
-        .padding()
     }
 }
 
 struct PaperSortOptionView_Previews: PreviewProvider {
     static var previews: some View {
-        PaperSortOptionView(sortBy: .constant(.sortByYear), sortInsideBy: .constant(.sortByMonth))
+        PaperSortOptionView(sortBy: .constant(.byYear), sortInsideBy: .constant(.byMonth))
     }
 }

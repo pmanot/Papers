@@ -16,7 +16,7 @@ struct WrappedPDFView: UIViewRepresentable {
     init(pages: [PDFPage]){
         let compiledPDF = PDFDocument()
         for page in pages.reversed() {
-            compiledPDF.insert(page, at: 0)
+            compiledPDF.insert(page, at: compiledPDF.pageCount)
         }
         self.pdf = compiledPDF
     }

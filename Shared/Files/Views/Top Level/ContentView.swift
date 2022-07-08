@@ -9,9 +9,8 @@ struct ContentView: View {
     enum Destination: String, CaseIterable, Codable, HashIdentifiable {
         case home
         case papers
-        case search
         case flashCards
-        case credits
+        case saved
         
         var title: String {
             switch self {
@@ -19,12 +18,10 @@ struct ContentView: View {
                     return "Home"
                 case .papers:
                     return "Papers"
-                case .search:
-                    return "Search"
                 case .flashCards:
                     return "Flashcards"
-                case .credits:
-                    return "Credits"
+                case .saved:
+                    return "Saved"
             }
         }
         
@@ -34,12 +31,10 @@ struct ContentView: View {
                     return .trayFullFill
                 case .papers:
                     return .listDash
-                case .search:
-                    return .magnifyingglass
                 case .flashCards:
                     return .rectangleStack
-                case .credits:
-                    return .heart
+                case .saved:
+                    return .bookmark
             }
         }
     }
@@ -137,20 +132,16 @@ extension ContentView {
                     .zIndex(getIndex(for: .papers))
 
                     NavigationView {
-                        SearchView()
-                    }
-                    .zIndex(getIndex(for: .search))
-
-                    NavigationView {
                         FlashCardDeck(papersDatabase: applicationStore.papersDatabase)
                             .environmentObject(applicationStore)
                     }
                     .zIndex(getIndex(for: .flashCards))
                     
                     NavigationView {
-                        CreditsView()
+                        SavedCollectionView()
+                            .environmentObject(applicationStore)
                     }
-                    .zIndex(getIndex(for: .credits))
+                    .zIndex(getIndex(for: .saved))
                 }
                 
                 Divider()

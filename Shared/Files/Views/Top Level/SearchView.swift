@@ -18,7 +18,6 @@ struct SearchView: View {
     
     var body: some View {
         ListView(paperBundles: $paperBundles, searchText: $searchText)
-            .searchable(text: $searchText, placement: .sidebar, prompt: "Search")
             .navigationTitle("Search")
             .listStyle(GroupedListStyle())
             .onChange(of: searchText){ _ in
@@ -53,7 +52,7 @@ extension SearchView.ListView {
         let paperBundle: CambridgePaperBundle
         
         var body: some View {
-            NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: $searchText)) {
+            NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: searchText)) {
                 VStack(alignment: .leading) {
                     HStack {
                         Text("\"\(searchText)\"")

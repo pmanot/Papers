@@ -6,7 +6,7 @@
       "location" : "https://github.com/vmanot/Compute.git",
       "state" : {
         "branch" : "master",
-        "revision" : "92422a0120e27b92ecbf1590cb6ab352e935f910"
+        "revision" : "c8d3770f43b8b1784cc97efa4ed5348ee1c24023"
       }
     },
     {
@@ -15,7 +15,7 @@
       "location" : "https://github.com/vmanot/Data",
       "state" : {
         "branch" : "master",
-        "revision" : "38bdff251a92c51c5b4eab1b2e9e387919ad0e2d"
+        "revision" : "027798bf06a4c0775ab3ad864d1a249ee69637f0"
       }
     },
     {
@@ -24,7 +24,7 @@
       "location" : "https://github.com/vmanot/Diagnostics.git",
       "state" : {
         "branch" : "master",
-        "revision" : "f2e2a1a8ff9b32599793d9f4f7d481a76c32991b"
+        "revision" : "99ff14170f649f4577357e79425cbbcd0502ea58"
       }
     },
     {
@@ -33,7 +33,7 @@
       "location" : "https://github.com/vmanot/Filesystem",
       "state" : {
         "branch" : "master",
-        "revision" : "a7df83f0fbff2214f3f2c9bf57c1d9eb7c1e00cc"
+        "revision" : "3f9ca6dfd7a9deb7b944b6f23ca692c0d38dfd48"
       }
     },
     {
@@ -42,7 +42,7 @@
       "location" : "https://github.com/vmanot/FoundationX.git",
       "state" : {
         "branch" : "master",
-        "revision" : "2305e83e7b78087b894c4e795af694b6e0a6fe54"
+        "revision" : "f19dcf381ab654ce24903abdb24b35df9359648e"
       }
     },
     {
@@ -51,7 +51,7 @@
       "location" : "https://github.com/vmanot/Merge.git",
       "state" : {
         "branch" : "master",
-        "revision" : "b955fa6031ff9ba3b3e2b85f9208d762e1dd6a50"
+        "revision" : "a2cfaaa11b69f2ef108eb113730aa8c825654520"
       }
     },
     {
@@ -60,7 +60,7 @@
       "location" : "https://github.com/vmanot/POSIX.git",
       "state" : {
         "branch" : "master",
-        "revision" : "80faa5d7fab487ae0164c38782a4cdea541a9f35"
+        "revision" : "9a15f41c13292c801b601032505dee637a44e7a5"
       }
     },
     {
@@ -69,7 +69,7 @@
       "location" : "https://github.com/vmanot/Runtime.git",
       "state" : {
         "branch" : "master",
-        "revision" : "dda287e9ae10e43e4783c84eccdf4e75d04c729b"
+        "revision" : "d7ac90fcf304d855485e05ae76743f5e12f1483b"
       }
     },
     {
@@ -78,7 +78,7 @@
       "location" : "https://github.com/vmanot/Swallow.git",
       "state" : {
         "branch" : "master",
-        "revision" : "09b7eaed5e31aa72c85f09fe805c170c5d9389af"
+        "revision" : "1013fa18d456aac424cc349fc6b6c5d233cb17d1"
       }
     },
     {
@@ -96,7 +96,7 @@
       "location" : "https://github.com/SwiftUIX/SwiftUIX.git",
       "state" : {
         "branch" : "master",
-        "revision" : "b8cd3f75a21d2d368727b10363b6674c1c4bfa21"
+        "revision" : "1e2b15a685d4d84bf25b34e6c058811e2824d7c1"
       }
     }
   ],
