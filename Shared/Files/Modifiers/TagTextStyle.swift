@@ -1,8 +1,5 @@
 //
-//  TagTextStyle.swift
-//  Papers
-//
-//  Created by Purav Manot on 05/07/22.
+// Copyright (c) Purav Manot
 //
 
 import SwiftUI

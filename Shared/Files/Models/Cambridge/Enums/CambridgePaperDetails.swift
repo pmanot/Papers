@@ -1,8 +1,5 @@
 //
-//  CambridgePaperDetails.swift
-//  Papers
-//
-//  Created by Purav Manot on 10/04/22.
+// Copyright (c) Purav Manot
 //
 
 import Foundation

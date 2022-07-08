@@ -2,7 +2,6 @@
 // Copyright (c) Purav Manot
 //
 
-
 import Foundation
 
 func FuzzyMatch(search: String, in text: String) -> Bool {
