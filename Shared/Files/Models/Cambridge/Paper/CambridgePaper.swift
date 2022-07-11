@@ -5,6 +5,7 @@
 import Diagnostics
 import Foundation
 import PDFKit
+import SwiftUI
 
 
 struct CambridgePaper: Hashable {

@@ -20,6 +20,8 @@ extension Toolbar {
         @Binding var answerOverlayShowing: Bool
         @Binding var datasheetShowing: Bool
         @Binding var flashcardCreationSheetShowing: Bool
+        let save: () -> ()
+        var isSaved: Bool
         
         var body: some View {
             HStack {
@@ -76,8 +78,10 @@ extension Toolbar {
                             }
                             .frame(width: 30)
                             
-                            SymbolButton("bookmark", onToggle: "bookmark.fill"){
-                                
+                            SymbolButton(!isSaved ? "bookmark" : "bookmark.fill", onToggle: !isSaved ? "bookmark.fill" : "bookmark"){
+                                Task(priority: TaskPriority.medium) {
+                                    save()
+                                }
                             }
                             .buttonStyle(PlainButtonStyle())
                             .font(.title2, weight: .regular)

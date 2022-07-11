@@ -50,7 +50,6 @@ struct HomeView: View {
             }
             .navigationTitle("Home")
         }
-        .background(Color.systemGroupedBackground)
     }
 
 }

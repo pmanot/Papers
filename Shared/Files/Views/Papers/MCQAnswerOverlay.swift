@@ -7,7 +7,6 @@ import SwiftUIX
 
 struct MCQAnswerOverlay: View {
     let timer = Timer.publish(every: 0.01, on: .main, in: .common).autoconnect()
-    
     let bundle: CambridgePaperBundle
     let markschemeAnswers: [QuestionIndex : MultipleChoiceAnswer]
     
@@ -19,6 +18,7 @@ struct MCQAnswerOverlay: View {
     @State private var showingResults: Bool = false
     @Binding var isShowing: Bool
     @Environment(\.presentationMode) var presentationMode
+    private let notificationGenerator = UINotificationFeedbackGenerator()
     
     init(bundle: CambridgePaperBundle, showing: Binding<Bool>){
         self.bundle = bundle
@@ -68,17 +68,26 @@ struct MCQAnswerOverlay: View {
             VStack(alignment: .leading, spacing: 0) {
                 Rectangle()
                     .frame(width: answers[selectedIndex]!.value == .none ? 0 : Screen.size.width, height: 5)
-                    .foregroundColor(Color.systemIndigo)
+                    .foregroundColor(Color.blue)
                 Divider()
                 TabView(selection: $selectedIndex) {
                     ForEach([Int](1...40).map { QuestionIndex($0) }){ index in
                         HStack(spacing: 30) {
                             ForEach([MultipleChoiceValue.A, MultipleChoiceValue.B, MultipleChoiceValue.C, MultipleChoiceValue.D]){ value in
-                                Button(action: {buttonPressed(value: value)}){
+                                Button(action: {
+                                    buttonPressed(value: value)
+                                    if value == markschemeAnswers[index]?.value ?? .none {
+                                        notificationGenerator.notificationOccurred(.success)
+                                    } else {
+                                        notificationGenerator.notificationOccurred(.error)
+                                    }
+                                    
+                                    
+                                }){
                                     Text(value.rawValue)
                                 }
                                 .modifier(MCQButtonStyle())
-                                .foregroundColor(getAnswerColor(selected: answers[index]!.value, correct: markschemeAnswers[index]!.value, for: value))
+                                .foregroundColor(getAnswerColor(selected: answers[index]?.value ?? .none, correct: markschemeAnswers[index]?.value ?? .none, for: value))
                             }
                         }
                         .tag(index)

@@ -31,6 +31,8 @@ struct Toolbar: View {
     @Binding var paperSelection: CambridgePaperType
     @Binding var testMode: Bool
     @Binding var datasheetShowing: Bool
+    let save: () -> ()
+    let isSaved: Bool
     
     var body: some View {
         GeometryReader { screen in
@@ -80,7 +82,7 @@ struct Toolbar: View {
             ZStack {
                 Color.primaryInverted.cornerRadius(.infinity)
                 
-                ItemsView(minimized: $minimized, testMode: $testMode, timerShowing: $timerShowing, paperSelection: $paperSelection, markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, datasheetShowing: $datasheetShowing, flashcardCreationSheetShowing: $flashcardCreationSheetShowing)
+                ItemsView(minimized: $minimized, testMode: $testMode, timerShowing: $timerShowing, paperSelection: $paperSelection, markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, datasheetShowing: $datasheetShowing, flashcardCreationSheetShowing: $flashcardCreationSheetShowing, save: save, isSaved: isSaved)
             }
             .matchedGeometryEffect(id: "t", in: toolbar)
             .frame(width: !minimized ? 320 : 80, height: !minimized ? 50 : 45)
@@ -147,7 +149,7 @@ extension Toolbar {
 
 struct Toolbar_Previews: PreviewProvider {
     static var previews: some View {
-        Toolbar(markschemeShowing: .constant(false), answerOverlayShowing: .constant(false), paperSelection: .constant(.questionPaper), testMode: .constant(false), datasheetShowing: .constant(false))
+        Toolbar(markschemeShowing: .constant(false), answerOverlayShowing: .constant(false), paperSelection: .constant(.questionPaper), testMode: .constant(false), datasheetShowing: .constant(false), save: {}, isSaved: false)
             .preferredColorScheme(.dark)
             .environmentObject(ApplicationStore())
     }

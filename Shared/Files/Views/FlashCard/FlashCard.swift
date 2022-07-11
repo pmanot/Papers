@@ -25,17 +25,18 @@ struct FlashCard: View {
                 Text(card.prompt)
                     .font(flipped ? .title2 : .title, weight: .heavy)
                     .foregroundColor(flipped ? .secondary : .white)
-                    .padding(5)
+                    .padding(15)
                 
                 Text(card.answer)
                     .font(flipped ? .title2 : .title3, weight: .bold)
                     .foregroundColor(flipped ? .white : .secondary)
                     .onAppear(perform: stopBlink)
-                    .padding(5)
+                    .padding(15)
                     .blur(radius: flipped ? 0 : 5)
                     .opacity(flipped ? 1 : 0.5)
                 
             }
+            .animation(.spring(), value: flipped)
             .frame(width: screen.size.width, height: screen.size.height)
             .position(x: screen.size.width/2, y: screen.size.height/2)
             .background(Color.accentColor.edgesIgnoringSafeArea(.all))

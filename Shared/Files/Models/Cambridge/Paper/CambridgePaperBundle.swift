@@ -8,7 +8,9 @@ import PDFKit
 
 /// A bundle of the question paper and the mark scheme.
 struct CambridgePaperBundle: Identifiable, Hashable {
-    let id = UUID()
+    var id: String {
+        metadata.code
+    }
     let questionPaper: CambridgePaper?
     let markScheme: CambridgePaper?
     
@@ -27,5 +29,9 @@ struct CambridgePaperBundle: Identifiable, Hashable {
     init(questionPaper: CambridgePaper?, markScheme: CambridgePaper?) {
         self.questionPaper = questionPaper
         self.markScheme = markScheme
+    }
+    
+    func index(in bundles: [CambridgePaperBundle]) -> Int {
+        return bundles.firstIndex(of: self)!
     }
 }

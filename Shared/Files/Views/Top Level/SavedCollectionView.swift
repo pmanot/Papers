@@ -5,35 +5,65 @@
 import SwiftUI
 
 struct SavedCollectionView: View {
-    @EnvironmentObject var applicationStore: ApplicationStore
-    let savedBundles: [CambridgePaperBundle] = []
-    let savedQuestions: [Question] = []
-
+    @ObservedObject var papersDatabase: PapersDatabase
     @State private var selectedType: CambridgeSavedItemType = .bundle
 
     var body: some View {
-        List {
-            Section {
-                Picker("", selection: $selectedType){
-                    Text("Paper")
-                        .tag(CambridgeSavedItemType.bundle)
-                    Text("Question")
-                        .tag(CambridgeSavedItemType.question)
+        VStack {
+            Picker("", selection: $selectedType){
+                Text("Paper")
+                    .tag(CambridgeSavedItemType.bundle)
+                Text("Question")
+                    .tag(CambridgeSavedItemType.question)
+            }
+            .pickerStyle(SegmentedPickerStyle())
+            .padding([.horizontal, .top])
+            
+            List {
+                switch selectedType {
+                    case .bundle:
+                        ForEach(papersDatabase.savedPaperIndices, id: \.self) { index in
+                            Row(database: papersDatabase, paperBundle: papersDatabase.paperBundles[index], searchText: nil)
+                                .swipeActions {
+                                    Button(role: .destructive, action: {
+                                        papersDatabase.removePaper(index: index)
+                                    }, label: {
+                                        Label("Remove", systemImage: .xmark)
+                                    })
+                                }
+                        }
+                    case .question:
+                        ForEach(papersDatabase.savedQuestions) { question in
+                            VStack(alignment: .leading) {
+                                QuestionRow(question)
+                                    .swipeActions {
+                                        Button(action: {
+                                            if !papersDatabase.savedQuestions.contains(question) {
+                                                papersDatabase.saveQuestion(question: question)
+                                            } else {
+                                                papersDatabase.savedQuestions.remove { $0 == question }
+                                            }
+                                            
+                                        }, label: {
+                                            if !papersDatabase.savedQuestions.contains(question) {
+                                                Label("Save", systemImage: .bookmark)
+                                            } else {
+                                                Label("Unsave", systemImage: .xmark)
+                                            }
+                                        })
+                                        
+                                    }
+                                Text(question.rawText)
+                                    .frame(height: 100)
+                            }
+                            .padding(10)
+                        }
                 }
-                .pickerStyle(SegmentedPickerStyle())
             }
-
-            switch selectedType {
-                case .bundle:
-                    ForEach(applicationStore.papersDatabase.paperBundles, id: \.metadata.code) { bundle in
-                        Row(paperBundle: bundle, searchText: nil)
-                    }
-                case .question:
-                    ForEach(savedQuestions) { question in
-                        Text(question.rawText)
-                    }
-            }
+            .listStyle(.insetGrouped)
         }
+        .navigationTitle("Saved")
+        
     }
 
     private enum CambridgeSavedItemType: String, Hashable {
@@ -42,11 +72,46 @@ struct SavedCollectionView: View {
     }
 }
 
+extension SavedCollectionView {
+    struct QuestionRow: View {
+        let question: Question
+        let searchText: String?
+        
+        init(_ question: Question, search: String? = nil) {
+            self.question = question
+            self.searchText = search
+        }
+        
+        var body: some View {
+            VStack(alignment: .leading) {
+                HStack {
+                    Text("\(self.question.index.index).")
+                        .font(.title, weight: .heavy)
+                        .padding(.horizontal)
+                    
+                    Text("\(question.index.parts.count) parts")
+                        .modifier(TagTextStyle())
+                    
+                    Text("\(question.pages.count) pages")
+                        .modifier(TagTextStyle())
+                }
+                if searchText != nil {
+                    if question.rawText.match(searchText!) {
+                        Text("\"\(question.rawText.getTextAround(string: searchText!))\"")
+                            .font(.caption)
+                    }
+                }
+                
+            }
+        }
+    }
+}
+
 // MARK: - Development Preview -
 
 struct SavedCollectionView_Previews: PreviewProvider {
     static var previews: some View {
-        SavedCollectionView()
+        SavedCollectionView(papersDatabase: ApplicationStore().papersDatabase)
             .environmentObject(ApplicationStore())
     }
 }

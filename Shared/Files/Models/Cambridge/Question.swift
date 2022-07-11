@@ -5,8 +5,10 @@
 import Foundation
 import PDFKit
 
-struct Question: Hashable, Identifiable {
-    let id = UUID()
+struct Question: Codable, Hashable, Identifiable {
+    var id: String {
+        details.code + "_i\(index)"
+    }
     let details: CambridgePaperDetails
     let index: QuestionIndex
     var check: QuestionCheck = .unsolved

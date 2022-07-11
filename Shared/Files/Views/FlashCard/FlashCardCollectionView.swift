@@ -107,9 +107,10 @@ extension FlashCardCollectionView.ListView {
         var body: some View {
             VStack(alignment: .leading) {
                 Text(card.prompt)
-                    .padding(.bottom, 2)
-                Text("\(card.answer)")
                     .font(.headline)
+                Spacer()
+                Text("\(card.answer)")
+                    .font(.subheadline)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.leading)
             }

@@ -5,6 +5,7 @@
 import SwiftUI
 import SwiftUIX
 
+/*
 struct SearchView: View {
     @EnvironmentObject var applicationStore: ApplicationStore
     @State var searchText: String = ""
@@ -38,7 +39,7 @@ extension SearchView {
         
         var body: some View {
             List(paperBundles, id: \.metadata.code){ bundle in
-                Row(searchText: $searchText, paperBundle: bundle)
+                Row(database: database, searchText: $searchText, paperBundle: bundle)
                     .buttonStyle(PlainButtonStyle())
             }
         }
@@ -92,3 +93,4 @@ struct SearchView_Previews: PreviewProvider {
         }
     }
 }
+*/

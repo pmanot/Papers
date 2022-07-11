@@ -47,6 +47,13 @@ struct PDFView: View {
     @State var datasheetShowing: Bool = false
     @State var paperSelection: CambridgePaperType = .questionPaper
     @State var testMode = false
+    var onSave: () -> () {
+        {
+            if applicationStore.papersDatabase.paperBundles.contains(bundle) {
+                !applicationStore.papersDatabase.savedPaperIndices.contains(bundle.index(in: applicationStore.papersDatabase.paperBundles)) ? applicationStore.papersDatabase.savePaper(bundle: bundle) : applicationStore.papersDatabase.removePaper(bundle: bundle)
+            }
+        }
+    }
     
     let bundle: CambridgePaperBundle
     
@@ -81,7 +88,7 @@ struct PDFView: View {
                 .background(Color.white)
                 .edgesIgnoringSafeArea(.all)
                 
-                Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, paperSelection: $paperSelection, testMode: $testMode, datasheetShowing: $datasheetShowing)
+                Toolbar(markschemeShowing: $markschemeShowing, answerOverlayShowing: $answerOverlayShowing, paperSelection: $paperSelection, testMode: $testMode, datasheetShowing: $datasheetShowing, save: onSave, isSaved: false)
                     .zIndex(3)
             }
             
@@ -122,7 +129,7 @@ extension PDFView {
     }
     
     func canShowMCQAnswerOverlay() -> Bool {
-        (bundle.metadata.paperNumber == .paper1) && !(bundle.markScheme.map { $0.metadata.multipleChoiceAnswers }).isNilOrEmpty && (answerOverlayShowing == true)
+        (bundle.metadata.paperNumber == .paper1) && (bundle.markScheme.map { $0.metadata.multipleChoiceAnswers })?.keys.count ?? 0 == 40 && (answerOverlayShowing == true)
     }
     
     func showMCQAnswerOverlay() {

@@ -4,7 +4,7 @@
 
 import Diagnostics
 import Filesystem
-import Foundation
+import SwiftUI
 import PDFKit
 
 final public class PapersDatabase: ObservableObject {
@@ -16,6 +16,8 @@ final public class PapersDatabase: ObservableObject {
     @Published var paperBundles: [CambridgePaperBundle] = []
     @Published var newPaperBundles: [NewCambridgePaperBundle] = []
     @Published var solvedPapers: [String: [SolvedPaper]] = [:]
+    @Published var savedPaperIndices: [Int] = []
+    @Published var savedQuestions: [Question] = []
     @Published var questions: [Question] = []
     @Published var deck: [Stack] = []
     
@@ -50,11 +52,14 @@ final public class PapersDatabase: ObservableObject {
                 let paperBundles = self.computeNewPaperBundles(from: urls, metadata: metadata).sorted(by: { $0.metadata.details.year >= $1.metadata.details.year })
                 let solvedPapers = try! self.readSolvedPaperData()
                 let deck = try! self.readFlashCardDeck()
+                let (savedPaperIndices, savedQuestions) = try! self.readSavedPaperData()
 
                 DispatchQueue.main.async {
                     self.paperBundles = paperBundles
                     self.solvedPapers = solvedPapers
                     self.deck = deck
+                    self.savedPaperIndices = savedPaperIndices
+                    self.savedQuestions = savedQuestions
                     // self.questions = self.paperBundles.compactMap({ $0.questionPaper }).questions()
                 }
             }
@@ -215,9 +220,70 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
+    private func readSavedPaperData() throws -> ([Int], [Question]){
+        let paperIndices: [Int]
+        let questions: [Question]
+        if let data = directory.read(from: "savedPapers") {
+            paperIndices = try JSONDecoder().decode([Int].self, from: data)
+        } else {
+            paperIndices = []
+            DispatchQueue.main.async {
+                try! self.directory.write(paperIndices, toDocumentNamed: "savedPapers")
+            }
+        }
+        if let data = directory.read(from: "savedQuestions") {
+            questions = try JSONDecoder().decode([Question].self, from: data)
+        } else {
+            questions = []
+            DispatchQueue.main.async {
+                try! self.directory.write(questions, toDocumentNamed: "savedQuestions")
+            }
+        }
+        
+        return (paperIndices, questions)
+    }
+    
     func saveDeck(){
         DispatchQueue.main.async {
             try! self.directory.write(self.deck, toDocumentNamed: "deck")
+        }
+    }
+    
+    func savePaper(bundle: CambridgePaperBundle) {
+        if let index = self.paperBundles.firstIndex(of: bundle) {
+            self.savedPaperIndices.append(index)
+            DispatchQueue.main.async {
+                try! self.directory.write(self.savedPaperIndices, toDocumentNamed: "savedPapers")
+            }
+        }
+    }
+    
+    func removePaper(bundle: CambridgePaperBundle){
+        let index = self.paperBundles.firstIndex(of: bundle)
+        self.savedPaperIndices.remove { $0 == index }
+        DispatchQueue.main.async {
+            try! self.directory.write(self.savedPaperIndices, toDocumentNamed: "savedPapers")
+        }
+    }
+    
+    func removePaper(index: Int){
+        self.savedPaperIndices.remove { $0 == index }
+        DispatchQueue.main.async {
+            try! self.directory.write(self.savedPaperIndices, toDocumentNamed: "savedPapers")
+        }
+    }
+    
+    func saveQuestion(question: Question){
+        self.savedQuestions.append(question)
+        DispatchQueue.main.async {
+            try! self.directory.write(self.savedQuestions, toDocumentNamed: "savedQuestions")
+        }
+    }
+    
+    func removeQuestion(question: Question){
+        self.savedQuestions.remove { $0 == question }
+        DispatchQueue.main.async {
+            try! self.directory.write(self.savedQuestions, toDocumentNamed: "savedQuestions")
         }
     }
     

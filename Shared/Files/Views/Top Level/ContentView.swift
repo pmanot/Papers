@@ -138,7 +138,7 @@ extension ContentView {
                     .zIndex(getIndex(for: .flashCards))
                     
                     NavigationView {
-                        SavedCollectionView()
+                        SavedCollectionView(papersDatabase: applicationStore.papersDatabase)
                             .environmentObject(applicationStore)
                     }
                     .zIndex(getIndex(for: .saved))

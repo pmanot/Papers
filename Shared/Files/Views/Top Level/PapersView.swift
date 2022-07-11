@@ -90,7 +90,7 @@ extension PapersView {
                     ForEach(sections, id: \.self) { section in
                         if let bundles = sortedBundles[section] {
                             Section {
-                                InnerSortView(bundles: bundles, sortBy: $sortInsideBy, searchText: searchText, expanded: $expanded)
+                                InnerSortView(database: database, bundles: bundles, sortBy: $sortInsideBy, searchText: searchText, expanded: $expanded)
                             } header: {
                                 switch section {
                                     case .year(let year):
@@ -111,20 +111,40 @@ extension PapersView {
                     }
                 } else {
                     Section {
+                        ForEach(searchResults.filter(filter), id: \.id) { bundle in
+                            Row(database: database, paperBundle: bundle, searchText: searchText)
+                                .swipeActions {
+                                    Button(action: {
+                                        if !database.savedPaperIndices.contains(bundle.index(in: database.paperBundles)) {
+                                            database.savePaper(bundle: bundle)
+                                        } else {
+                                            database.removePaper(bundle: bundle)
+                                        }
+                                        
+                                    }, label: {
+                                        if !database.savedPaperIndices.contains(bundle.index(in: database.paperBundles)) {
+                                            Label("Save", systemImage: .bookmark)
+                                        } else {
+                                            Label("Unsave", systemImage: .xmark)
+                                        }
+                                    })
+                                    
+                                }
+                        }
+                    } header: {
                         TagPicker(PapersDatabase.subjects, id: \.self, selection: $selectedSubject) { subject in
                             Text(subject.rawValue)
                         }
-                        .frame(height: 40)
+                        .frame(height: 30)
+                        .id("subject")
+                        
                         TagPicker(PapersDatabase.paperNumbers, id: \.self, selection: $selectedPaperNumber) { paperNumber in
                             Text("Paper \(paperNumber.rawValue)")
                         }
-                        .frame(height: 40)
-                    }
-                    
-                    Section("Showing \(searchResults.count) results for \"\(searchText)\"") {
-                        ForEach(searchResults.filter(filter), id: \.id) { bundle in
-                            Row(paperBundle: bundle, searchText: searchText)
-                        }
+                        .frame(height: 30)
+                        .id("paper")
+                        
+                        Text("Showing \(searchResults.count) results for \"\(searchText)\"")
                     }
                 }
             }
@@ -186,6 +206,7 @@ enum PapersListSection: Hashable {
 
 extension PapersView.ListView {
     struct InnerSortView: View {
+        @ObservedObject var database: PapersDatabase
         let bundles: [CambridgePaperBundle]
         
         @Binding var sortBy: PapersListSectionType
@@ -215,9 +236,25 @@ extension PapersView.ListView {
             ForEach(sections, id: \.self) { (section: PapersListSection) in
                 if let items = itemsPerSection[section] {
                     DisclosureGroup {
-                        ForEach(items, id: \.metadata.code){ bundle in
-                            Row(paperBundle: bundle, searchText: searchText)
+                        ForEach(items.enumerated(), id: \.1.id){ (index, bundle) in
+                            Row(database: database, paperBundle: bundle, searchText: searchText)
                                 .buttonStyle(PlainButtonStyle())
+                                .swipeActions {
+                                    Button(action: {
+                                        if !database.savedPaperIndices.contains(bundle.index(in: database.paperBundles)) {
+                                            database.savePaper(bundle: bundle)
+                                        } else {
+                                            database.removePaper(bundle: bundle)
+                                        }
+                                        
+                                    }, label: {
+                                        if !database.savedPaperIndices.contains(bundle.index(in: database.paperBundles)) {
+                                            Label("Save", systemImage: .bookmark)
+                                        } else {
+                                            Label("Unsave", systemImage: .xmark)
+                                        }
+                                    })
+                                }
                         }
                     } label: {
                         VStack(alignment: .leading, spacing: 10) {
@@ -249,13 +286,12 @@ extension PapersView.ListView {
 }
 
 struct Row: View {
+    @ObservedObject var database: PapersDatabase
     let paperBundle: CambridgePaperBundle
     let searchText: String?
     
-    
-    
     var body: some View {
-        NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: searchText)) {
+        NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: searchText, database: database)) {
             VStack(alignment: .leading) {
                 HStack {
                     Text("\(paperBundle.metadata.subject.rawValue)")
@@ -265,19 +301,18 @@ struct Row: View {
                         .font(.caption)
                         .padding(.vertical, 5)
                         .padding(.horizontal, 10)
-                        .background(Color.systemGray2)
+                        .background(Color.systemGray)
                         .cornerRadius(15)
                         .shadow(radius: 0.5)
                     
                 }
                 
-                HStack {
+                HStack(spacing: 5) {
                     Text("\(paperBundle.metadata.month.compact())")
                         .modifier(TagTextStyle(color: Color.blue))
                     
                     Text(String(paperBundle.metadata.year))
                         .modifier(TagTextStyle(color: Color.blue))
-                        
                     
                     Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
                         .modifier(TagTextStyle())
@@ -287,7 +322,7 @@ struct Row: View {
                 }
                 
                 
-                Text("\(paperBundle.metadata.numberOfQuestions) questions  |  \(paperBundle.questionPaper!.pages.count) pages")
+                Text("\(paperBundle.metadata.numberOfQuestions) questions,  \(paperBundle.questionPaper!.pages.count) pages")
                     .font(.subheadline)
                     .fontWeight(.light)
                     .foregroundColor(.secondary)

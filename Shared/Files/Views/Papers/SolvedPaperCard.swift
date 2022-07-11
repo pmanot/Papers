@@ -35,7 +35,7 @@ struct SolvedPaperCard: View {
                 
                 Text(solvedPaper.solvedOn.relativeDescription)
                     .padding()
-                NavigationLink(destination: PaperContentsView(bundle: bundle), isActive: $goToContents) {
+                NavigationLink(destination: PaperContentsView(bundle: bundle, database: applicationStore.papersDatabase), isActive: $goToContents) {
                     Image(systemName: .arrowRightCircleFill)
                         .font(.title)
                         .foregroundColor(Color.blue)

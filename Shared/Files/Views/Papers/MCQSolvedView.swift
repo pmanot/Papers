@@ -303,8 +303,14 @@ struct BarView: View {
 }
 
 struct PieChart: View {
-    var colors: [Color] = [Color.green, Color.red, Color.blue, Color.yellow]
-    var values: [Double] = [2, 4, 6, 20]
+    let colors: [Color]
+    let values: [Double]
+    
+    init(colors: [Color] = [Color.green, Color.red, Color.blue, Color.yellow], values: [Double] = [2, 4, 6, 20]){
+        self.colors = colors
+        self.values = values
+    }
+    
     var angles: [Angle] {
         let sum: CGFloat = CGFloat(values.reduce(0, +))
         let mappedAngles: [Angle] = values.map {

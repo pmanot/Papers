@@ -5,17 +5,20 @@
 import SwiftUI
 
 struct PaperContentsView: View {
+    @ObservedObject var database: PapersDatabase
     let paperBundle: CambridgePaperBundle
     let searchText: String?
     
-    init(paper: CambridgePaper, search: String? = nil){
+    init(paper: CambridgePaper, search: String? = nil, database: PapersDatabase){
         self.paperBundle = CambridgePaperBundle(questionPaper: paper, markScheme: nil)
         self.searchText = search
+        self.database = database
     }
     
-    init(bundle: CambridgePaperBundle, search: String? = nil){
+    init(bundle: CambridgePaperBundle, search: String? = nil, database: PapersDatabase){
         self.paperBundle = bundle
         self.searchText = search
+        self.database = database
     }
     
     
@@ -31,9 +34,26 @@ struct PaperContentsView: View {
                 Section(header: "Questions"){
                     ForEach(paperBundle.questionPaper!.questions){ question in
                         NavigationLink(destination: QuestionView(question, bundle: paperBundle)) {
-                            QuestionRow(question, search: searchText)
+                            QuestionRow(database: database, question, search: searchText)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .swipeActions {
+                            Button(action: {
+                                if !database.savedQuestions.contains(question) {
+                                    database.saveQuestion(question: question)
+                                } else {
+                                    database.savedQuestions.remove { $0 == question }
+                                }
+                                
+                            }, label: {
+                                if !database.savedQuestions.contains(question) {
+                                    Label("Save", systemImage: .bookmark)
+                                } else {
+                                    Label("Unsave", systemImage: .xmark)
+                                }
+                            })
+                            
+                        }
                         .listRowBackground(!searchText.isNilOrEmpty ? Color.accentColor.opacity(question.rawText.match(searchText!) ? 0.4 : 0) : Color.clear)
                     }
                 }
@@ -54,10 +74,12 @@ struct PaperContentsView_Previews: PreviewProvider {
 
 extension PaperContentsView {
     struct QuestionRow: View {
+        @ObservedObject var database: PapersDatabase
         let question: Question
         let searchText: String?
         
-        init(_ question: Question, search: String?) {
+        init(database: PapersDatabase, _ question: Question, search: String? = nil) {
+            self.database = database
             self.question = question
             self.searchText = search
         }
@@ -74,6 +96,19 @@ extension PaperContentsView {
                     
                     Text("\(question.pages.count) pages")
                         .modifier(TagTextStyle())
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        if !database.savedQuestions.contains(question) {
+                            database.saveQuestion(question: question)
+                        } else {
+                            database.removeQuestion(question: question)
+                        }
+                        
+                    }){
+                        Image(systemName: database.savedQuestions.contains(question) ? .bookmarkFill : .bookmark)
+                    }
                 }
                 if searchText != nil {
                     if question.rawText.match(searchText!) {
@@ -81,10 +116,8 @@ extension PaperContentsView {
                             .font(.caption)
                     }
                 }
-                
             }
-            
-            .padding()
+            .padding(.vertical, 10)
         }
     }
 }
