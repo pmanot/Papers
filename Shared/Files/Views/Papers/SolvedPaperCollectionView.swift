@@ -11,39 +11,6 @@ struct SolvedPaperCollectionView: View {
 
     @Namespace private var paperCards
 
-    struct ItemView: View {
-        let index: Int
-        let paper: SolvedPaper
-        let isExpanded: Bool
-
-        @State var hasAppeared: Bool = false
-
-        var body: some View {
-            SolvedPaperCard(paper)
-                .frame(width: Screen.main.width * 0.95)
-                .rotationEffect(
-                    hasAppeared
-                        ? rotation(forIndex: index, expanded: isExpanded)
-                        : rotation(forIndex: index, expanded: !isExpanded)
-                )
-                .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) {
-                        withAnimation {
-                            hasAppeared = true
-                        }
-                    }
-                }
-        }
-
-        private func rotation(forIndex i: Int, expanded: Bool) -> Angle {
-            if expanded {
-                return .degrees(0)
-            } else {
-                return .degrees(-min(i, 3) * 4)
-            }
-        }
-    }
-
     var body: some View {
         VStack {
             HStack {
@@ -98,9 +65,43 @@ struct SolvedPaperCollectionView: View {
             .frame(width: 25, height: 25)
             
         }
-       
         .onTapGesture {
             expand()
+        }
+    }
+}
+
+extension SolvedPaperCollectionView {
+    struct ItemView: View {
+        let index: Int
+        let paper: SolvedPaper
+        let isExpanded: Bool
+        
+        @State var hasAppeared: Bool = false
+        
+        var body: some View {
+            SolvedPaperCard(paper)
+                .frame(width: Screen.main.width * 0.95)
+                .rotationEffect(
+                    hasAppeared
+                    ? rotation(forIndex: index, expanded: isExpanded)
+                    : rotation(forIndex: index, expanded: !isExpanded)
+                )
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(100)) {
+                        withAnimation {
+                            hasAppeared = true
+                        }
+                    }
+                }
+        }
+        
+        private func rotation(forIndex i: Int, expanded: Bool) -> Angle {
+            if expanded {
+                return .degrees(0)
+            } else {
+                return .degrees(-min(i, 3) * 4)
+            }
         }
     }
 }
