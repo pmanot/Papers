@@ -111,7 +111,7 @@ extension HomeView {
                             .frame(minHeight: 300)
                             
                         }
-                        .padding(10)
+                        .padding(15)
                     }
                 }
             } else {
@@ -141,7 +141,7 @@ extension HomeView.QuestionCollectionView {
                                 .frame(width: 250, height: 220)
                         default:
                             Text(question.getContents(pdf: bundle.questionPaper!.pdf))
-                                .frame(width: 200, height: 200)
+                                .frame(width: 250, height: 220)
                             
                     }
                     

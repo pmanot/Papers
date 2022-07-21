@@ -24,6 +24,7 @@ struct SavedCollectionView: View {
                     case .bundle:
                         ForEach(papersDatabase.savedPaperIndices, id: \.self) { index in
                             Row(database: papersDatabase, paperBundle: papersDatabase.paperBundles[index], searchText: nil)
+                                .padding(5)
                                 .swipeActions {
                                     Button(role: .destructive, action: {
                                         papersDatabase.removePaper(index: index)
@@ -95,6 +96,9 @@ extension SavedCollectionView {
                     Text("\(question.pages.count) pages")
                         .modifier(TagTextStyle())
                 }
+                
+                Divider()
+                
                 if searchText != nil {
                     if question.rawText.match(searchText!) {
                         Text("\"\(question.rawText.getTextAround(string: searchText!))\"")

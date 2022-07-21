@@ -13,14 +13,17 @@ final public class PapersDatabase: ObservableObject {
     let directory = PaperRelatedDataDirectory()
     
     @Published var calculatedMetadata: [String: CambridgePaperMetadata] = [:]
-    @Published var paperBundles: [CambridgePaperBundle] = []
+    @Published var bundlesByCode: [String: CambridgePaperBundle] = [:]
     @Published var newPaperBundles: [NewCambridgePaperBundle] = []
     @Published var solvedPapers: [String: [SolvedPaper]] = [:]
-    @Published var savedPaperIndices: [Int] = []
+    @Published var savedPaperCodes: [String] = []
     @Published var savedQuestions: [Question] = []
     @Published var questions: [Question] = []
     @Published var deck: [Stack] = []
-    
+    var paperBundles: [CambridgePaperBundle] {
+        [CambridgePaperBundle](bundlesByCode.values)
+    }
+
     let calculatingMetadata: Bool = false
 
     init() {
@@ -35,32 +38,31 @@ final public class PapersDatabase: ObservableObject {
             let urls = self.directory.findAllPaperURLs()
             //let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
             let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
-            let paperBundles = self.computeNewPaperBundles(from: urls, metadata: metadata)
+            let bundlesByCode = self.computeNewPaperBundles(from: urls, metadata: metadata)
             let solvedPapers = try! self.readSolvedPaperData()
 
             DispatchQueue.main.async {
                 self.calculatedMetadata = metadata
-                self.paperBundles = paperBundles
+                self.bundlesByCode = bundlesByCode
                 self.solvedPapers = solvedPapers
-                self.questions = self.paperBundles.compactMap({ $0.questionPaper?.questions }).reduce([], +).shuffled()
             }
             
         } else {
             Task(priority: .userInitiated) {
                 let urls = self.directory.findAllPaperURLs()
                 let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
-                let paperBundles = self.computeNewPaperBundles(from: urls, metadata: metadata).sorted(by: { $0.metadata.details.year >= $1.metadata.details.year })
+                let bundlesByCode = self.computeNewPaperBundles(from: urls, metadata: metadata)
                 let solvedPapers = try! self.readSolvedPaperData()
                 let deck = try! self.readFlashCardDeck()
-                let (savedPaperIndices, savedQuestions) = try! self.readSavedPaperData()
+                let (savedPaperCodes, savedQuestions) = try! self.readSavedPaperData()
 
                 DispatchQueue.main.async {
-                    self.paperBundles = paperBundles
+                    self.bundlesByCode = bundlesByCode
                     self.solvedPapers = solvedPapers
                     self.deck = deck
-                    self.savedPaperIndices = savedPaperIndices
+                    self.savedPaperCodes = savedPaperCodes
                     self.savedQuestions = savedQuestions
-                    // self.questions = self.paperBundles.compactMap({ $0.questionPaper }).questions()
+                    // self.questions = self.bundlesByCode.compactMap({ $0.questionPaper }).questions()
                 }
             }
         }
@@ -69,7 +71,7 @@ final public class PapersDatabase: ObservableObject {
     /// Erases all existing metadata from disk and erases all stored properties
     func eraseAllData() throws {
         calculatedMetadata = [:]
-        paperBundles = []
+        bundlesByCode = [:]
         questions = []
         
         try directory.deleteAllFiles()
@@ -118,8 +120,8 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
-    private func computeNewPaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
-        var result: [CambridgePaperBundle] = []
+    private func computeNewPaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [String : CambridgePaperBundle] {
+        var result: [String: CambridgePaperBundle] = [:]
 
         let standardPaperCodes = urls
             .map { getQuestionPaperCode($0.getPaperCode()) }
@@ -134,7 +136,7 @@ final public class PapersDatabase: ObservableObject {
             
             logger.debug("Processing question paper URL: \(questionPaperURL!), mark scheme URL: \(markSchemeURL!)")
             
-            result.append(
+            result[code] = (
                 CambridgePaperBundle(
                     questionPaper: questionPaperURL.map {
                         CambridgePaper(
@@ -156,8 +158,8 @@ final public class PapersDatabase: ObservableObject {
     }
     
     /// Creates paper bundles from the given paper URLs.
-    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [CambridgePaperBundle] {
-        var result: [CambridgePaperBundle] = []
+    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [String: CambridgePaperBundle] {
+        var result: [String : CambridgePaperBundle] = [:]
 
         let standardPaperCodes = urls
             .map { getQuestionPaperCode($0.getPaperCode()) }
@@ -172,7 +174,7 @@ final public class PapersDatabase: ObservableObject {
             
             logger.debug("Processing question paper URL: \(questionPaperURL!), mark scheme URL: \(markSchemeURL!)")
             
-            result.append(
+            result[code] = (
                 CambridgePaperBundle(
                     questionPaper: questionPaperURL.map {
                         CambridgePaper(
@@ -220,15 +222,15 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
-    private func readSavedPaperData() throws -> ([Int], [Question]){
-        let paperIndices: [Int]
+    private func readSavedPaperData() throws -> ([String], [Question]){
+        let paperCodes: [String]
         let questions: [Question]
         if let data = directory.read(from: "savedPapers") {
-            paperIndices = try JSONDecoder().decode([Int].self, from: data)
+            paperCodes = try JSONDecoder().decode([String].self, from: data)
         } else {
-            paperIndices = []
+            paperCodes = []
             DispatchQueue.main.async {
-                try! self.directory.write(paperIndices, toDocumentNamed: "savedPapers")
+                try! self.directory.write(paperCodes, toDocumentNamed: "savedPapers")
             }
         }
         if let data = directory.read(from: "savedQuestions") {
@@ -240,7 +242,7 @@ final public class PapersDatabase: ObservableObject {
             }
         }
         
-        return (paperIndices, questions)
+        return (paperCodes, questions)
     }
     
     func saveDeck(){
@@ -249,27 +251,27 @@ final public class PapersDatabase: ObservableObject {
         }
     }
     
+    
+    // MARK: - Save and Remove Papers
+    
     func savePaper(bundle: CambridgePaperBundle) {
-        if let index = self.paperBundles.firstIndex(of: bundle) {
-            self.savedPaperIndices.append(index)
-            DispatchQueue.main.async {
-                try! self.directory.write(self.savedPaperIndices, toDocumentNamed: "savedPapers")
-            }
+        self.savedPaperCodes.append(bundle.questionPaperCode)
+        DispatchQueue.main.async {
+            try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
         }
     }
     
     func removePaper(bundle: CambridgePaperBundle){
-        let index = self.paperBundles.firstIndex(of: bundle)
-        self.savedPaperIndices.remove { $0 == index }
+        self.savedPaperCodes.remove({ $0 == bundle.questionPaperCode })
         DispatchQueue.main.async {
-            try! self.directory.write(self.savedPaperIndices, toDocumentNamed: "savedPapers")
+            try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
         }
     }
     
-    func removePaper(index: Int){
-        self.savedPaperIndices.remove { $0 == index }
+    func removePaper(code: String){
+        self.savedPaperCodes.remove { $0 == code }
         DispatchQueue.main.async {
-            try! self.directory.write(self.savedPaperIndices, toDocumentNamed: "savedPapers")
+            try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
         }
     }
     
