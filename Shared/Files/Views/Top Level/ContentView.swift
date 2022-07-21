@@ -43,8 +43,7 @@ struct ContentView: View {
 
     @Environment(\.userInterfaceIdiom) var userInterfaceIdiom
 
-    @AppStorage("rootView.selection") private var selection: Destination = .home
-    
+    @State private var selection: Destination? = .home
     @State private var isLoading: Bool = true
     
     var body: some View {
@@ -54,51 +53,42 @@ struct ContentView: View {
     
     @ViewBuilder
     var navigationView: some View {
-        /*
         if userInterfaceIdiom == .pad || userInterfaceIdiom == .mac {
-            AdaptiveNavigationView("Papers", selection: $selection) {
-                HomeView()
-                    .environmentObject(applicationStore)
-                    .initialSidebarVisibility(.visible)
-                    .navigatableItem(tag: Destination.home) {
+            NavigationView {
+                List {
+                    NavigationLink(tag: Destination.home, selection: $selection) {
+                        HomeView()
+                            .environmentObject(applicationStore)
+                    } label: {
                         TabItem(item: .home)
                     }
-                
-                PapersView()
-                    .environmentObject(applicationStore)
-                    .initialSidebarVisibility(.visible)
-                    .navigatableItem(tag: Destination.papers) {
+                    
+                    NavigationLink(tag: Destination.papers, selection: $selection) {
+                        PapersView()
+                            .environmentObject(applicationStore)
+                    } label: {
                         TabItem(item: .papers)
                     }
-                
-                SearchView()
-                    .initialSidebarVisibility(.visible)
-                    .navigatableItem(tag: Destination.search) {
-                        TabItem(item: .search)
-                    }
-                
-                FlashCardDeck(papersDatabase: applicationStore.papersDatabase)
-                    .environmentObject(applicationStore)
-                    .initialSidebarVisibility(.visible)
-                    .navigatableItem(tag: Destination.flashCards) {
+                    
+                    NavigationLink(tag: Destination.flashCards, selection: $selection) {
+                        FlashCardDeck(papersDatabase: applicationStore.papersDatabase)
+                            .environmentObject(applicationStore)
+                    } label: {
                         TabItem(item: .flashCards)
                     }
-                
-                CreditsView()
-                    .initialSidebarVisibility(.visible)
-
-                    .navigatableItem(tag: Destination.credits) {
-                        TabItem(item: .credits)
+                    
+                    NavigationLink(tag: Destination.saved, selection: $selection) {
+                        SavedCollectionView(papersDatabase: applicationStore.papersDatabase)
+                            .environmentObject(applicationStore)
+                    } label: {
+                        TabItem(item: .saved)
                     }
-
-            } placeholder: {
-                Text("No Selection")
-                    .font(.title2)
-                    .foregroundColor(.secondary)
+                }
+                .listStyle(SidebarListStyle())
             }
-        } else {*/
+        } else {
             CustomTabView(selection: $selection)
-        //}
+        }
     }
 }
 
@@ -114,7 +104,7 @@ extension ContentView {
         @EnvironmentObject var applicationStore: ApplicationStore
         
         @State var showingTabView: Bool = true
-        @Binding var selection: Destination
+        @Binding var selection: Destination?
         
         var body: some View {
             VStack(spacing: 0) {
@@ -123,12 +113,14 @@ extension ContentView {
                         HomeView()
                             .environmentObject(applicationStore)
                     }
+                    .navigationViewStyle(.stack)
                     .zIndex(getIndex(for: .home))
 
                     NavigationView {
                         PapersView()
                             .environmentObject(applicationStore)
                     }
+                    .navigationViewStyle(.stack)
                     .zIndex(getIndex(for: .papers))
 
                     NavigationView {

@@ -20,19 +20,18 @@ struct HomeView: View {
                 
                 solvedPapers
             }
-            .padding()
         }
         .background(Color.systemBackground)
         .navigationTitle("Home")
     }
     
     var dailyQuestions: some View {
-        VStack(alignment: .leading) {
+        Section {
+            QuestionCollectionView(papersDatabase: applicationStore.papersDatabase)
+        } header: {
             Text("Questions For You")
                 .font(.title2.weight(.bold))
                 .padding(.horizontal, .small)
-
-            QuestionCollectionView(papersDatabase: applicationStore.papersDatabase)
         }
     }
     
@@ -179,7 +178,7 @@ struct Home_Previews: PreviewProvider {
             HomeView()
                 .environmentObject(ApplicationStore())
                 .preferredColorScheme(.dark)
+                .navigationViewStyle(.stack)
         }
-        .environmentObject(PapersDatabase())
     }
 }
