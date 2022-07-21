@@ -22,16 +22,18 @@ struct SavedCollectionView: View {
             List {
                 switch selectedType {
                     case .bundle:
-                        ForEach(papersDatabase.savedPaperIndices, id: \.self) { index in
-                            Row(database: papersDatabase, paperBundle: papersDatabase.paperBundles[index], searchText: nil)
-                                .padding(5)
-                                .swipeActions {
-                                    Button(role: .destructive, action: {
-                                        papersDatabase.removePaper(index: index)
-                                    }, label: {
-                                        Label("Remove", systemImage: .xmark)
-                                    })
-                                }
+                        ForEach(papersDatabase.savedPaperCodes, id: \.self) { code in
+                            if let bundle = papersDatabase.bundlesByCode[code] {
+                                Row(database: papersDatabase, paperBundle: bundle, searchText: nil)
+                                    .padding(5)
+                                    .swipeActions {
+                                        Button(role: .destructive, action: {
+                                            papersDatabase.removePaper(code: code)
+                                        }, label: {
+                                            Label("Remove", systemImage: .xmark)
+                                        })
+                                    }
+                            }
                         }
                     case .question:
                         ForEach(papersDatabase.savedQuestions) { question in
