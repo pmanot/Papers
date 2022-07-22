@@ -9,7 +9,7 @@ import PDFKit
 /// A bundle of the question paper and the mark scheme.
 struct CambridgePaperBundle: Identifiable, Hashable {
     var id: String {
-        metadata.code
+        self.questionPaperCode
     }
     let questionPaper: CambridgePaper?
     let markScheme: CambridgePaper?

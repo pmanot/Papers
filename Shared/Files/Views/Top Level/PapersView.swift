@@ -144,7 +144,7 @@ extension PapersView {
                             ScrollView {
                                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 180))], spacing: 20){
                                     ForEach(searchResults.filter(filter), id: \.id) { bundle in
-                                        Box(database: database, paperBundle: bundle, searchText: searchText)
+                                        Box(database: database, metadata: bundle.metadata, searchText: searchText)
                                             .swipeActions {
                                                 Button(action: {
                                                     if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
@@ -323,7 +323,7 @@ extension PapersView.ListView {
             ForEach(sections, id: \.self) { (section: PapersListSection) in
                 if let items = itemsPerSection[section] {
                     if viewMode == .boxStyle {
-                        BoxView(database: database, items: items, section: section)
+                        BoxView(database: database, items: items.map { $0.metadata }, section: section)
                     } else {
                         ListView(database: database, items: items, section: section)
                     }
@@ -338,14 +338,14 @@ extension PapersView.ListView.InnerSortView {
     struct BoxView: View {
         @ObservedObject var database: PapersDatabase
         
-        let items: [CambridgePaperBundle]
+        let items: [CambridgePaperMetadata]
         let section: PapersListSection
         
         var body: some View {
             DisclosureGroup {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 20)], spacing: 20) {
-                    ForEach(items, id: \.id){ bundle in
-                        Box(database: database, paperBundle: bundle, searchText: nil)
+                    ForEach(items, id: \.questionPaperCode){ metadata in
+                        Box(database: database, metadata: metadata, searchText: nil)
                     }
                 }
             } label: {
@@ -430,18 +430,18 @@ extension PapersView.ListView.InnerSortView {
 
 struct Box: View {
     @ObservedObject var database: PapersDatabase
-    let paperBundle: CambridgePaperBundle
+    let metadata: CambridgePaperMetadata
     let searchText: String?
     
     var body: some View {
-        NavigationLink(destination: PaperContentsView(bundle: paperBundle, search: searchText, database: database)) {
+        NavigationLink(destination: PaperContentsView(bundle: database.bundlesByCode[metadata.questionPaperCode]!, search: searchText, database: database)) {
             GroupBox {
                 VStack(alignment: .leading) {
                     HStack {
                         VStack(alignment: .leading) {
-                            Text("\(paperBundle.metadata.subject.rawValue)")
+                            Text("\(metadata.subject.rawValue)")
                                 .font(.title3, weight: .semibold)
-                            Text(paperBundle.metadata.kind.rawValue.uppercased())
+                            Text(metadata.kind.rawValue.uppercased())
                                 .font(.subheadline, weight: .semibold)
                                 .foregroundColor(.secondary)
                         }
@@ -449,14 +449,14 @@ struct Box: View {
                         Spacer()
                         
                         Button(action: {
-                            if !database.savedPaperCodes.contains(paperBundle.questionPaperCode) {
-                                database.savePaper(bundle: paperBundle)
+                            if !database.savedPaperCodes.contains(metadata.questionPaperCode) {
+                                database.savePaper(code: metadata.questionPaperCode)
                             } else {
-                                database.removePaper(bundle: paperBundle)
+                                database.removePaper(code: metadata.questionPaperCode)
                             }
                             
                         }, label: {
-                            Image(systemName: !database.savedPaperCodes.contains(paperBundle.questionPaperCode) ? .bookmark : .bookmarkFill)
+                            Image(systemName: !database.savedPaperCodes.contains(metadata.questionPaperCode) ? .bookmark : .bookmarkFill)
                                 .font(.title2)
                         })
                     }
@@ -465,25 +465,25 @@ struct Box: View {
                     
                     VStack(alignment: .leading, spacing: 5) {
                         HStack(spacing: 5) {
-                            Text("\(paperBundle.metadata.month.compact())")
+                            Text("\(metadata.month.compact())")
                                 .modifier(TagTextStyle(color: Color.blue))
                             
-                            Text(String(paperBundle.metadata.year))
+                            Text(String(metadata.year))
                                 .modifier(TagTextStyle(color: Color.blue))
                         }
                         
                         HStack(spacing: 5) {
-                            Text("Paper \(paperBundle.metadata.paperNumber.rawValue)")
+                            Text("Paper \(metadata.paperNumber.rawValue)")
                                 .modifier(TagTextStyle())
                             
-                            Text("Variant \(paperBundle.metadata.paperVariant.rawValue)")
+                            Text("Variant \(metadata.paperVariant.rawValue)")
                                 .modifier(TagTextStyle())
                         }
                     }
                     
                     Divider()
                     
-                    Text("\(paperBundle.metadata.numberOfQuestions) questions,  \(paperBundle.questionPaper!.pages.count) pages")
+                    Text("\(metadata.numberOfQuestions) questions,  \(metadata.pages.count) pages")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         

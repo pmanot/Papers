@@ -261,6 +261,13 @@ final public class PapersDatabase: ObservableObject {
         }
     }
     
+    func savePaper(code: String) {
+        self.savedPaperCodes.append(code)
+        DispatchQueue.main.async {
+            try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
+        }
+    }
+    
     func removePaper(bundle: CambridgePaperBundle){
         self.savedPaperCodes.remove({ $0 == bundle.questionPaperCode })
         DispatchQueue.main.async {
