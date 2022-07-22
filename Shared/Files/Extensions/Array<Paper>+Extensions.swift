@@ -35,16 +35,6 @@ extension Array where Element: Hashable {
     }
 }
 
-extension Array where Element == URL {
-    func getQuestionPaperURLs() -> [URL] {
-        return self.filter { $0.getPaperCode().isQuestionPaper() }
-    }
-    
-    func getMarkschemeURLs() -> [URL] {
-        return self.filter { $0.getPaperCode().isMarkscheme() }
-    }
-}
-
 extension Array {
     mutating func rotate() {
         self = self.rotated()
@@ -64,7 +54,7 @@ extension Array where Element == URL {
     func paperFiltered() -> [URL] {
         var filteredURLs: [URL] = []
         for url in self {
-            let codeChunks = url.getPaperCode().split(separator: "_")
+            let codeChunks = url.getPaperFilename().rawValue.split(separator: "_")
             if codeChunks.count > 2 {
                 if codeChunks[2] == "ms" || codeChunks[2] == "qp" {
                     filteredURLs.append(url)

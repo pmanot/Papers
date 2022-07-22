@@ -8,25 +8,23 @@ import PDFKit
 
 /// A bundle of the question paper and the mark scheme.
 struct CambridgePaperBundle: Identifiable, Hashable {
-    var id: String {
-        self.questionPaperCode
-    }
+    var id: PaperCode
     let questionPaper: CambridgePaper?
     let markScheme: CambridgePaper?
     
     var datasheetBySubject: PDFDocument? {
         PapersDatabase.datasheetBySubject[self.metadata.subject]
     }
-
+    
     var metadata: CambridgePaperMetadata {
         questionPaper?.metadata ?? markScheme!.metadata
     }
-
-    var questionPaperCode: String {
-        questionPaper?.metadata.questionPaperCode ?? markScheme!.metadata.questionPaperCode
-    }
-
-    init(questionPaper: CambridgePaper?, markScheme: CambridgePaper?) {
+    
+    init(
+        questionPaper: CambridgePaper?,
+        markScheme: CambridgePaper?
+    ) {
+        self.id = questionPaper?.metadata.paperCode ?? markScheme!.metadata.paperCode
         self.questionPaper = questionPaper
         self.markScheme = markScheme
     }

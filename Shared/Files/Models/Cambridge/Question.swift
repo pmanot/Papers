@@ -7,8 +7,9 @@ import PDFKit
 
 struct Question: Codable, Hashable, Identifiable {
     var id: String {
-        details.code + "_i\(index)"
+        details.paperFilename.rawValue + "_i\(index)"
     }
+    
     let details: CambridgePaperDetails
     let index: QuestionIndex
     var check: QuestionCheck = .unsolved
@@ -20,7 +21,7 @@ struct Question: Codable, Hashable, Identifiable {
     init(index: QuestionIndex, pages: [CambridgePaperPage], metadata: CambridgePaperMetadata){
         self.index = index
         self.pages = pages
-        self.details = CambridgePaperDetails(paperCode: metadata.code)
+        self.details = CambridgePaperDetails(paperFilename: metadata.paperFilename)
     }
     
     func getContents(pdf: PDFDocument) -> AttributedString {

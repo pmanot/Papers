@@ -15,7 +15,7 @@
       "location" : "https://github.com/vmanot/Data",
       "state" : {
         "branch" : "master",
-        "revision" : "027798bf06a4c0775ab3ad864d1a249ee69637f0"
+        "revision" : "3f1a619f78e8ba2b055c54b1c3006bbcdee7be60"
       }
     },
     {
@@ -24,7 +24,7 @@
       "location" : "https://github.com/vmanot/Diagnostics.git",
       "state" : {
         "branch" : "master",
-        "revision" : "99ff14170f649f4577357e79425cbbcd0502ea58"
+        "revision" : "8744e5b5f494e0bf42a8ea5201f3715817b8b10e"
       }
     },
     {
@@ -33,7 +33,7 @@
       "location" : "https://github.com/vmanot/Filesystem",
       "state" : {
         "branch" : "master",
-        "revision" : "3f9ca6dfd7a9deb7b944b6f23ca692c0d38dfd48"
+        "revision" : "5df21868f573a330961b8a3c34a15bcc137d3064"
       }
     },
     {
@@ -51,7 +51,7 @@
       "location" : "https://github.com/vmanot/Merge.git",
       "state" : {
         "branch" : "master",
-        "revision" : "a2cfaaa11b69f2ef108eb113730aa8c825654520"
+        "revision" : "bcff83f26e116888895e59199caf409d449cf134"
       }
     },
     {
@@ -69,7 +69,7 @@
       "location" : "https://github.com/vmanot/Runtime.git",
       "state" : {
         "branch" : "master",
-        "revision" : "d7ac90fcf304d855485e05ae76743f5e12f1483b"
+        "revision" : "291b2d6592ca0a733adcb6cf2a5dec356fe76459"
       }
     },
     {
@@ -79,15 +79,6 @@
       "state" : {
         "branch" : "master",
         "revision" : "1013fa18d456aac424cc349fc6b6c5d233cb17d1"
-      }
-    },
-    {
-      "identity" : "swift-log",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-log.git",
-      "state" : {
-        "revision" : "5d66f7ba25daf4f94100e7022febf3c75e37a6c7",
-        "version" : "1.4.2"
       }
     },
     {

@@ -36,38 +36,18 @@ struct PapersView: View {
 }
 
 
-struct PapersView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            PapersView()
-                .environmentObject(ApplicationStore())
-                .preferredColorScheme(.dark)
-        }
-        .navigationViewStyle(.stack)
-        .previewDevice(PreviewDevice(rawValue: "iPad mini (6th generation)"))
-        .previewDisplayName("MiniPad")
-        
-        NavigationView {
-            PapersView()
-                .environmentObject(ApplicationStore())
-                .preferredColorScheme(.dark)
-        }
-        .navigationViewStyle(.stack)
-        .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (5th generation)"))
-        .previewDisplayName("MaxiPad")
-    }
-}
-
-
 extension PapersView {
     struct ListView: View {
         @ObservedObject var database: PapersDatabase
+        
         @Binding var sortBy: PapersListSectionType
         @Binding var sortInsideBy: PapersListSectionType
         @Binding var searchText: String
+        
         @State private var selectedSubject: CambridgeSubject = .physics
         @State private var selectedPaperNumber: CambridgePaperNumber = .paper4
         @State private var searchResults: [CambridgePaperBundle] = []
+        
         @Environment(\.userInterfaceIdiom) var userInterface
         private var viewMode: ViewMode {
             if userInterface == .mac || userInterface == .pad {
@@ -146,21 +126,19 @@ extension PapersView {
                                     ForEach(searchResults.filter(filter), id: \.id) { bundle in
                                         Box(database: database, metadata: bundle.metadata, searchText: searchText)
                                             .swipeActions {
-                                                Button(action: {
-                                                    if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
+                                                Button {
+                                                    if !database.savedPaperCodes.contains(bundle.id) {
                                                         database.savePaper(bundle: bundle)
                                                     } else {
                                                         database.removePaper(bundle: bundle)
                                                     }
-                                                    
-                                                }, label: {
-                                                    if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
+                                                } label: {
+                                                    if !database.savedPaperCodes.contains(bundle.id) {
                                                         Label("Save", systemImage: .bookmark)
                                                     } else {
                                                         Label("Unsave", systemImage: .xmark)
                                                     }
-                                                })
-                                                
+                                                }
                                             }
                                     }
                                 }
@@ -178,7 +156,6 @@ extension PapersView {
                                 }
                                 .frame(height: 30)
                                 .id("paper")
-                                
                             }
                             
                             Text("Showing \(searchResults.count) results for \"\(searchText)\"")
@@ -216,14 +193,14 @@ extension PapersView {
                                     Row(database: database, paperBundle: bundle, searchText: searchText)
                                         .swipeActions {
                                             Button(action: {
-                                                if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
+                                                if !database.savedPaperCodes.contains(bundle.id) {
                                                     database.savePaper(bundle: bundle)
                                                 } else {
                                                     database.removePaper(bundle: bundle)
                                                 }
                                                 
                                             }, label: {
-                                                if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
+                                                if !database.savedPaperCodes.contains(bundle.id) {
                                                     Label("Save", systemImage: .bookmark)
                                                 } else {
                                                     Label("Unsave", systemImage: .xmark)
@@ -344,7 +321,7 @@ extension PapersView.ListView.InnerSortView {
         var body: some View {
             DisclosureGroup {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 180), spacing: 20)], spacing: 20) {
-                    ForEach(items, id: \.questionPaperCode){ metadata in
+                    ForEach(items, id: \.paperCode) { metadata in
                         Box(database: database, metadata: metadata, searchText: nil)
                     }
                 }
@@ -385,20 +362,20 @@ extension PapersView.ListView.InnerSortView {
                     Row(database: database, paperBundle: bundle, searchText: nil)
                         .buttonStyle(PlainButtonStyle())
                         .swipeActions {
-                            Button(action: {
-                                if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
+                            Button {
+                                if !database.savedPaperCodes.contains(bundle.id) {
                                     database.savePaper(bundle: bundle)
                                 } else {
                                     database.removePaper(bundle: bundle)
                                 }
                                 
-                            }, label: {
-                                if !database.savedPaperCodes.contains(bundle.questionPaperCode) {
+                            } label: {
+                                if !database.savedPaperCodes.contains(bundle.id) {
                                     Label("Save", systemImage: .bookmark)
                                 } else {
                                     Label("Unsave", systemImage: .xmark)
                                 }
-                            })
+                            }
                         }
                 }
             } label: {
@@ -434,7 +411,7 @@ struct Box: View {
     let searchText: String?
     
     var body: some View {
-        NavigationLink(destination: PaperContentsView(bundle: database.bundlesByCode[metadata.questionPaperCode]!, search: searchText, database: database)) {
+        NavigationLink(destination: PaperContentsView(bundle: database.bundlesByCode[metadata.paperCode]!, search: searchText, database: database)) {
             GroupBox {
                 VStack(alignment: .leading) {
                     HStack {
@@ -449,14 +426,14 @@ struct Box: View {
                         Spacer()
                         
                         Button(action: {
-                            if !database.savedPaperCodes.contains(metadata.questionPaperCode) {
-                                database.savePaper(code: metadata.questionPaperCode)
+                            if !database.savedPaperCodes.contains(metadata.paperCode) {
+                                database.savePaper(code: metadata.paperCode)
                             } else {
-                                database.removePaper(code: metadata.questionPaperCode)
+                                database.removePaper(code: metadata.paperCode)
                             }
                             
                         }, label: {
-                            Image(systemName: !database.savedPaperCodes.contains(metadata.questionPaperCode) ? .bookmark : .bookmarkFill)
+                            Image(systemName: !database.savedPaperCodes.contains(metadata.paperCode) ? .bookmark: .bookmarkFill)
                                 .font(.title2)
                         })
                     }
@@ -554,5 +531,27 @@ extension Array where Element == CambridgePaperBundle {
             case .byPaperNumber:
                 return group(by: { PapersListSection.paperNumber($0.metadata.paperNumber) })
         }
+    }
+}
+
+struct PapersView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            PapersView()
+                .environmentObject(ApplicationStore())
+                .preferredColorScheme(.dark)
+        }
+        .navigationViewStyle(.stack)
+        .previewDevice(PreviewDevice(rawValue: "iPad mini (6th generation)"))
+        .previewDisplayName("MiniPad")
+        
+        NavigationView {
+            PapersView()
+                .environmentObject(ApplicationStore())
+                .preferredColorScheme(.dark)
+        }
+        .navigationViewStyle(.stack)
+        .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (5th generation)"))
+        .previewDisplayName("MaxiPad")
     }
 }

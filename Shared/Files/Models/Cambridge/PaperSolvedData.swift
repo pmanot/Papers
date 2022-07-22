@@ -11,47 +11,52 @@ struct PaperHistory {
 }
 
 struct PaperSolvedData {
-    init(_ solvedPaper: SolvedPaper){
-        self.paperCode = solvedPaper.paperCode
-        self.correct = solvedPaper.correctAnswers.count
-        self.incorrect = solvedPaper.incorrectAnswers.count
-        self.unattempted = solvedPaper.unsolvedAnswers.count
-        self.timeTaken = 0
-        self.solvedOn = solvedPaper.solvedOn
-    }
-    init(paperCode: String, correct: Int, incorrect: Int, unattempted: Int, timeTaken: TimeInterval){
-        self.paperCode = paperCode
-        self.correct = correct
-        self.incorrect = incorrect
-        self.unattempted = unattempted
-        self.timeTaken = timeTaken
-    }
-    
-    var paperCode: String
-    
+    var paperFilename: PaperFilename
     var solvedOn: Date = Date()
     var correct: Int
     var incorrect: Int
     var unattempted: Int
     var timeTaken: TimeInterval
     
+    init(
+        paperFilename: PaperFilename,
+        correct: Int,
+        incorrect: Int,
+        unattempted: Int,
+        timeTaken: TimeInterval
+    ) {
+        self.paperFilename = paperFilename
+        self.correct = correct
+        self.incorrect = incorrect
+        self.unattempted = unattempted
+        self.timeTaken = timeTaken
+    }
+    
+    init(_ solvedPaper: SolvedPaper) {
+        self.paperFilename = solvedPaper.paperFilename
+        self.correct = solvedPaper.correctAnswers.count
+        self.incorrect = solvedPaper.incorrectAnswers.count
+        self.unattempted = solvedPaper.unsolvedAnswers.count
+        self.timeTaken = 0
+        self.solvedOn = solvedPaper.solvedOn
+    }
 }
 
 struct SolvedPaper: Codable, Hashable, Identifiable {
     var id = UUID()
-    var paperCode: String
+    var paperFilename: PaperFilename
     var solvedOn: Date = Date()
     var answers: [QuestionIndex : MultipleChoiceAnswer] = [:]
     var correctAnswers: [QuestionIndex] = []
     var incorrectAnswers: [QuestionIndex] = []
     var unsolvedAnswers: [QuestionIndex] = []
-
+    
     var allAnswers: [QuestionIndex] {
         correctAnswers + incorrectAnswers + unsolvedAnswers
     }
     
     init(bundle: CambridgePaperBundle, answers: [QuestionIndex : MultipleChoiceAnswer]){
-        paperCode = bundle.metadata.code
+        paperFilename = bundle.metadata.paperFilename
         self.answers = answers
         if bundle.markScheme != nil {
             self.check(markschemeAnswers: bundle.markScheme!.metadata.multipleChoiceAnswers)
@@ -60,14 +65,17 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
     
     
     init(paper: CambridgePaper, answers: [QuestionIndex : MultipleChoiceAnswer]){
-        self.paperCode = paper.metadata.code
+        self.paperFilename = paper.metadata.paperFilename
         self.answers = answers
     }
     
     
     // testing and debugging
-    init(answers: [QuestionIndex : MultipleChoiceAnswer], correctAnswers: [QuestionIndex : MultipleChoiceAnswer]){
-        self.paperCode = "9702_s18_qp_11"
+    init(
+        _testInit_Answers answers: [QuestionIndex : MultipleChoiceAnswer],
+        correctAnswers: [QuestionIndex : MultipleChoiceAnswer]
+    ){
+        self.paperFilename = .init(rawValue: "9702_s18_qp_11")
         self.answers = answers
         self.check(markschemeAnswers: correctAnswers)
     }
@@ -89,8 +97,8 @@ struct SolvedPaper: Codable, Hashable, Identifiable {
 }
 
 extension SolvedPaper {
-    static func makeNewExample() -> SolvedPaper {
-        SolvedPaper(answers: [:], correctAnswers: [:])
+    static func makeNewTestExample() -> SolvedPaper {
+        SolvedPaper(_testInit_Answers: [:], correctAnswers: [:])
     }
 }
 

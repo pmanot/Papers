@@ -7,14 +7,21 @@ import SwiftUIX
 
 struct SolvedPaperCard: View {
     @EnvironmentObject var applicationStore: ApplicationStore
+    
     let solvedPaper: SolvedPaper
-    var bundle: CambridgePaperBundle! {
-        applicationStore.papersDatabase.paperBundles.first { $0.metadata.code == solvedPaper.paperCode }
-    }
+    
     @State var goToContents: Bool = false
+
     init(_ solvedPaper: SolvedPaper) {
         self.solvedPaper = solvedPaper
     }
+    
+    var bundle: CambridgePaperBundle! {
+        applicationStore.papersDatabase.paperBundles.first {
+            $0.metadata.paperFilename == solvedPaper.paperFilename
+        }
+    }
+        
     var body: some View {
         HStack(alignment: .top) {
             blockChartWidget
@@ -59,7 +66,7 @@ struct SolvedPaperCard: View {
             }
             Button(role: .destructive, action: {
                 withAnimation {
-                    delete(database: applicationStore.papersDatabase)
+                    applicationStore.papersDatabase.delete(solvedPaper)
                 }
             }){
                 Label("Delete solved paper", systemImage: .binXmark)
@@ -69,18 +76,7 @@ struct SolvedPaperCard: View {
     }
 }
 
-/*
-struct SolvedPaperCard_Previews: PreviewProvider {
-    static var previews: some View {
-        SolvedPaperCard()
-    }
-}
-*/
-
 extension SolvedPaperCard {
-    func delete(database: PapersDatabase) {
-        database.solvedPapers.removeValue(forKey: solvedPaper.paperCode)
-    }
     private var barChartWidget: some View {
         VStack(spacing: 1) {
             VStack(alignment: .leading, spacing: 0) {

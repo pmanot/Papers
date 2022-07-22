@@ -156,6 +156,16 @@ struct GradeView: View {
 
 struct CorrectionView_Previews: PreviewProvider {
     static var previews: some View {
-        CorrectionView(solvedData: .constant(PaperSolvedData(paperCode: "", correct: 0, incorrect: 0, unattempted: 0, timeTaken: 0)), dismiss: .constant(false))
+        CorrectionView(
+            solvedData: .constant(
+                PaperSolvedData(
+                    paperFilename: SolvedPaper.makeNewTestExample().paperFilename,
+                    correct: 0,
+                    incorrect: 0,
+                    unattempted: 0,
+                    timeTaken: 0)
+            ),
+            dismiss: .constant(false)
+        )
     }
 }

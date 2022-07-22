@@ -16,8 +16,9 @@ public enum CambridgePaperVariant: Int, Codable, Hashable {
 }
 
 extension CambridgePaperVariant {
-    init(paperCode: String){
-        let paperCodeChunks = paperCode.split(separator: "_")
-        self.init(rawValue: Int(paperCodeChunks[3].dropFirst()) ?? 1)!
+    init(paperFilename: PaperFilename) {
+        let chunks = paperFilename.rawValue.split(separator: "_")
+        
+        self.init(rawValue: Int(chunks[3].dropFirst()) ?? 1)!
     }
 }

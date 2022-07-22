@@ -14,8 +14,8 @@ public enum CambridgeSubject: String, Codable, Hashable {
 }
 
 extension CambridgeSubject {
-    init(paperCode: String){
-        switch paperCode.dropLast(10) {
+    init(paperFilename: PaperFilename) {
+        switch paperFilename.rawValue.dropLast(10) {
             case "9700":
                 self = .biology
             case "9701":

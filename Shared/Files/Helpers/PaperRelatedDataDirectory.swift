@@ -37,9 +37,15 @@ struct PaperRelatedDataDirectory {
                     attributes: nil
                 )
             }
+            
             let fileURL = nestedFolderURL.appendingPathComponent(filename)
 
+            guard manager.fileExists(at: fileURL) else {
+                return nil
+            }
+            
             let data = try Data(contentsOf: fileURL)
+            
             return data
         } catch {
             return nil

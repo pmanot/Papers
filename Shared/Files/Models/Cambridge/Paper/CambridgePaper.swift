@@ -25,7 +25,7 @@ struct CambridgePaper: Hashable {
                     }
                 }
             if metadata.indices.count != metadata.numberOfQuestions {
-                Self.logger.debug("The number of question indices in the metadata (\(metadata.indices.count) does not match the number of questions (\(metadata.numberOfQuestions)) in Paper \(metadata.code)")
+                Self.logger.debug("The number of question indices in the metadata (\(metadata.indices.count) does not match the number of questions (\(metadata.numberOfQuestions)) in Paper \(metadata.paperFilename.rawValue)")
                 return []
             }
             return indicesArray.map { Question(index: metadata.indices[$0 - 1], pages: pagesByIndex[$0]!, metadata: self.metadata) }

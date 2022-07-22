@@ -12,9 +12,9 @@ public enum CambridgePaperMonth: String, Codable, Hashable {
 }
 
 extension CambridgePaperMonth {
-    init(paperCode: String){
-        let paperCodeChunks = paperCode.split(separator: "_")
-        switch paperCodeChunks[1].dropLast(2) {
+    init(paperFilename: PaperFilename) {
+        let chunks = paperFilename.rawValue.split(separator: "_")
+        switch chunks[1].dropLast(2) {
         case "s":
             self = .mayJune
         case "w":

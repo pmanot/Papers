@@ -93,17 +93,17 @@ extension HomeView {
         
         @Binding var isExpanded: Bool
         
-        var data: [String] {
-            papersDatabase.solvedPapers.keys.sorted()
+        var data: [PaperFilename] {
+            papersDatabase.solvedPapers.keys.sorted(by: { $0.rawValue < $1.rawValue })
         }
         
         var body: some View {
             if !data.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(alignment: .top) {
-                        ForEach(data, id: \.self) { paperCode in
+                        ForEach(data, id: \.self) { paperFilename in
                             SolvedPaperCollectionView(
-                                solvedPapers: papersDatabase.solvedPapers[paperCode]!,
+                                solvedPapers: papersDatabase.solvedPapers[paperFilename]!,
                                 expanded: $isExpanded
                             )
                             .frame(width: 310)

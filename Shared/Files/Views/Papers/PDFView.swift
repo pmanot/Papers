@@ -50,7 +50,7 @@ struct PDFView: View {
     var onSave: () -> () {
         {
             if applicationStore.papersDatabase.paperBundles.contains(bundle) {
-                !applicationStore.papersDatabase.savedPaperCodes.contains(bundle.questionPaperCode) ? applicationStore.papersDatabase.savePaper(bundle: bundle) : applicationStore.papersDatabase.removePaper(bundle: bundle)
+                !applicationStore.papersDatabase.savedPaperCodes.contains(bundle.id) ? applicationStore.papersDatabase.savePaper(bundle: bundle) : applicationStore.papersDatabase.removePaper(bundle: bundle)
             }
         }
     }

@@ -154,7 +154,7 @@ extension PaperContentsView {
                     }
                     
                     HStack {
-                        Text(bundle.metadata.questionPaperCode)
+                        Text(bundle.metadata.paperCode.description)
                             .modifier(TagTextStyle())
                         
                         Text("\(bundle.metadata.pages.count) pages")

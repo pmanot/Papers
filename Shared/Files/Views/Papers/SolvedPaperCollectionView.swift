@@ -6,18 +6,18 @@ import SwiftUIX
 
 struct SolvedPaperCollectionView: View {
     var solvedPapers: [SolvedPaper]
-
+    
     @Binding var expanded: Bool
-
+    
     @Namespace private var paperCards
-
+    
     var body: some View {
         VStack {
             HStack {
-                Text(CambridgeSubject(paperCode: solvedPapers.first!.paperCode).rawValue)
+                Text(CambridgeSubject(paperFilename: solvedPapers.first!.paperFilename).rawValue)
                     .modifier(TagTextStyle())
                 
-                Text(getQuestionPaperCode(solvedPapers.first!.paperCode))
+                Text(solvedPapers.first!.paperFilename.derivePaperCode().description)
                     .modifier(TagTextStyle())
                 
                 Text("\(solvedPapers.count)")
@@ -119,18 +119,22 @@ struct SolvedPaperCollectionView_Previews: PreviewProvider {
         Preview()
             .preferredColorScheme(.dark)
     }
-
+    
     struct Preview: View {
-        @State private var examples = [SolvedPaper.makeNewExample(), SolvedPaper.makeNewExample(), SolvedPaper.makeNewExample(), SolvedPaper.makeNewExample()
+        @State private var examples = [
+            SolvedPaper.makeNewTestExample(),
+            SolvedPaper.makeNewTestExample(),
+            SolvedPaper.makeNewTestExample(),
+            SolvedPaper.makeNewTestExample()
         ]
-
+        
         @State private var isExpanded: Bool = false
-
+        
         var body: some View {
             ScrollView {
                 VStack {
                     Toggle("Expand", isOn: $isExpanded.animation(.default))
-
+                    
                     SolvedPaperCollectionView(solvedPapers: examples, expanded: $isExpanded)
                 }
             }

@@ -13,19 +13,20 @@ public enum CambridgePaperType: Codable, Hashable {
 }
 
 extension CambridgePaperType {
-    init(){
+    init() {
         self = .other
     }
     
-    init(paperCode: String) {
-        let paperCodeChunks = paperCode.split(separator: "_")
-        switch paperCodeChunks[2] {
-        case "qp":
+    init(paperFilename: PaperFilename) {
+        let chunks = paperFilename.rawValue.split(separator: "_")
+        
+        switch chunks[2] {
+            case "qp":
                 self = .questionPaper
-        case "ms":
+            case "ms":
                 self = .markScheme
-        default:
-            self = .datasheet
+            default:
+                self = .datasheet
         }
     }
 }

@@ -21,13 +21,3 @@ extension NSRegularExpression {
         }
     }
 }
-
-func regexMatches(string: String, pattern: String) -> Bool {
-    let regex = try! NSRegularExpression(pattern: pattern)
-    return regex.matches(string)
-}
-
-func regexReturnMatches(string: String, pattern: String) -> [String] {
-    let regex = try! NSRegularExpression(pattern: pattern)
-    return regex.returnMatches(string)
-}

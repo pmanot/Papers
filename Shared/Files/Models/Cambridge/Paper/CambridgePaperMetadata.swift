@@ -6,55 +6,60 @@ import Diagnostics
 import Foundation
 import PDFKit
 
-extension PDFDocument {
-    func pages() -> [PDFPage] {
-        (0..<self.pageCount).compactMap { self.page(at: $0) }
-    }
-}
-
 enum PaperCodeError: Error {
     case invalidCode
 }
 
 struct CambridgePaperMetadata: Codable, Hashable {
-    static let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "CambridgePaperMetadata")
+    static let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier!,
+        category: "CambridgePaperMetadata"
+    )
     
-    let code: String
+    let paperFilename: PaperFilename
     let type: CambridgePaperType
     var pages: [CambridgePaperPage] = []
+
+    var multipleChoiceAnswers: [QuestionIndex: MultipleChoiceAnswer] = [:]
+    
+    /// COMPATIBILITY
+
+    var answers: [Answer] = []
+    var numberOfQuestions: Int = 40
+    var indices: [QuestionIndex] = []
+
     var details: CambridgePaperDetails {
-        CambridgePaperDetails.init(paperCode: code)
+        CambridgePaperDetails(paperFilename: paperFilename)
     }
+
     var kind: CambridgePaperKind {
         CambridgePaperKind(details: details)
     }
-    
-    var multipleChoiceAnswers: [QuestionIndex : MultipleChoiceAnswer] = [:]
-    
-    /// COMPATIBILITY
-    var answers: [Answer] = []
-    var numberOfQuestions: Int = 40
+
     var rawText: String {
         self.pages.map { $0.rawText }.reduce("", +)
     }
-    var indices: [QuestionIndex] = []
-    
-    var questionPaperCode: String {
-        getQuestionPaperCode(code)
+
+    var paperCode: PaperCode {
+        paperFilename.derivePaperCode()
     }
     
     var paperNumber: CambridgePaperNumber {
         self.details.number ?? .paper1
     }
+
     var paperVariant: CambridgePaperVariant {
         self.details.variant ?? .variant1
     }
+
     var subject: CambridgeSubject {
         self.details.subject ?? .other
     }
+
     var month: CambridgePaperMonth {
         self.details.month ?? .mayJune
     }
+
     var year: Int {
         self.details.year ?? 2020
     }
@@ -62,17 +67,19 @@ struct CambridgePaperMetadata: Codable, Hashable {
     ///-------------------------------
     
     init(url: URL) {
-        self.code = url.deletingPathExtension().lastPathComponent
-        self.type = CambridgePaperType(paperCode: code)
+        self.paperFilename = url.getPaperFilename()
+        self.type = CambridgePaperType(paperFilename: paperFilename)
+
         getPages(url: url)
     }
     
-    init(code: String){
-        if regexMatches(string: code, pattern: RegularExpressions.paperCodePattern) { // check if papercode is valid
-            self.code = code
-            self.type = CambridgePaperType(paperCode: code)
-        } else { // papercode is not valid
-            self.code = code
+    init(paperFilename: PaperFilename) {
+        self.paperFilename = paperFilename
+
+        // check if paper filename is valid, if not mark it as `.other`.
+        if paperFilename.rawValue.matches(.init(RegularExpressions.paperFilenamePattern)) {
+            self.type = CambridgePaperType(paperFilename: paperFilename)
+        } else {
             self.type = .other
         }
     }
@@ -81,7 +88,7 @@ struct CambridgePaperMetadata: Codable, Hashable {
         self.init(url: URL(fileURLWithPath: Bundle.main.path(forResource: bundleResourceName, ofType: "pdf")!))
     }
     
-    mutating func getPages(url: URL) -> () {
+    mutating func getPages(url: URL) {
         guard let pdf = PDFDocument(url: url) else {
             return
         }
@@ -158,7 +165,7 @@ struct CambridgePaperMetadata: Codable, Hashable {
                                     self.pages.append(CambridgePaperPage(index: index, questionIndices: [Int](29...40).map { QuestionIndex($0) }, rawText: rawText))
                                     multipleChoiceAnswers.append(contentsOf: page.getAnswers(for: 29...40))
                                     
-                                    let log = "MCQ answers calculated (\(multipleChoiceAnswers.count) answers) for Paper \(self.code)"
+                                    let log = "MCQ answers calculated (\(multipleChoiceAnswers.count) answers) for Paper \(self.paperFilename)"
                                     Self.logger.info("\(log)")
                                 default:
                                     return
@@ -195,14 +202,6 @@ struct CambridgePaperMetadata: Codable, Hashable {
     }
 }
 
-extension CambridgePaperMetadata {
-    private static func validatePaperCode(_ code: String) -> Bool {
-        let regex = try! NSRegularExpression(pattern: RegularExpressions.paperCodePattern)
-        return regex.matches(code)
-    }
-}
-
-
 extension PDFPage {
     func getQuestionIndices(
         currentIndex: inout Int,
@@ -213,12 +212,15 @@ extension PDFPage {
             return []
         }
         var partsDictionary = [Int: [Int]]()
+
         let boldStrings = contents
-            .fetchBoldStrings()
+            .fetchSubstrings(withSymbolicTrait: .traitBold)
+            .map({ $0.substring })
             .reduce(" ", +)
         
         let regexNum = try! NSRegularExpression(pattern: "[0-9]+")
         let regexParts = try! NSRegularExpression(pattern: "\\([a-z]+\\)")
+
         var numbers = regexNum
             .returnMatches(boldStrings)
             .compactMap(Int.init)

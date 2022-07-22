@@ -260,7 +260,7 @@ extension MCQSolvedView {
 
 struct MCQSolvedView_Previews: PreviewProvider {
     static var previews: some View {
-        MCQSolvedView(.constant(SolvedPaper.makeNewExample()))
+        MCQSolvedView(.constant(SolvedPaper.makeNewTestExample()))
     }
 }
 

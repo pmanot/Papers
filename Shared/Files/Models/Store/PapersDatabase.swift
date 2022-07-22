@@ -9,61 +9,40 @@ import PDFKit
 
 final public class PapersDatabase: ObservableObject {
     let logger = Logger(subsystem: Bundle.main.bundleIdentifier!, category: "PapersDatabase")
-
+    
     let directory = PaperRelatedDataDirectory()
     
-    @Published var calculatedMetadata: [String: CambridgePaperMetadata] = [:]
-    @Published var bundlesByCode: [String: CambridgePaperBundle] = [:]
+    @Published var calculatedMetadata: [PaperFilename: CambridgePaperMetadata] = [:]
+    @Published var bundlesByCode: [PaperCode: CambridgePaperBundle] = [:]
     @Published var newPaperBundles: [NewCambridgePaperBundle] = []
-    @Published var solvedPapers: [String: [SolvedPaper]] = [:]
-    @Published var savedPaperCodes: [String] = []
+    @Published var solvedPapers: [PaperFilename: [SolvedPaper]] = [:]
+    @Published var savedPaperCodes: [PaperCode] = []
     @Published var savedQuestions: [Question] = []
-    @Published var questions: [Question] = []
     @Published var deck: [Stack] = []
+    
     var paperBundles: [CambridgePaperBundle] {
         [CambridgePaperBundle](bundlesByCode.values)
     }
-
-    let calculatingMetadata: Bool = false
-
+        
     init() {
         
     }
-
+    
     func load() {
-        // Normal
-        
-        if calculatingMetadata {
-            // While calculating metadata
+        Task(priority: .userInitiated) {
             let urls = self.directory.findAllPaperURLs()
-            //let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
             let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
             let bundlesByCode = self.computeNewPaperBundles(from: urls, metadata: metadata)
             let solvedPapers = try! self.readSolvedPaperData()
-
+            let deck = try! self.readFlashCardDeck()
+            let (savedPaperCodes, savedQuestions) = try! self.readSavedPaperData()
+            
             DispatchQueue.main.async {
-                self.calculatedMetadata = metadata
                 self.bundlesByCode = bundlesByCode
                 self.solvedPapers = solvedPapers
-            }
-            
-        } else {
-            Task(priority: .userInitiated) {
-                let urls = self.directory.findAllPaperURLs()
-                let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
-                let bundlesByCode = self.computeNewPaperBundles(from: urls, metadata: metadata)
-                let solvedPapers = try! self.readSolvedPaperData()
-                let deck = try! self.readFlashCardDeck()
-                let (savedPaperCodes, savedQuestions) = try! self.readSavedPaperData()
-
-                DispatchQueue.main.async {
-                    self.bundlesByCode = bundlesByCode
-                    self.solvedPapers = solvedPapers
-                    self.deck = deck
-                    self.savedPaperCodes = savedPaperCodes
-                    self.savedQuestions = savedQuestions
-                    // self.questions = self.bundlesByCode.compactMap({ $0.questionPaper }).questions()
-                }
+                self.deck = deck
+                self.savedPaperCodes = savedPaperCodes
+                self.savedQuestions = savedQuestions
             }
         }
     }
@@ -72,101 +51,70 @@ final public class PapersDatabase: ObservableObject {
     func eraseAllData() throws {
         calculatedMetadata = [:]
         bundlesByCode = [:]
-        questions = []
         
         try directory.deleteAllFiles()
     }
     
     /// Reads existing metadata from disk, or create and write new metadata for the given paper URLs.
-    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [String: CambridgePaperMetadata] {
+    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [PaperFilename: CambridgePaperMetadata] {
+        var result: [PaperFilename: CambridgePaperMetadata]
         
-        var result: [String: CambridgePaperMetadata]
-        
-        if calculatingMetadata {
-            if let data = directory.read(from: "metadata") {
-                // Read the metadata from device
-                result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: data)
-            } else {
-                // Cannot read metadata from device
-                if let url = Bundle.main.url(forResource: "metadata", withExtension: nil) {
-                    // Try reading metadata from bundle
-                    result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: Data(contentsOf: url))
-                    
-                    for url in paperURLs {
-                        // Check if metadata is complete
-                        if result[url.getPaperCode()].isNil {
-                            // Calculate the metadata for a new paper
-                            result[url.getPaperCode()] = CambridgePaperMetadata(url: url)
-                        }
-                    }
-                    // Write the metadata to device
-                    try! self.directory.write(result, toDocumentNamed: "metadata")
-                } else {
-                    // Create the metadata.
-                    result = Dictionary(uniqueKeysWithValues: paperURLs.map { ($0.getPaperCode(), CambridgePaperMetadata(url: $0)) })
-                    // Write the metadata to device
-                    try! self.directory.write(result, toDocumentNamed: "metadata")
-                }
-                
-            }
+        if let data = directory.read(from: "metadata") {
+            // Read the metadata from device
+            result = try JSONDecoder().decode([PaperFilename: CambridgePaperMetadata].self, from: data)
         } else {
+            // Cannot read metadata from device
             if let url = Bundle.main.url(forResource: "metadata", withExtension: nil) {
-                // Try reading the metadata from bundle
-                result = try JSONDecoder().decode([String : CambridgePaperMetadata].self, from: Data(contentsOf: url))
-            } else {
-                result = [:]
-            }
-        }
-        return result
-    }
-    
-    private func computeNewPaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [String : CambridgePaperBundle] {
-        var result: [String: CambridgePaperBundle] = [:]
-
-        let standardPaperCodes = urls
-            .map { getQuestionPaperCode($0.getPaperCode()) }
-            .removingDuplicates()
-
-        let questionPaperURLs = Dictionary(uniqueKeysWithValues: urls.getQuestionPaperURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
-        let markschemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
-        
-        for code in standardPaperCodes {
-            let questionPaperURL = questionPaperURLs[code]
-            let markSchemeURL = markschemeURLs[code]
-            
-            logger.debug("Processing question paper URL: \(questionPaperURL!), mark scheme URL: \(markSchemeURL!)")
-            
-            result[code] = (
-                CambridgePaperBundle(
-                    questionPaper: questionPaperURL.map {
-                        CambridgePaper(
-                            url: $0,
-                            metadata: metadata[$0.getPaperCode()]!
-                        )
-                    },
-                    markScheme: markSchemeURL.map {
-                        CambridgePaper(
-                            url: $0,
-                            metadata: metadata[$0.getPaperCode()]!
-                        )
+                // Try reading metadata from bundle
+                result = try JSONDecoder().decode([PaperFilename: CambridgePaperMetadata].self, from: Data(contentsOf: url))
+                
+                for url in paperURLs {
+                    // Check if metadata is complete
+                    if result[url.getPaperFilename()] == nil {
+                        // Calculate the metadata for a new paper
+                        result[url.getPaperFilename()] = CambridgePaperMetadata(url: url)
                     }
-                )
-            )
+                }
+                // Write the metadata to device
+                try! self.directory.write(result, toDocumentNamed: "metadata")
+            } else {
+                // Create the metadata.
+                result = Dictionary(uniqueKeysWithValues: paperURLs.map { ($0.getPaperFilename(), CambridgePaperMetadata(url: $0)) })
+                // Write the metadata to device
+                try! self.directory.write(result, toDocumentNamed: "metadata")
+            }
+            
         }
-        
+
         return result
     }
     
     /// Creates paper bundles from the given paper URLs.
-    private func computePaperBundles(from urls: [URL], metadata: [String : CambridgePaperMetadata]) -> [String: CambridgePaperBundle] {
-        var result: [String : CambridgePaperBundle] = [:]
-
+    private func computeNewPaperBundles(
+        from urls: [URL],
+        metadata: [PaperFilename: CambridgePaperMetadata]
+    ) -> [PaperCode: CambridgePaperBundle] {
+        var result: [PaperCode: CambridgePaperBundle] = [:]
+        
         let standardPaperCodes = urls
-            .map { getQuestionPaperCode($0.getPaperCode()) }
+            .map({ $0.getPaperFilename().derivePaperCode() })
             .removingDuplicates()
+        
+        let questionPaperURLs: [PaperCode: URL] = Dictionary(
+            uniqueKeysWithValues: urls
+                .filter({ $0.getPaperFilename().type == .questionPaper })
+                .map { (url: URL) in
+                    (url.getPaperFilename().derivePaperCode(), url)
+                }
+        )
 
-        let questionPaperURLs = Dictionary(uniqueKeysWithValues: urls.getQuestionPaperURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
-        let markschemeURLs = Dictionary(uniqueKeysWithValues: urls.getMarkschemeURLs().map { (getQuestionPaperCode($0.getPaperCode()), $0) })
+        let markschemeURLs: [PaperCode: URL] = Dictionary(
+            uniqueKeysWithValues: urls
+                .filter({ $0.getPaperFilename().type == .markScheme })
+                .map { (url: URL) in
+                    (url.getPaperFilename().derivePaperCode(), url)
+                }
+        )
 
         for code in standardPaperCodes {
             let questionPaperURL = questionPaperURLs[code]
@@ -179,27 +127,31 @@ final public class PapersDatabase: ObservableObject {
                     questionPaper: questionPaperURL.map {
                         CambridgePaper(
                             url: $0,
-                            metadata: metadata[$0.getPaperCode()]!
+                            metadata: metadata[$0.getPaperFilename()]!
                         )
                     },
                     markScheme: markSchemeURL.map {
                         CambridgePaper(
                             url: $0,
-                            metadata: metadata[$0.getPaperCode()]!
+                            metadata: metadata[$0.getPaperFilename()]!
                         )
                     }
                 )
             )
         }
-
+        
         return result
     }
-    
-    private func readSolvedPaperData() throws -> [String : [SolvedPaper]] {
-        let result: [String : [SolvedPaper]]
+            
+    func delete(_ solvedPaper: SolvedPaper) {
+        solvedPapers.removeValue(forKey: solvedPaper.paperFilename)
+    }
+
+    private func readSolvedPaperData() throws -> [PaperFilename : [SolvedPaper]] {
+        let result: [PaperFilename: [SolvedPaper]]
         
         if let data = directory.read(from: "solvedPaperData") {
-            result = try JSONDecoder().decode([String : [SolvedPaper]].self, from: data)
+            result = try JSONDecoder().decode([PaperFilename: [SolvedPaper]].self, from: data)
         } else {
             result = [:]
         }
@@ -222,11 +174,11 @@ final public class PapersDatabase: ObservableObject {
         return result
     }
     
-    private func readSavedPaperData() throws -> ([String], [Question]){
-        let paperCodes: [String]
+    private func readSavedPaperData() throws -> ([PaperCode], [Question]){
+        let paperCodes: [PaperCode]
         let questions: [Question]
         if let data = directory.read(from: "savedPapers") {
-            paperCodes = try JSONDecoder().decode([String].self, from: data)
+            paperCodes = try JSONDecoder().decode([PaperCode].self, from: data)
         } else {
             paperCodes = []
             DispatchQueue.main.async {
@@ -255,13 +207,13 @@ final public class PapersDatabase: ObservableObject {
     // MARK: - Save and Remove Papers
     
     func savePaper(bundle: CambridgePaperBundle) {
-        self.savedPaperCodes.append(bundle.questionPaperCode)
+        self.savedPaperCodes.append(bundle.id)
         DispatchQueue.main.async {
             try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
         }
     }
     
-    func savePaper(code: String) {
+    func savePaper(code: PaperCode) {
         self.savedPaperCodes.append(code)
         DispatchQueue.main.async {
             try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
@@ -269,13 +221,13 @@ final public class PapersDatabase: ObservableObject {
     }
     
     func removePaper(bundle: CambridgePaperBundle){
-        self.savedPaperCodes.remove({ $0 == bundle.questionPaperCode })
+        self.savedPaperCodes.remove({ $0 == bundle.id })
         DispatchQueue.main.async {
             try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
         }
     }
     
-    func removePaper(code: String){
+    func removePaper(code: PaperCode){
         self.savedPaperCodes.remove { $0 == code }
         DispatchQueue.main.async {
             try! self.directory.write(self.savedPaperCodes, toDocumentNamed: "savedPapers")
@@ -297,7 +249,7 @@ final public class PapersDatabase: ObservableObject {
     }
     
     func writeSolvedPaperData(_ solved: SolvedPaper) {
-        let key = solved.paperCode
+        let key = solved.paperFilename
         var solvedPapers = try! readSolvedPaperData()
         if solvedPapers[key].isNilOrEmpty {
             solvedPapers[key] = [solved]
@@ -316,7 +268,7 @@ extension PapersDatabase {
     
     // MARK: - Examples
     var examples: [CambridgePaperMetadata] {
-        PaperRelatedDataDirectory().fetchAllAvailablePDFResourceURLs().map { CambridgePaperMetadata(bundleResourceName: $0.getPaperCode()) }
+        PaperRelatedDataDirectory().fetchAllAvailablePDFResourceURLs().map { CambridgePaperMetadata(bundleResourceName: $0.getPaperFilenameString()) }
     }
     
     // MARK: - Datasheets
