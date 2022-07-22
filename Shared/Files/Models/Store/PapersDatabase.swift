@@ -56,34 +56,41 @@ final public class PapersDatabase: ObservableObject {
     }
     
     /// Reads existing metadata from disk, or create and write new metadata for the given paper URLs.
-    private func readOrCreateMetadata(paperURLs: [URL]) throws -> [PaperFilename: CambridgePaperMetadata] {
+    private func readOrCreateMetadata(
+        paperURLs: [URL]
+    ) throws -> [PaperFilename: CambridgePaperMetadata] {
         var result: [PaperFilename: CambridgePaperMetadata]
         
         if let data = directory.read(from: "metadata") {
-            // Read the metadata from device
             result = try JSONDecoder().decode([PaperFilename: CambridgePaperMetadata].self, from: data)
         } else {
-            // Cannot read metadata from device
             if let url = Bundle.main.url(forResource: "metadata", withExtension: nil) {
-                // Try reading metadata from bundle
                 result = try JSONDecoder().decode([PaperFilename: CambridgePaperMetadata].self, from: Data(contentsOf: url))
                 
-                for url in paperURLs {
-                    // Check if metadata is complete
-                    if result[url.getPaperFilename()] == nil {
-                        // Calculate the metadata for a new paper
-                        result[url.getPaperFilename()] = CambridgePaperMetadata(url: url)
+                for filename in paperURLs.map({ $0.getPaperFilename() }) {
+                    guard result[filename] == nil else {
+                        continue
                     }
+
+                    result[filename] = CambridgePaperMetadata(url: url)
                 }
-                // Write the metadata to device
-                try! self.directory.write(result, toDocumentNamed: "metadata")
             } else {
-                // Create the metadata.
-                result = Dictionary(uniqueKeysWithValues: paperURLs.map { ($0.getPaperFilename(), CambridgePaperMetadata(url: $0)) })
-                // Write the metadata to device
-                try! self.directory.write(result, toDocumentNamed: "metadata")
+                result = [:]
+                
+                for (index, url) in paperURLs.enumerated() {
+                    let filename = url.getPaperFilename()
+                    
+                    logger.info("Processing \(filename).")
+
+                    let metadata = CambridgePaperMetadata(url: url)
+                    
+                    result[filename] = metadata
+                    
+                    logger.info("Finished processing \(filename), \(paperURLs.count - (index + 1)) paper(s) remaining.")
+                }
             }
             
+            try! directory.write(result, toDocumentNamed: "metadata")
         }
 
         return result
@@ -287,5 +294,3 @@ extension PapersDatabase {
     static var paperNumbers: [CambridgePaperNumber] = [.paper1, .paper2, .paper3, .paper4, .paper5, .paper6]
     static var paperVariants: [CambridgePaperVariant] = [.variant1, .variant2, .variant3, .variant4, .variant5, .variant6, .variant7, .variant8]
 }
-
-

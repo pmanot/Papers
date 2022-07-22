@@ -11,10 +11,12 @@ enum PaperCodeError: Error {
 }
 
 struct CambridgePaperMetadata: Codable, Hashable {
-    static let logger = Logger(
+    static let logger = PassthroughLogger()
+    
+    /*(
         subsystem: Bundle.main.bundleIdentifier!,
         category: "CambridgePaperMetadata"
-    )
+    )*/
     
     let paperFilename: PaperFilename
     let type: CambridgePaperType
@@ -124,12 +126,14 @@ struct CambridgePaperMetadata: Codable, Hashable {
                 
                 for page in pages {
                     let index = page.pageRef?.pageNumber ?? 0
-                    let rawText = page.string ?? ""
+                    let attributedText = page.attributedString ?? NSAttributedString()
+                    let rawText = attributedText.string
                     
                     if index <= startingPage  { // First Page
                         self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
                     } else {
                         let questionIndices = page.getQuestionIndices(
+                            contents: attributedText,
                             currentIndex: &questionIndexValue,
                             currentLetterIndex: &partIndexValue,
                             currentNumeralIndex: &numeralIndexValue
@@ -148,7 +152,14 @@ struct CambridgePaperMetadata: Codable, Hashable {
             case .multipleChoice:
                 switch type {
                     case .questionPaper:
-                        self.pages = pages.map { CambridgePaperPage(index: $0.pageRef?.pageNumber ?? 0, questionIndices: [], rawText: $0.string ?? "") }
+                        self.pages = pages.map {
+                            CambridgePaperPage(
+                                index: $0.pageRef?.pageNumber ?? 0,
+                                questionIndices: [],
+                                rawText: $0.string ?? ""
+                            )
+                        }
+                        
                         return
                     case .markScheme:
                         for page in pages {
@@ -157,15 +168,32 @@ struct CambridgePaperMetadata: Codable, Hashable {
 
                             switch index {
                                 case 1: // First Page
-                                    self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
+                                    self.pages.append(
+                                        CambridgePaperPage(index: index, questionIndices: [], rawText: rawText)
+                                    )
                                 case 2:
-                                    self.pages.append(CambridgePaperPage(index: index, questionIndices: [Int](1...28).map { QuestionIndex($0) }, rawText: rawText))
-                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(for: 1...28))
+                                    self.pages.append(
+                                        CambridgePaperPage(
+                                            index: index,
+                                            questionIndices: [Int](1...28).map { QuestionIndex($0) }, // TODO: Document magic number 28. Where is it coming from?
+                                            rawText: rawText
+                                        )
+                                    )
+                                    
+                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(rawText: rawText, for: 1...28))
                                 case 3:
-                                    self.pages.append(CambridgePaperPage(index: index, questionIndices: [Int](29...40).map { QuestionIndex($0) }, rawText: rawText))
-                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(for: 29...40))
+                                    self.pages.append(
+                                        CambridgePaperPage(
+                                            index: index,
+                                            questionIndices: [Int](29...40).map({ QuestionIndex($0) }),
+                                            rawText: rawText
+                                        )
+                                    )
+                                    
+                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(rawText: rawText, for: 29...40))
                                     
                                     let log = "MCQ answers calculated (\(multipleChoiceAnswers.count) answers) for Paper \(self.paperFilename)"
+                                    
                                     Self.logger.info("\(log)")
                                 default:
                                     return
@@ -204,13 +232,11 @@ struct CambridgePaperMetadata: Codable, Hashable {
 
 extension PDFPage {
     func getQuestionIndices(
+        contents: NSAttributedString,
         currentIndex: inout Int,
         currentLetterIndex: inout Int,
         currentNumeralIndex: inout Int
     ) -> [QuestionIndex] {
-        guard let contents = attributedString else {
-            return []
-        }
         var partsDictionary = [Int: [Int]]()
 
         let boldStrings = contents
@@ -232,7 +258,7 @@ extension PDFPage {
         
         let partsArray = regexParts
             .returnMatches(boldStrings)
-            .map { $0.removingCharacters(in: CharacterSet(charactersIn: "()")) }
+            .map({ $0.removingCharacters(in: CharacterSet(charactersIn: "()")) })
         
         if currentIndex >= 1 {
             // (i) (b) (a)
@@ -243,10 +269,7 @@ extension PDFPage {
                         currentLetterIndex += 1
                         currentNumeralIndex = 0
                     case PapersDatabase.numerals[currentNumeralIndex]:
-                        if partsDictionary[currentLetterIndex].isNilOrEmpty {
-                            partsDictionary[currentLetterIndex] = []
-                        }
-                        partsDictionary[currentLetterIndex]!.append(currentNumeralIndex + 1)
+                        partsDictionary[currentLetterIndex, default: []].append(currentNumeralIndex + 1)
                         currentNumeralIndex += 1
                     case PapersDatabase.letters[0]:
                         if numbers.contains(currentIndex + 1) {
@@ -263,10 +286,14 @@ extension PDFPage {
             }
         }
         
-        let parts = partsDictionary
-            .map { (key, value) in
-                QuestionIndex(index: key, type: .letter, parts: value.map({ QuestionIndex($0, type: .numeral) }) )
-            }
+        let parts = partsDictionary.map { (key, value) in
+            QuestionIndex(
+                index: key,
+                type: .letter,
+                parts: value.map({ QuestionIndex($0, type: .numeral) })
+            )
+        }
+        
         if parts.isEmpty {
             if numbers.contains(currentIndex + 1) {
                 currentIndex += 1
@@ -281,15 +308,11 @@ extension PDFPage {
         return [QuestionIndex(index: currentIndex, type: .number, parts: parts)]
     }
     
-    func getAnswers(for range: ClosedRange<Int>) -> [QuestionIndex : MultipleChoiceAnswer] {
-        guard let rawText = self.string else {
-            return [:]
-        }
+    func getAnswers(rawText: String, for range: ClosedRange<Int>) -> [QuestionIndex: MultipleChoiceAnswer] {
         let regex = try! NSRegularExpression(pattern: "[0-4]*[0-9]\\s?[A-D]")
-        let matches = regex.returnMatches(rawText).map({ $0.removing(allOf: " ")})
-        var final: [QuestionIndex : MultipleChoiceAnswer] = [:]
+        let matches = regex.returnMatches(rawText).map({ $0.removing(allOf: " ") })
+        var final: [QuestionIndex: MultipleChoiceAnswer] = [:]
         var i: Int = range.lowerBound
-        
         
         for m in matches {
             if m.last != nil {
