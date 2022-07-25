@@ -12,7 +12,10 @@ final public class PapersDatabase: ObservableObject {
     
     let directory = PaperRelatedDataDirectory()
     
+    @Published var paperCodes: [PaperCode] = []
     @Published var calculatedMetadata: [PaperFilename: CambridgePaperMetadata] = [:]
+    @Published var questionPapersByCode: [PaperCode: CambridgePaper] = [:]
+    @Published var markSchemesByCode: [PaperCode: CambridgePaper] = [:]
     @Published var bundlesByCode: [PaperCode: CambridgePaperBundle] = [:]
     @Published var newPaperBundles: [NewCambridgePaperBundle] = []
     @Published var solvedPapers: [PaperFilename: [SolvedPaper]] = [:]
@@ -21,7 +24,13 @@ final public class PapersDatabase: ObservableObject {
     @Published var deck: [Stack] = []
     
     var paperBundles: [CambridgePaperBundle] {
-        [CambridgePaperBundle](bundlesByCode.values)
+        paperCodes
+            .map { code in
+                CambridgePaperBundle (
+                    questionPaper: questionPapersByCode[code],
+                    markScheme: markSchemesByCode[code]
+                )
+            }
     }
         
     init() {
@@ -30,14 +39,18 @@ final public class PapersDatabase: ObservableObject {
     
     func load() {
         Task(priority: .userInitiated) {
-            let urls = self.directory.findAllPaperURLs()
-            let metadata = try! self.readOrCreateMetadata(paperURLs: urls)
-            let bundlesByCode = self.computeNewPaperBundles(from: urls, metadata: metadata)
+            let urls = self.directory
+                .findAllPaperURLs()
+                .sorted {
+                    $0.getPaperFilename().rawValue.contains("qp") || $1.getPaperFilename().rawValue.contains("ms")
+                }
+            async let metadata = try! await self.readOrCreateMetadata(paperURLs: urls)
+            let bundlesByCode = await self.computeNewPaperBundles(from: urls, metadata: metadata)
             let solvedPapers = try! self.readSolvedPaperData()
             let deck = try! self.readFlashCardDeck()
             let (savedPaperCodes, savedQuestions) = try! self.readSavedPaperData()
             
-            DispatchQueue.main.async {
+            await MainActor.run {
                 self.bundlesByCode = bundlesByCode
                 self.solvedPapers = solvedPapers
                 self.deck = deck
@@ -58,7 +71,7 @@ final public class PapersDatabase: ObservableObject {
     /// Reads existing metadata from disk, or create and write new metadata for the given paper URLs.
     private func readOrCreateMetadata(
         paperURLs: [URL]
-    ) throws -> [PaperFilename: CambridgePaperMetadata] {
+    ) async throws -> [PaperFilename: CambridgePaperMetadata] {
         var result: [PaperFilename: CambridgePaperMetadata]
         
         if let data = directory.read(from: "metadata") {
@@ -86,6 +99,20 @@ final public class PapersDatabase: ObservableObject {
                     
                     result[filename] = metadata
                     
+                    await MainActor.run {
+                        switch metadata.type {
+                            case .questionPaper:
+                                self.questionPapersByCode[metadata.paperCode] = CambridgePaper(url: url, metadata: metadata)
+                                
+                            case .markScheme:
+                                self.markSchemesByCode[metadata.paperCode] = CambridgePaper(url: url, metadata: metadata)
+                                
+                            default:
+                                break
+                        }
+                        paperCodes.append(metadata.paperCode)
+                    }
+                    
                     logger.info("Finished processing \(filename), \(paperURLs.count - (index + 1)) paper(s) remaining.")
                 }
             }
@@ -94,6 +121,62 @@ final public class PapersDatabase: ObservableObject {
         }
 
         return result
+    }
+    
+    private func getPaperBundle(from urls: (questionPaperURL: URL?, markSchemeURL: URL?)) -> CambridgePaperBundle {
+        var metadata: [PaperFilename: CambridgePaperMetadata] = [:]
+        if let questionPaperURL = urls.questionPaperURL {
+            metadata[questionPaperURL.getPaperFilename()] = CambridgePaperMetadata(url: questionPaperURL)
+        }
+        if let markSchemeURL = urls.markSchemeURL {
+            metadata[markSchemeURL.getPaperFilename()] = CambridgePaperMetadata(url: markSchemeURL)
+        }
+        
+        let paperBundle = CambridgePaperBundle(
+            questionPaper: urls
+                .questionPaperURL
+                .map {
+                    CambridgePaper(
+                        url: $0,
+                        metadata: metadata[$0.getPaperFilename()]!
+                    )
+                },
+            markScheme: urls
+                .markSchemeURL
+                .map {
+                    CambridgePaper(
+                        url: $0,
+                        metadata: metadata[$0.getPaperFilename()]!
+                    )
+                }
+        )
+        return paperBundle
+    }
+    
+    private func sortPaperURLs(urls: [URL]) -> [(questionPaperURL: URL?, markSchemeURL: URL?)] {
+        var questionPaperURLsByCode: [PaperCode: URL] = [:]
+        var markSchemeURLsByCode: [PaperCode: URL] = [:]
+        var paperCodes: [PaperCode] = []
+        
+        
+        for url in urls {
+            let filename = url.getPaperFilename()
+            let paperCode = filename.derivePaperCode()
+            paperCodes.append(paperCode)
+            switch filename.type {
+                case .questionPaper:
+                    questionPaperURLsByCode[paperCode] = url
+                case .markScheme:
+                    markSchemeURLsByCode[paperCode] = url
+                default:
+                    continue
+            }
+        }
+        
+        return paperCodes
+            .map {
+                (questionPaperURL: questionPaperURLsByCode[$0], markSchemeURL: markSchemeURLsByCode[$0])
+            }
     }
     
     /// Creates paper bundles from the given paper URLs.
@@ -269,6 +352,11 @@ final public class PapersDatabase: ObservableObject {
             self.solvedPapers = solvedPapers
         }
     }
+    
+    // MARK: - Download Papers
+    
+    
+    
 }
 
 extension PapersDatabase {

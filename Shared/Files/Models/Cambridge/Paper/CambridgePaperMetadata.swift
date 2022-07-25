@@ -132,7 +132,8 @@ struct CambridgePaperMetadata: Codable, Hashable {
                     if index <= startingPage  { // First Page
                         self.pages.append(CambridgePaperPage(index: index, questionIndices: [], rawText: rawText))
                     } else {
-                        let questionIndices = page.getQuestionIndices(
+                        let questionIndices = getQuestionIndices(
+                            pageNumber: page.pageRef?.pageNumber ?? 0,
                             contents: attributedText,
                             currentIndex: &questionIndexValue,
                             currentLetterIndex: &partIndexValue,
@@ -180,7 +181,7 @@ struct CambridgePaperMetadata: Codable, Hashable {
                                         )
                                     )
                                     
-                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(rawText: rawText, for: 1...28))
+                                    multipleChoiceAnswers.append(contentsOf: getAnswers(rawText: rawText, for: 1...28))
                                 case 3:
                                     self.pages.append(
                                         CambridgePaperPage(
@@ -190,11 +191,11 @@ struct CambridgePaperMetadata: Codable, Hashable {
                                         )
                                     )
                                     
-                                    multipleChoiceAnswers.append(contentsOf: page.getAnswers(rawText: rawText, for: 29...40))
+                                    multipleChoiceAnswers.append(contentsOf: getAnswers(rawText: rawText, for: 29...40))
                                     
                                     let log = "MCQ answers calculated (\(multipleChoiceAnswers.count) answers) for Paper \(self.paperFilename)"
                                     
-                                    Self.logger.info("\(log)")
+                                    Self.logger.debug("\(log)")
                                 default:
                                     return
                             }
@@ -230,99 +231,98 @@ struct CambridgePaperMetadata: Codable, Hashable {
     }
 }
 
-extension PDFPage {
-    func getQuestionIndices(
-        contents: NSAttributedString,
-        currentIndex: inout Int,
-        currentLetterIndex: inout Int,
-        currentNumeralIndex: inout Int
-    ) -> [QuestionIndex] {
-        var partsDictionary = [Int: [Int]]()
+func getQuestionIndices(
+    pageNumber: Int,
+    contents: NSAttributedString,
+    currentIndex: inout Int,
+    currentLetterIndex: inout Int,
+    currentNumeralIndex: inout Int
+) -> [QuestionIndex] {
+    var partsDictionary = [Int: [Int]]()
 
-        let boldStrings = contents
-            .fetchSubstrings(withSymbolicTrait: .traitBold)
-            .map({ $0.substring })
-            .reduce(" ", +)
-        
-        let regexNum = try! NSRegularExpression(pattern: "[0-9]+")
-        let regexParts = try! NSRegularExpression(pattern: "\\([a-z]+\\)")
+    let boldStrings = contents
+        .fetchSubstrings(withSymbolicTrait: .traitBold)
+        .map({ $0.substring })
+        .reduce(" ", +)
+    
+    let regexNum = try! NSRegularExpression(pattern: "[0-9]+")
+    let regexParts = try! NSRegularExpression(pattern: "\\([a-z]+\\)")
 
-        var numbers = regexNum
-            .returnMatches(boldStrings)
-            .compactMap(Int.init)
-        
-        if let index = numbers.firstIndex(of: pageRef?.pageNumber ?? 0) {
-            // Removes the page number from array of numbers
-            numbers.remove(at: index)
-        }
-        
-        let partsArray = regexParts
-            .returnMatches(boldStrings)
-            .map({ $0.removingCharacters(in: CharacterSet(charactersIn: "()")) })
-        
-        if currentIndex >= 1 {
-            // (i) (b) (a)
-            for part in partsArray { // [a, b, i, ii, c, i, ii]
-                switch part {
-                    case PapersDatabase.letters[currentLetterIndex]:
-                        partsDictionary[currentLetterIndex + 1] = []
-                        currentLetterIndex += 1
-                        currentNumeralIndex = 0
-                    case PapersDatabase.numerals[currentNumeralIndex]:
-                        partsDictionary[currentLetterIndex, default: []].append(currentNumeralIndex + 1)
-                        currentNumeralIndex += 1
-                    case PapersDatabase.letters[0]:
-                        if numbers.contains(currentIndex + 1) {
-                            currentIndex += 1
-                            currentLetterIndex = 0
-                            currentNumeralIndex = 0
-                        }
-                        partsDictionary[currentLetterIndex + 1] = []
-                        currentLetterIndex += 1
-                        currentNumeralIndex = 0
-                    default:
-                        continue
-                }
-            }
-        }
-        
-        let parts = partsDictionary.map { (key, value) in
-            QuestionIndex(
-                index: key,
-                type: .letter,
-                parts: value.map({ QuestionIndex($0, type: .numeral) })
-            )
-        }
-        
-        if parts.isEmpty {
-            if numbers.contains(currentIndex + 1) {
-                currentIndex += 1
-                currentLetterIndex = 0
-                currentNumeralIndex = 0
-            }
-            partsDictionary[currentLetterIndex + 1] = []
-            currentLetterIndex += 1
-            currentNumeralIndex = 0
-        }
-        
-        return [QuestionIndex(index: currentIndex, type: .number, parts: parts)]
+    var numbers = regexNum
+        .returnMatches(boldStrings)
+        .compactMap(Int.init)
+    
+    if let index = numbers.firstIndex(of: pageNumber) {
+        // Removes the page number from array of numbers
+        numbers.remove(at: index)
     }
     
-    func getAnswers(rawText: String, for range: ClosedRange<Int>) -> [QuestionIndex: MultipleChoiceAnswer] {
-        let regex = try! NSRegularExpression(pattern: "[0-4]*[0-9]\\s?[A-D]")
-        let matches = regex.returnMatches(rawText).map({ $0.removing(allOf: " ") })
-        var final: [QuestionIndex: MultipleChoiceAnswer] = [:]
-        var i: Int = range.lowerBound
-        
-        for m in matches {
-            if m.last != nil {
-                if m.removing(at: m.lastIndex) == "\(i)"  {
-                    final[QuestionIndex(i)] = MultipleChoiceAnswer(index: QuestionIndex(i), value: MultipleChoiceValue(rawValue: String(m.last!))!)
-                    i += 1
-                }
+    let partsArray = regexParts
+        .returnMatches(boldStrings)
+        .map({ $0.removingCharacters(in: CharacterSet(charactersIn: "()")) })
+    
+    if currentIndex >= 1 {
+        // (i) (b) (a)
+        for part in partsArray { // [a, b, i, ii, c, i, ii]
+            switch part {
+                case PapersDatabase.letters[currentLetterIndex]:
+                    partsDictionary[currentLetterIndex + 1] = []
+                    currentLetterIndex += 1
+                    currentNumeralIndex = 0
+                case PapersDatabase.numerals[currentNumeralIndex]:
+                    partsDictionary[currentLetterIndex, default: []].append(currentNumeralIndex + 1)
+                    currentNumeralIndex += 1
+                case PapersDatabase.letters[0]:
+                    if numbers.contains(currentIndex + 1) {
+                        currentIndex += 1
+                        currentLetterIndex = 0
+                        currentNumeralIndex = 0
+                    }
+                    partsDictionary[currentLetterIndex + 1] = []
+                    currentLetterIndex += 1
+                    currentNumeralIndex = 0
+                default:
+                    continue
             }
         }
-        
-        return final
     }
+    
+    let parts = partsDictionary.map { (key, value) in
+        QuestionIndex(
+            index: key,
+            type: .letter,
+            parts: value.map({ QuestionIndex($0, type: .numeral) })
+        )
+    }
+    
+    if parts.isEmpty {
+        if numbers.contains(currentIndex + 1) {
+            currentIndex += 1
+            currentLetterIndex = 0
+            currentNumeralIndex = 0
+        }
+        partsDictionary[currentLetterIndex + 1] = []
+        currentLetterIndex += 1
+        currentNumeralIndex = 0
+    }
+    
+    return [QuestionIndex(index: currentIndex, type: .number, parts: parts)]
+}
+
+func getAnswers(rawText: String, for range: ClosedRange<Int>) -> [QuestionIndex: MultipleChoiceAnswer] {
+    let regex = try! NSRegularExpression(pattern: "[0-4]*[0-9]\\s?[A-D]")
+    let matches = regex.returnMatches(rawText).map({ $0.removing(allOf: " ") })
+    var final: [QuestionIndex: MultipleChoiceAnswer] = [:]
+    var i: Int = range.lowerBound
+    
+    for m in matches {
+        if m.last != nil {
+            if m.removing(at: m.lastIndex) == "\(i)"  {
+                final[QuestionIndex(i)] = MultipleChoiceAnswer(index: QuestionIndex(i), value: MultipleChoiceValue(rawValue: String(m.last!))!)
+                i += 1
+            }
+        }
+    }
+    
+    return final
 }

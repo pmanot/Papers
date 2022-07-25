@@ -333,10 +333,12 @@ struct PieChart: View {
     
     var body: some View {
         ZStack {
-            ForEach(0..<colors.count) { key in
-                Sector(startAngle: .degrees(0), endAngle: anglesWithOffset[key], clockwise: true)
-                    .foregroundColor(colors[key])
-                    .zIndex(-Double(key))
+            if let count = colors.count { // To stop compiler warning
+                ForEach(0..<count) { key in
+                    Sector(startAngle: .degrees(0), endAngle: anglesWithOffset[key], clockwise: true)
+                        .foregroundColor(colors[key])
+                        .zIndex(-Double(key))
+                }
             }
         }
     }

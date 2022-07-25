@@ -508,11 +508,19 @@ struct Row: View {
                         .modifier(TagTextStyle())
                 }
                 
+                HStack {
+                    Text("\(paperBundle.metadata.numberOfQuestions) questions")
+                        .font(.subheadline)
+                        .fontWeight(.light)
+                        .foregroundColor(.secondary)
+                    if let totalPages = paperBundle.questionPaper?.pages.count {
+                        Text("\(totalPages) pages")
+                            .font(.subheadline)
+                            .fontWeight(.light)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 
-                Text("\(paperBundle.metadata.numberOfQuestions) questions,  \(paperBundle.questionPaper!.pages.count) pages")
-                    .font(.subheadline)
-                    .fontWeight(.light)
-                    .foregroundColor(.secondary)
             }
             
         }
